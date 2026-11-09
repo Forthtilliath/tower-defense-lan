@@ -160,7 +160,7 @@ func _parse_towers(raw: Variant) -> Variant:
 		return null
 	var out := {}
 	for e in raw:
-		if not _is_tuple(e, 5):
+		if not _is_tuple(e, 6):
 			return null
 		var cell = Check.as_int(e[0], 0, map.cell_count() - 1)
 		var type = Check.as_int(e[1], 0, data.tower_order.size() - 1)
@@ -170,9 +170,10 @@ func _parse_towers(raw: Variant) -> Variant:
 		var level = Check.as_int(e[2], 0, data.tower_levels(id).size() - 1)
 		var owner = Check.as_int(e[3], 1, NetPayloads.MAX_PEER_ID)
 		var mode = Check.as_int(e[4], 0, SimTower.TARGET_NAMES.size() - 1)
-		if level == null or owner == null or mode == null:
+		var buffs = Check.as_int(e[5], 0, 7)
+		if level == null or owner == null or mode == null or buffs == null:
 			return null
-		out[cell] = {"type": id, "level": level, "owner": owner, "mode": mode}
+		out[cell] = {"type": id, "level": level, "owner": owner, "mode": mode, "buffs": buffs}
 	return out
 
 
@@ -188,7 +189,7 @@ func _parse_monsters(raw: Variant) -> Variant:
 		var path = Check.as_int(e[2], 0, map.start_count() - 1)
 		var progress = Check.as_num(e[3], 0.0, 100000.0)
 		var hp = Check.as_int(e[4], 0, 255)
-		var flags = Check.as_int(e[5], 0, 7)
+		var flags = Check.as_int(e[5], 0, 255)
 		if id == null or type == null or path == null or progress == null or hp == null or flags == null:
 			return null
 		var type_id: String = data.monster_order[type]
@@ -196,6 +197,8 @@ func _parse_monsters(raw: Variant) -> Variant:
 			"type": type_id, "path": path, "flying": data.monsters[type_id]["flying"],
 			"from": progress, "to": progress, "hp": hp,
 			"slowed": flags & 1 != 0, "poisoned": flags & 2 != 0, "elite": flags & 4 != 0,
+			"burning": flags & 8 != 0, "bleeding": flags & 16 != 0, "stunned": flags & 32 != 0,
+			"feared": flags & 64 != 0, "charmed": flags & 128 != 0,
 		}
 	return out
 

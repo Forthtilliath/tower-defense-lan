@@ -60,9 +60,10 @@ func refresh() -> void:
 			_next.text += "\nVague spéciale « %s » : %s" % [mod["name"], mod["description"]]
 		_next.add_theme_color_override("font_color", Color(mod["color"]) if not mod.is_empty() else UiTheme.MUTED)
 	var gold := int(_game.me().get("gold", 0))
-	if float(data.player["interest"]) > 0.0:
+	var rule := data.interest_rule(_game.my_builder())
+	if float(rule[0]) > 0.0:
 		_interest.text = "Intérêts : +%d or à la prochaine vague (%d %% de ton or, %d au plus)" % [
-			MatchFlow.interest(data, gold), roundi(float(data.player["interest"]) * 100.0), int(data.player["interest_cap"])]
+			MatchFlow.interest(data, gold, _game.my_builder()), roundi(float(rule[0]) * 100.0), int(rule[1])]
 	for entry in _allies:
 		var id: int = entry[0]
 		var builder := int(_game.builders.get(id, 0))
