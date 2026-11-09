@@ -1,0 +1,30 @@
+# Godot
+.godot/
+/android/
+*.translation
+
+# Builds et exports
+/build/
+
+# Clés de signature et identifiants : JAMAIS dans le dépôt
+*.keystore
+*.jks
+*.p12
+*.pem
+export_credentials.cfg
+.env
+.env.*
+
+# Documentation : seuls README et CHANGELOG sont suivis
+*.md
+!README.md
+!CHANGELOG.md
+
+# Divers
+*.log
+*.tmp
+Thumbs.db
+.DS_Store
+
+# Réglages locaux de l'éditeur
+.vscode/
