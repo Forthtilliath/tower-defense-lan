@@ -28,6 +28,7 @@ static func upgrade(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell
 	p["gold"] -= cost
 	t.level += 1
 	t.invested += cost
+	board.refresh_stats(t)
 	return ""
 
 
@@ -60,7 +61,7 @@ static func send(sim: SimMatch, id: int, p: Dictionary, type: String) -> String:
 		return "Aucun adversaire en jeu"
 	if p["gold"] < cost:
 		return "Or insuffisant"
-	if not sim.boards[target].queue_monster(type, sim.endless_mult()):
+	if not sim.boards[target].queue_monster(type, sim.monster_hp_mult()):
 		return "Trop de monstres en attente chez l'adversaire"
 	p["gold"] -= cost
 	p["income"] += int(def["income"])
