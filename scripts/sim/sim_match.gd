@@ -85,7 +85,7 @@ func step(dt: float) -> void:
 		if not b.alive:
 			continue
 		for reward in b.step(dt):
-			_credit(reward[0], reward[1])
+			_credit_bounty(reward[0], reward[1])
 		if not b.alive:
 			_on_board_lost(i)
 	_check_end()
@@ -154,7 +154,7 @@ func launch_next_wave() -> void:
 		p["ready"] = false
 		if not p["alive"] or not p["connected"]:
 			continue
-		p["gold"] += MatchFlow.interest(data, p["gold"])
+		p["gold"] += MatchFlow.interest(data, p["gold"], p["builder"])
 		p["gold"] += roundi(int(wave["gold"]) * float(p["gold_mult"])) + bonus
 		if mode == Mode.VERSUS:
 			p["gold"] += VERSUS_BASE_INCOME + int(p["income"])
@@ -252,6 +252,13 @@ func _active_count() -> int:
 		if players[id]["connected"] and players[id]["alive"]:
 			n += 1
 	return n
+
+
+## Part de prime d'un monstre tué, multipliée selon le bâtisseur (ex. : Gobelin).
+func _credit_bounty(owner: int, gold: int) -> void:
+	var p: Dictionary = players.get(owner, {})
+	if not p.is_empty():
+		_credit(owner, roundi(gold * data.builder_value(p["builder"], "bounty")))
 
 
 func _credit(owner: int, gold: int) -> void:

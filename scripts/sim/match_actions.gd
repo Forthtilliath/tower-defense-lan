@@ -71,7 +71,7 @@ static func sell(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: i
 	if t == null:
 		return "Aucune tourelle à toi sur cette case"
 	p["gold"] += int(t.invested * SimMatch.SELL_RATIO)
-	board.towers.erase(cell)
+	board.remove_tower(cell)
 	return ""
 
 
