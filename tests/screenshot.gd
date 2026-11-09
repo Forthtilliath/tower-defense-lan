@@ -32,13 +32,17 @@ func _run() -> void:
 	await _wait(0.6)
 	_shot("2-salon-%s" % tag)
 	Net.start_match()
+	# Démonstration : assez d'or, et saut à la vague 9 (troll, chamans) pour montrer les effets
+	Net.host_loop.sim.players[1]["gold"] += 1000
+	Net.host_loop.sim.wave_index = 7
 	await _wait(0.3)
 	var map: MapDef = Data.db.maps[_map]
 	var placed := 0
-	for cell in [2 * map.width + 2, 3 * map.width + 11, 5 * map.width + 4, 2 * map.width + 9, 6 * map.width + 5]:
+	for cell in [2 * map.width + 2, 3 * map.width + 6, 5 * map.width + 5, 2 * map.width + 9, 6 * map.width + 5, 3 * map.width + 3]:
 		if map.is_buildable(cell):
-			Net.send_command({"a": "build", "cell": cell, "tower": placed % 4})
+			Net.send_command({"a": "build", "cell": cell, "tower": [0, 4, 5, 7, 6, 1][placed]})
 			placed += 1
+	Net.send_command({"a": "upgrade", "cell": 2 * map.width + 2})
 	Net.send_command({"a": "ready"})
 	Net.send_command({"a": "speed"})
 	if _mode == 1:

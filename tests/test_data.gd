@@ -4,9 +4,12 @@ extends "res://tests/test_base.gd"
 
 func test_bundled_data_is_valid() -> void:
 	var gd := load_data()
-	check(gd.maps.size() == 3, "3 cartes attendues")
-	check(gd.tower_order.size() == 4, "4 tourelles attendues")
-	check(gd.sendable_monsters().size() == 5, "5 monstres envoyables (pas le dragon)")
+	check(gd.maps.size() == 7, "7 cartes attendues")
+	check(gd.tower_order.size() == 8, "8 tourelles attendues")
+	check(gd.difficulties.size() == 4 and gd.specials.size() == 4, "4 difficultés et 4 cases spéciales")
+	check(gd.sendable_monsters().size() == 11, "11 monstres envoyables : %d" % gd.sendable_monsters().size())
+	for id in gd.tower_order:
+		check(gd.tower_levels(id).size() == 5, "%s : 5 niveaux" % id)
 
 
 func test_paths_follow_the_route() -> void:
@@ -74,9 +77,30 @@ func test_rejects_duplicate_ids_and_bad_json() -> void:
 
 
 func test_unknown_keys_are_dropped() -> void:
-	var gd := GameData.from_text(_bundled_text().replace("\"start_lives\": 20", "\"start_lives\": 20, \"hack\": 1"))
+	var gd := GameData.from_text(_bundled_text().replace("\"start_gold\": 150", "\"start_gold\": 150, \"hack\": 1"))
 	check(gd.is_valid(), "clé inconnue tolérée")
 	check(not gd.player.has("hack"), "clé inconnue non recopiée")
+
+
+func test_rejects_bad_specials_and_splits() -> void:
+	var gd := GameData.from_text(_bundled_text().replace("\"split_into\": \"mini_slime\"", "\"split_into\": \"slime\""))
+	check(not gd.is_valid() and gd.error.contains("diviser"), "division en cascade refusée : " + gd.error)
+	gd = GameData.from_text(_bundled_text().replace("\"split_into\": \"mini_slime\"", "\"split_into\": \"fantome\""))
+	check(not gd.is_valid() and gd.error.contains("inconnu"), "division vers un inconnu refusée : " + gd.error)
+	gd = GameData.from_text(_bundled_text().replace("{ \"char\": \"^\"", "{ \"char\": \"=\""))
+	check(not gd.is_valid() and gd.error.contains("symbole"), "symbole déjà pris refusé : " + gd.error)
+	gd = GameData.from_text(_bundled_text().replace("\"lives\": 30", "\"lives\": 0"))
+	check(not gd.is_valid(), "difficulté sans vie refusée")
+
+
+func test_special_tiles_on_maps() -> void:
+	var gd := load_data()
+	var prairie: MapDef = gd.maps[0]
+	var hill := 3 * prairie.width + 6
+	check(prairie.special_at(hill) == 0 and prairie.is_buildable(hill), "colline constructible en (6, 3)")
+	var s := gd.tower_stats("crossbow", 0, 0)
+	check(is_equal_approx(s["range"], 2.5 * 1.25), "portée bonifiée : %f" % s["range"])
+	check(is_equal_approx(gd.tower_stats("venom", 0, 1)["poison_dps"], 4 * 1.3), "le cristal renforce le poison")
 
 
 func test_check_helpers() -> void:
