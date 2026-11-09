@@ -52,24 +52,45 @@ func refresh() -> void:
 	else:
 		_wave.text = "Vague %d / %d" % [s.wave, s.total]
 	_wave.text += "  ·  " + _game.difficulty_name()
-	var waiting := s.countdown >= 0.0 and not s.ended
-	_timer.text = ("Prochaine vague : %d s" % ceili(s.countdown)) if waiting else ""
-	_ready_btn.visible = waiting and bool(me.get("alive", false))
-	if waiting:
-		var ready_count := 0
-		var total := 0
-		for id in s.players:
-			if s.players[id]["alive"]:
-				total += 1
-				if s.players[id]["ready"]:
-					ready_count += 1
-		var bonus := int(s.countdown)
-		if me.get("ready", false):
-			_ready_btn.text = "Prêt (%d/%d)" % [ready_count, total]
-		elif total > 1:
-			_ready_btn.text = "Prêt ! +%d or (%d/%d)" % [bonus, ready_count, total]
-		else:
-			_ready_btn.text = "Lancer maintenant (+%d or)" % bonus
+	_timer.text = _timer_text(s)
+	var can_launch := not _game.host_launches() or _game.my_id == _game.order[0]
+	_ready_btn.visible = s.can_call and bool(me.get("alive", false)) and can_launch
+	if _ready_btn.visible:
+		_ready_btn.text = _ready_text(s, me)
 		_ready_btn.disabled = me.get("ready", false)
 	if _speed != null:
 		_speed.text = "Vitesse x%d" % s.speed
+
+
+func _timer_text(s: ViewState) -> String:
+	if s.ended:
+		return ""
+	var text := ""
+	if s.countdown >= 0.0:
+		var label := "Construction" if _game.rhythm() == SimMatch.Rhythm.BETWEEN else "Prochaine vague"
+		text = "%s : %d s" % [label, ceili(s.countdown)]
+		var mod := _game.wave_modifier(s.wave)
+		if not mod.is_empty():
+			text += " (%s)" % mod["name"]
+	elif _game.rhythm() == SimMatch.Rhythm.BETWEEN:
+		text = "Vague en cours : construction bloquée"
+	return text
+
+
+## Bonus : secondes restantes, ou tout le compte à rebours si la vague est appelée en pleine vague.
+func _ready_text(s: ViewState, me: Dictionary) -> String:
+	var bonus := int(s.countdown) if s.countdown >= 0.0 else int(SimMatch.BETWEEN_WAVES)
+	if _game.host_launches():
+		return "Vague suivante (+%d or)" % bonus
+	var ready_count := 0
+	var total := 0
+	for id in s.players:
+		if s.players[id]["alive"]:
+			total += 1
+			if s.players[id]["ready"]:
+				ready_count += 1
+	if me.get("ready", false):
+		return "Prêt (%d/%d)" % [ready_count, total]
+	if total > 1:
+		return "Prêt ! +%d or (%d/%d)" % [bonus, ready_count, total]
+	return "Vague suivante (+%d or)" % bonus
