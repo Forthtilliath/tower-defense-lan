@@ -1,9 +1,12 @@
 extends Node
 ## Test réseau de bout en bout, lancé par main.gd avec « -- --autotest=host » ou « --autotest=client ».
-## L'hôte attend un joueur et lance une partie coop ; le client construit une tourelle ;
+## L'hôte attend un joueur ; le client choisit son bâtisseur et vote pour une difficulté dans le
+## salon ; l'hôte lance la partie coop une fois ces choix reçus ; le client construit une tourelle ;
 ## chacun vérifie dans les instantanés que la tourelle du client existe, puis quitte (code 0).
 
 const TIMEOUT := 25.0
+const CLIENT_BUILDER := 2
+const CLIENT_VOTE := 2
 
 var role := ""
 var main: Node
@@ -31,6 +34,8 @@ func _ready() -> void:
 		var err := Net.join(ip, "Invité test")
 		if err != "":
 			_finish(false, err)
+		else:
+			Net.lobby_changed.connect(_on_client_lobby)
 	else:
 		_finish(false, "rôle inconnu : " + role)
 
@@ -42,9 +47,25 @@ func _process(delta: float) -> void:
 
 
 func _on_lobby() -> void:
-	if Net.players.size() >= 2 and not _started:
-		print("AUTOTEST hôte : joueur connecté (%s)" % Net.players.values()[1]["name"])
+	if Net.players.size() < 2 or _started:
+		return
+	var guest: Dictionary = Net.players[Net.ordered_ids()[1]]
+	if guest["builder"] == CLIENT_BUILDER and guest["vote"] == CLIENT_VOTE:
+		print("AUTOTEST hôte : joueur connecté (%s), bâtisseur et vote reçus" % guest["name"])
+		_started = true
 		Net.start_match()
+
+
+## Côté client : choix personnels dès l'arrivée dans le salon (un par message, limite de fréquence).
+func _on_client_lobby() -> void:
+	var me: Dictionary = Net.players.get(Net.my_id(), {})
+	if me.is_empty():
+		return
+	if me["builder"] != CLIENT_BUILDER:
+		Net.choose("builder", CLIENT_BUILDER)
+	elif me["vote"] != CLIENT_VOTE:
+		await get_tree().create_timer(0.3).timeout
+		Net.choose("vote", CLIENT_VOTE)
 
 
 func _on_snapshot(snap: Dictionary) -> void:
@@ -55,6 +76,10 @@ func _on_snapshot(snap: Dictionary) -> void:
 		return
 	if role == "client" and not _built:
 		_built = true
+		# Vote 1 contre 1 (hôte : Normal, client : Difficile) : égalité, la plus facile l'emporte
+		if Net.config["difficulty"] != 1 or Net.config["roster"][1][3] != CLIENT_BUILDER:
+			_finish(false, "configuration reçue sans les choix du salon : %s" % str(Net.config))
+			return
 		var map: MapDef = Data.db.maps[Net.config["map"]]
 		for cell in map.cell_count():
 			if map.is_buildable(cell):

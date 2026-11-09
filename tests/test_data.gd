@@ -4,7 +4,8 @@ extends "res://tests/test_base.gd"
 
 func test_bundled_data_is_valid() -> void:
 	var gd := load_data()
-	check(gd.maps.size() == 7, "7 cartes attendues")
+	check(gd.maps.size() == 10, "10 cartes attendues")
+	check(gd.builders.size() == 4 and gd.modifiers.size() == 4, "4 bâtisseurs et 4 vagues spéciales")
 	check(gd.tower_order.size() == 8, "8 tourelles attendues")
 	check(gd.difficulties.size() == 4 and gd.specials.size() == 4, "4 difficultés et 4 cases spéciales")
 	check(gd.sendable_monsters().size() == 11, "11 monstres envoyables : %d" % gd.sendable_monsters().size())
@@ -91,6 +92,35 @@ func test_rejects_bad_specials_and_splits() -> void:
 	check(not gd.is_valid() and gd.error.contains("symbole"), "symbole déjà pris refusé : " + gd.error)
 	gd = GameData.from_text(_bundled_text().replace("\"lives\": 30", "\"lives\": 0"))
 	check(not gd.is_valid(), "difficulté sans vie refusée")
+
+
+func test_rejects_bad_builders_waves_and_zones() -> void:
+	var text := _bundled_text()
+	var cases := {
+		"tourelle inconnue": ["\"towers\": [\"crossbow\", \"frost\", \"tesla\", \"venom\", \"sentinel\"]", "\"towers\": [\"crossbow\", \"laser\"]", "inconnue"],
+		"rien contre l'air": ["\"towers\": [\"crossbow\", \"cannon\", \"ballista\", \"mortar\", \"sentinel\"]", "\"towers\": [\"cannon\", \"mortar\"]", "air"],
+		"vague spéciale inconnue": ["\"modifier\": \"rush\"", "\"modifier\": \"tempete\"", "spéciale"],
+		"zone hors limites": ["111111111111111.222222222222222", "111111111111111.555555555555555", "zones"],
+		"ligne de zones trop courte": ["111111111111111.222222222222222", "1111.2222", "zones"],
+		"joueurs conseillés inversés": ["\"min_players\": 2, \"max_players\": 4", "\"min_players\": 4, \"max_players\": 2", "min_players"],
+		"plus de couloirs que de départs": ["\"lanes\": 4", "\"lanes\": 6", "couloirs"],
+	}
+	for label in cases:
+		var c: Array = cases[label]
+		check(text.contains(c[0]), "motif introuvable : " + label)
+		var gd := GameData.from_text(text.replace(c[0], c[1]))
+		check(not gd.is_valid() and gd.error.contains(c[2]), "%s refusé : %s" % [label, gd.error])
+		check(gd.maps.is_empty() and gd.builders.is_empty(), "%s : rien n'est appliqué" % label)
+
+
+func test_builders_and_modifiers() -> void:
+	var gd := load_data()
+	check(gd.builders[0]["towers"].size() == gd.tower_order.size(), "le premier bâtisseur connaît toutes les tourelles")
+	check(gd.builder_allows(1, "cannon") and not gd.builder_allows(2, "cannon"), "tourelles par bâtisseur")
+	check(not gd.builder_allows(99, "cannon"), "bâtisseur inconnu refusé")
+	var s := gd.tower_stats("cannon", 0, -1, 1)
+	check(is_equal_approx(s["damage"], 10.0 * 1.15), "bonus de dégâts de l'artilleur : %f" % s["damage"])
+	check(gd.wave_modifier("w5")["id"] == "rush" and gd.wave_modifier("w1").is_empty(), "vagues spéciales")
 
 
 func test_special_tiles_on_maps() -> void:
