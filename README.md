@@ -11,14 +11,27 @@ Sa carte vit encore dans le jeu : « Héritage (prototype 2021) ».
 
 | Mode | Principe |
 |------|----------|
-| **Coopération** | Une seule carte, vies communes. Chacun construit avec son propre or ; la prime d'un monstre va au propriétaire de la tourelle qui l'a tué. Les monstres sont plus résistants à chaque joueur supplémentaire. 12 vagues à repousser. |
+| **Coopération** | Une seule carte, vies communes. Chacun construit avec son propre or ; la prime d'un monstre va au propriétaire de la tourelle qui l'a tué. Chaque joueur supplémentaire ajoute 35 % de monstres (plus serrés) et 30 % de PV. |
 | **Versus** | Chacun son plateau. Envoyer un monstre chez l'adversaire suivant coûte de l'or mais augmente le revenu versé à chaque vague. Après la dernière vague, la « mort subite » rend les vagues toujours plus dures. Le dernier en vie gagne. |
 
 On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**.
-
-**Tourelles** : Arbalète (rapide, air + sol), Canon (zone, sol), Givre (ralentit), Baliste (longue portée). 3 niveaux chacune ; la revente rembourse 70 %.
-**Monstres** : Gobelin, Orc, Loup (rapide), Chauve-souris (volante, coupe à travers la carte), Troll, Dragon (boss volant).
 Entre deux vagues, « Prêt ! » lance la suivante en avance, avec un bonus d'or égal aux secondes restantes (quand tous les joueurs sont prêts).
+
+### Contenu
+
+- **7 cartes** de 12 à 20 vagues : Prairie, Carrefour, Héritage, Rivière, Trois portes (3 entrées), Spirale, Labyrinthe.
+- **4 difficultés**, choisies par l'hôte : Facile, Normal, Difficile, Cauchemar (PV des monstres, vies, or de départ, primes).
+- **8 tourelles à 5 niveaux** (revente à 70 %) : Arbalète (rapide, air et sol), Canon (zone au sol), Givre (ralentit),
+  Baliste (longue portée), Tesla (arc qui rebondit), Venin (poison qui ignore l'armure), Mortier (grosse zone, très longue portée),
+  Sentinelle (anti-aérien).
+- **14 monstres** : Gobelin, Rat, Loup, Orc, Squelette (armure), Chauve-souris (volante), Gelée (se divise à sa mort),
+  Chaman (soigne ses voisins), Spectre (volant, se régénère), Troll (se régénère), Golem (armure, insensible au ralentissement),
+  Dragon (boss volant), Liche (boss final).
+- **Cases spéciales** (cadre coloré) : Colline (+25 % de portée), Cristal (+30 % de dégâts), Rune (+25 % de cadence),
+  Filon d'or (+15 or par vague au propriétaire de la tourelle).
+
+Les volants vont en ligne droite du départ à l'arrivée (pointillés sur le plateau) : il faut de l'anti-aérien sur leur route.
+L'armure retire des dégâts fixes à chaque coup (au moins 25 % passent toujours) : préférer les gros coups ou le poison.
 
 ## Jouer en réseau local
 
@@ -65,7 +78,12 @@ tools/                Scripts PowerShell : vérification et build
 ```
 
 Les cartes s'écrivent en texte dans `data/game_data.json` : `.` herbe constructible, `=` route, `S` départ, `E` arrivée,
-`#` rocher, `~` eau, `T` arbre. Les chemins sont calculés automatiquement de chaque départ vers l'arrivée la plus proche.
+`#` rocher, `~` eau, `T` arbre, et les symboles des cases spéciales (`^` colline, `*` cristal, `!` rune, `$` filon d'or).
+Les chemins sont calculés automatiquement de chaque départ vers l'arrivée la plus proche. `flyer_speed` (facultatif)
+ralentit les volants sur une carte où leur ligne droite est un trop grand raccourci (Spirale, Labyrinthe).
+
+Équilibrage : `tests/test_balance.gd` fait jouer un bot simple, qui doit gagner chaque carte en Normal ; après
+une modification des données, relancer `tools/verify.ps1`.
 
 ### Architecture réseau
 
