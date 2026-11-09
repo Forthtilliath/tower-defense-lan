@@ -18,7 +18,11 @@ var name := ""
 var width := 0
 var height := 0
 var cells := PackedInt32Array()
+## Case spéciale (index dans GameData.specials) par case, -1 si aucune. Une case spéciale est constructible.
+var specials := PackedInt32Array()
 var waves: Array[String] = []
+## Multiplicateur de vitesse des volants sur cette carte (1 = normal).
+var flyer_speed := 1.0
 ## Chemins au sol, un par point de départ (points de virage uniquement).
 var ground_paths: Array[PackedVector2Array] = []
 ## Chemins des volants : ligne droite du départ à l'arrivée.
@@ -27,9 +31,12 @@ var _ground_cum: Array[PackedFloat32Array] = []
 var _air_cum: Array[PackedFloat32Array] = []
 
 
-## Construit une carte depuis ses lignes de texte.
-## Renvoie un MapDef, ou un message d'erreur (String) si la carte est invalide.
-static func parse(p_id: String, p_name: String, rows: Array, p_waves: Array[String]) -> Variant:
+## Construit une carte depuis ses lignes de texte. `special_tiles` : liste des cases spéciales
+## (chacune avec son symbole « char »). Renvoie un MapDef, ou un message d'erreur (String).
+static func parse(p_id: String, p_name: String, rows: Array, p_waves: Array[String], special_tiles: Array = []) -> Variant:
+	var special_chars := {}
+	for i in special_tiles.size():
+		special_chars[special_tiles[i]["char"]] = i
 	if rows.size() < MIN_SIZE or rows.size() > MAX_SIZE:
 		return "nombre de lignes hors limites (%d à %d)" % [MIN_SIZE, MAX_SIZE]
 	var m := MapDef.new()
@@ -49,9 +56,14 @@ static func parse(p_id: String, p_name: String, rows: Array, p_waves: Array[Stri
 			return "ligne %d : %d caractères au lieu de %d" % [y, line.length(), m.width]
 		for x in line.length():
 			var ch := line[x]
-			if not CHARS.has(ch):
+			if special_chars.has(ch):
+				m.cells.append(Cell.BUILD)
+				m.specials.append(special_chars[ch])
+			elif CHARS.has(ch):
+				m.cells.append(CHARS[ch])
+				m.specials.append(-1)
+			else:
 				return "ligne %d : caractère « %s » inconnu" % [y, ch]
-			m.cells.append(CHARS[ch])
 	var err := m._build_paths()
 	if err != "":
 		return err
@@ -76,6 +88,11 @@ func cell_center(index: int) -> Vector2:
 
 func cell_count() -> int:
 	return cells.size()
+
+
+## Index de la case spéciale (dans GameData.specials), -1 si case normale.
+func special_at(index: int) -> int:
+	return specials[index] if index >= 0 and index < specials.size() else -1
 
 
 func is_buildable(index: int) -> bool:

@@ -1,13 +1,28 @@
 {
-	"player": { "start_gold": 150, "start_lives": 20 },
+	"player": { "start_gold": 150 },
+	"coop_scaling": { "hp": 0.3, "count": 0.35 },
+	"difficulties": [
+		{ "id": "easy", "name": "Facile", "hp": 0.8, "lives": 30, "gold": 1.2, "reward": 1.15 },
+		{ "id": "normal", "name": "Normal", "hp": 1.0, "lives": 20, "gold": 1.0, "reward": 1.0 },
+		{ "id": "hard", "name": "Difficile", "hp": 1.1, "lives": 15, "gold": 1.05, "reward": 1.0 },
+		{ "id": "nightmare", "name": "Cauchemar", "hp": 1.25, "lives": 12, "gold": 1.0, "reward": 0.9 }
+	],
+	"special_tiles": [
+		{ "char": "^", "id": "hill", "name": "Colline", "color": "#d8c27a", "description": "+25 % de portée", "range": 1.25 },
+		{ "char": "*", "id": "crystal", "name": "Cristal", "color": "#b07cff", "description": "+30 % de dégâts (poison compris)", "damage": 1.3 },
+		{ "char": "!", "id": "rune", "name": "Rune", "color": "#4ee0d0", "description": "+25 % de cadence de tir", "rate": 1.25 },
+		{ "char": "$", "id": "gold", "name": "Filon d'or", "color": "#ffd54a", "description": "+15 or par vague pour le propriétaire de la tourelle", "gold_per_wave": 15 }
+	],
 	"towers": [
 		{
 			"id": "crossbow", "name": "Arbalète", "color": "#d9a441", "air": true, "ground": true,
 			"description": "Tir rapide, vise le sol et les volants.",
 			"levels": [
 				{ "cost": 50, "damage": 4, "range": 2.5, "rate": 1.2, "projectile_speed": 10 },
-				{ "cost": 45, "damage": 7, "range": 2.8, "rate": 1.4, "projectile_speed": 11 },
-				{ "cost": 80, "damage": 12, "range": 3.1, "rate": 1.7, "projectile_speed": 12 }
+				{ "cost": 45, "damage": 7, "range": 2.7, "rate": 1.35, "projectile_speed": 11 },
+				{ "cost": 80, "damage": 11, "range": 2.9, "rate": 1.5, "projectile_speed": 12 },
+				{ "cost": 130, "damage": 17, "range": 3.1, "rate": 1.7, "projectile_speed": 13 },
+				{ "cost": 200, "damage": 26, "range": 3.4, "rate": 2.0, "projectile_speed": 14 }
 			]
 		},
 		{
@@ -15,8 +30,10 @@
 			"description": "Dégâts de zone, uniquement au sol.",
 			"levels": [
 				{ "cost": 90, "damage": 10, "range": 2.2, "rate": 0.6, "projectile_speed": 6, "splash": 1.0 },
-				{ "cost": 75, "damage": 18, "range": 2.4, "rate": 0.65, "projectile_speed": 6.5, "splash": 1.1 },
-				{ "cost": 120, "damage": 32, "range": 2.6, "rate": 0.7, "projectile_speed": 7, "splash": 1.3 }
+				{ "cost": 75, "damage": 17, "range": 2.4, "rate": 0.65, "projectile_speed": 6.5, "splash": 1.1 },
+				{ "cost": 120, "damage": 28, "range": 2.6, "rate": 0.7, "projectile_speed": 7, "splash": 1.2 },
+				{ "cost": 180, "damage": 44, "range": 2.8, "rate": 0.75, "projectile_speed": 7.5, "splash": 1.3 },
+				{ "cost": 260, "damage": 68, "range": 3.0, "rate": 0.8, "projectile_speed": 8, "splash": 1.45 }
 			]
 		},
 		{
@@ -24,8 +41,10 @@
 			"description": "Ralentit les monstres touchés.",
 			"levels": [
 				{ "cost": 70, "damage": 2, "range": 2.3, "rate": 1.0, "projectile_speed": 8, "slow_factor": 0.55, "slow_duration": 1.5 },
-				{ "cost": 60, "damage": 3, "range": 2.5, "rate": 1.1, "projectile_speed": 8.5, "slow_factor": 0.45, "slow_duration": 2.0 },
-				{ "cost": 90, "damage": 5, "range": 2.8, "rate": 1.2, "projectile_speed": 9, "slow_factor": 0.35, "slow_duration": 2.5, "splash": 0.6 }
+				{ "cost": 60, "damage": 3, "range": 2.5, "rate": 1.1, "projectile_speed": 8.5, "slow_factor": 0.5, "slow_duration": 1.8 },
+				{ "cost": 90, "damage": 5, "range": 2.7, "rate": 1.2, "projectile_speed": 9, "slow_factor": 0.42, "slow_duration": 2.2, "splash": 0.6 },
+				{ "cost": 130, "damage": 7, "range": 2.9, "rate": 1.3, "projectile_speed": 9.5, "slow_factor": 0.36, "slow_duration": 2.5, "splash": 0.8 },
+				{ "cost": 190, "damage": 10, "range": 3.2, "rate": 1.4, "projectile_speed": 10, "slow_factor": 0.3, "slow_duration": 3.0, "splash": 1.0 }
 			]
 		},
 		{
@@ -33,67 +52,129 @@
 			"description": "Très longue portée, gros dégâts, tir lent.",
 			"levels": [
 				{ "cost": 120, "damage": 28, "range": 4.5, "rate": 0.4, "projectile_speed": 16 },
-				{ "cost": 95, "damage": 48, "range": 5.0, "rate": 0.45, "projectile_speed": 17 },
-				{ "cost": 150, "damage": 85, "range": 5.5, "rate": 0.5, "projectile_speed": 18 }
+				{ "cost": 95, "damage": 46, "range": 4.9, "rate": 0.45, "projectile_speed": 17 },
+				{ "cost": 150, "damage": 72, "range": 5.3, "rate": 0.5, "projectile_speed": 18 },
+				{ "cost": 220, "damage": 110, "range": 5.7, "rate": 0.55, "projectile_speed": 19 },
+				{ "cost": 320, "damage": 170, "range": 6.2, "rate": 0.6, "projectile_speed": 20 }
+			]
+		},
+		{
+			"id": "tesla", "name": "Tesla", "color": "#7fb2ff", "air": true, "ground": true,
+			"description": "L'arc électrique rebondit d'un monstre à l'autre.",
+			"levels": [
+				{ "cost": 110, "damage": 6, "range": 2.4, "rate": 0.9, "projectile_speed": 25, "chain": 2 },
+				{ "cost": 90, "damage": 9, "range": 2.6, "rate": 1.0, "projectile_speed": 25, "chain": 3 },
+				{ "cost": 140, "damage": 13, "range": 2.8, "rate": 1.05, "projectile_speed": 26, "chain": 4 },
+				{ "cost": 200, "damage": 19, "range": 3.0, "rate": 1.1, "projectile_speed": 27, "chain": 5 },
+				{ "cost": 290, "damage": 28, "range": 3.2, "rate": 1.2, "projectile_speed": 28, "chain": 6 }
+			]
+		},
+		{
+			"id": "venom", "name": "Venin", "color": "#7ccf3a", "air": true, "ground": true,
+			"description": "Empoisonne : dégâts continus qui ignorent l'armure.",
+			"levels": [
+				{ "cost": 80, "damage": 1, "range": 2.4, "rate": 0.8, "projectile_speed": 9, "poison_dps": 4, "poison_duration": 4 },
+				{ "cost": 70, "damage": 1, "range": 2.6, "rate": 0.85, "projectile_speed": 9.5, "poison_dps": 7, "poison_duration": 4 },
+				{ "cost": 110, "damage": 2, "range": 2.8, "rate": 0.9, "projectile_speed": 10, "poison_dps": 11, "poison_duration": 4.5 },
+				{ "cost": 160, "damage": 2, "range": 3.0, "rate": 0.95, "projectile_speed": 10.5, "poison_dps": 16, "poison_duration": 5 },
+				{ "cost": 230, "damage": 3, "range": 3.2, "rate": 1.0, "projectile_speed": 11, "poison_dps": 24, "poison_duration": 5 }
+			]
+		},
+		{
+			"id": "mortar", "name": "Mortier", "color": "#8a6d4b", "air": false, "ground": true,
+			"description": "Obus lents, très longue portée, grosse zone au sol.",
+			"levels": [
+				{ "cost": 140, "damage": 22, "range": 4.0, "rate": 0.35, "projectile_speed": 5, "splash": 1.4 },
+				{ "cost": 110, "damage": 36, "range": 4.3, "rate": 0.38, "projectile_speed": 5.2, "splash": 1.5 },
+				{ "cost": 170, "damage": 56, "range": 4.6, "rate": 0.4, "projectile_speed": 5.4, "splash": 1.6 },
+				{ "cost": 240, "damage": 84, "range": 4.9, "rate": 0.42, "projectile_speed": 5.6, "splash": 1.75 },
+				{ "cost": 340, "damage": 125, "range": 5.3, "rate": 0.45, "projectile_speed": 5.8, "splash": 1.9 }
+			]
+		},
+		{
+			"id": "sentinel", "name": "Sentinelle", "color": "#e8e8f0", "air": true, "ground": false,
+			"description": "Défense anti-aérienne : ne vise que les volants.",
+			"levels": [
+				{ "cost": 85, "damage": 14, "range": 3.5, "rate": 1.1, "projectile_speed": 18 },
+				{ "cost": 70, "damage": 22, "range": 3.8, "rate": 1.2, "projectile_speed": 19 },
+				{ "cost": 110, "damage": 34, "range": 4.1, "rate": 1.3, "projectile_speed": 20 },
+				{ "cost": 160, "damage": 50, "range": 4.4, "rate": 1.45, "projectile_speed": 21 },
+				{ "cost": 230, "damage": 74, "range": 4.8, "rate": 1.6, "projectile_speed": 22 }
 			]
 		}
 	],
 	"monsters": [
 		{ "id": "goblin", "name": "Gobelin", "color": "#7cc35a", "hp": 12, "speed": 1.6, "gold": 3, "damage": 1, "flying": false, "size": 0.45, "send_cost": 10, "income": 1 },
-		{ "id": "orc", "name": "Orc", "color": "#4f7a3a", "hp": 40, "speed": 1.0, "gold": 7, "damage": 2, "flying": false, "size": 0.6, "send_cost": 30, "income": 3 },
+		{ "id": "rat", "name": "Rat", "color": "#a08670", "hp": 6, "speed": 2.3, "gold": 1, "damage": 1, "flying": false, "size": 0.3, "send_cost": 6, "income": 1 },
 		{ "id": "wolf", "name": "Loup", "color": "#9a9aa8", "hp": 18, "speed": 2.6, "gold": 5, "damage": 1, "flying": false, "size": 0.5, "send_cost": 20, "income": 2 },
+		{ "id": "orc", "name": "Orc", "color": "#4f7a3a", "hp": 40, "speed": 1.0, "gold": 7, "damage": 2, "flying": false, "size": 0.6, "send_cost": 30, "income": 3 },
+		{ "id": "skeleton", "name": "Squelette", "color": "#e3dfcf", "hp": 30, "speed": 1.2, "gold": 6, "damage": 1, "flying": false, "size": 0.5, "armor": 3, "send_cost": 28, "income": 2 },
 		{ "id": "bat", "name": "Chauve-souris", "color": "#8a5ac8", "hp": 16, "speed": 1.8, "gold": 5, "damage": 1, "flying": true, "size": 0.4, "send_cost": 25, "income": 2 },
-		{ "id": "troll", "name": "Troll", "color": "#5a7d7c", "hp": 150, "speed": 0.7, "gold": 30, "damage": 5, "flying": false, "size": 0.8, "send_cost": 90, "income": 8 },
-		{ "id": "dragon", "name": "Dragon", "color": "#d6453d", "hp": 480, "speed": 0.6, "gold": 100, "damage": 10, "flying": true, "size": 0.9 }
+		{ "id": "slime", "name": "Gelée", "color": "#5fd3a0", "hp": 40, "speed": 0.9, "gold": 5, "damage": 2, "flying": false, "size": 0.6, "split_into": "mini_slime", "split_count": 2, "send_cost": 35, "income": 3 },
+		{ "id": "mini_slime", "name": "Petite gelée", "color": "#8ff0c4", "hp": 14, "speed": 1.4, "gold": 1, "damage": 1, "flying": false, "size": 0.3 },
+		{ "id": "shaman", "name": "Chaman", "color": "#d17bd8", "hp": 50, "speed": 0.9, "gold": 10, "damage": 2, "flying": false, "size": 0.55, "heal_radius": 1.5, "heal_rate": 3, "send_cost": 50, "income": 4 },
+		{ "id": "spectre", "name": "Spectre", "color": "#bfe6ff", "hp": 35, "speed": 2.0, "gold": 9, "damage": 2, "flying": true, "size": 0.5, "regen": 2, "send_cost": 45, "income": 4 },
+		{ "id": "troll", "name": "Troll", "color": "#5a7d7c", "hp": 150, "speed": 0.7, "gold": 30, "damage": 5, "flying": false, "size": 0.8, "regen": 2, "send_cost": 90, "income": 8 },
+		{ "id": "golem", "name": "Golem", "color": "#8c7f73", "hp": 260, "speed": 0.55, "gold": 35, "damage": 5, "flying": false, "size": 0.85, "armor": 7, "slow_immune": true, "send_cost": 120, "income": 10 },
+		{ "id": "dragon", "name": "Dragon", "color": "#d6453d", "hp": 400, "speed": 0.5, "gold": 100, "damage": 5, "flying": true, "size": 0.9 },
+		{ "id": "lich", "name": "Liche", "color": "#4b3f72", "hp": 1400, "speed": 0.45, "gold": 200, "damage": 15, "flying": false, "size": 0.95, "armor": 4, "regen": 8, "slow_immune": true }
 	],
 	"waves": [
 		{ "id": "w1", "gold": 15, "groups": [{ "monster": "goblin", "count": 8, "interval": 1.0 }] },
-		{ "id": "w2", "gold": 15, "groups": [{ "monster": "goblin", "count": 12, "interval": 0.8 }] },
+		{ "id": "w2", "gold": 15, "groups": [{ "monster": "goblin", "count": 10, "interval": 0.8 }, { "monster": "rat", "count": 8, "interval": 0.4 }] },
 		{ "id": "w3", "gold": 20, "groups": [{ "monster": "goblin", "count": 8, "interval": 0.8 }, { "monster": "wolf", "count": 6, "interval": 0.9 }] },
 		{ "id": "w4", "gold": 20, "groups": [{ "monster": "orc", "count": 6, "interval": 1.6 }] },
 		{ "id": "w5", "gold": 25, "groups": [{ "monster": "bat", "count": 10, "interval": 0.9 }] },
-		{ "id": "w6", "gold": 25, "hp": 1.1, "groups": [{ "monster": "goblin", "count": 14, "interval": 0.65 }, { "monster": "orc", "count": 5, "interval": 1.4 }] },
-		{ "id": "w7", "gold": 30, "hp": 1.2, "groups": [{ "monster": "wolf", "count": 16, "interval": 0.55 }] },
-		{ "id": "w8", "gold": 35, "hp": 1.2, "groups": [{ "monster": "troll", "count": 2, "interval": 4.0 }, { "monster": "goblin", "count": 12, "interval": 0.6 }] },
-		{ "id": "w9", "gold": 40, "hp": 1.3, "groups": [{ "monster": "bat", "count": 12, "interval": 0.6 }, { "monster": "orc", "count": 8, "interval": 1.1 }] },
-		{ "id": "w10", "gold": 55, "hp": 1.2, "groups": [{ "monster": "dragon", "count": 1, "interval": 1.0 }, { "monster": "wolf", "count": 12, "interval": 0.6 }] },
-		{ "id": "w11", "gold": 60, "hp": 1.25, "groups": [{ "monster": "troll", "count": 5, "interval": 2.5 }, { "monster": "bat", "count": 14, "interval": 0.5 }] },
-		{ "id": "w12", "gold": 0, "hp": 1.3, "groups": [{ "monster": "orc", "count": 18, "interval": 0.7 }, { "monster": "troll", "count": 4, "interval": 2.5 }, { "monster": "dragon", "count": 1, "interval": 1.0 }] }
+		{ "id": "w6", "gold": 25, "hp": 1.05, "groups": [{ "monster": "skeleton", "count": 8, "interval": 1.0 }, { "monster": "goblin", "count": 10, "interval": 0.6 }] },
+		{ "id": "w7", "gold": 30, "hp": 1.1, "groups": [{ "monster": "wolf", "count": 14, "interval": 0.55 }, { "monster": "rat", "count": 12, "interval": 0.35 }] },
+		{ "id": "w8", "gold": 30, "hp": 1.1, "groups": [{ "monster": "slime", "count": 6, "interval": 1.5 }, { "monster": "orc", "count": 4, "interval": 1.4 }] },
+		{ "id": "w9", "gold": 35, "hp": 1.15, "groups": [{ "monster": "troll", "count": 2, "interval": 4.0 }, { "monster": "shaman", "count": 3, "interval": 2.0 }, { "monster": "goblin", "count": 10, "interval": 0.6 }] },
+		{ "id": "w10", "gold": 50, "hp": 1.15, "groups": [{ "monster": "dragon", "count": 1, "interval": 1.0 }, { "monster": "bat", "count": 10, "interval": 0.6 }] },
+		{ "id": "w11", "gold": 40, "hp": 1.2, "groups": [{ "monster": "skeleton", "count": 12, "interval": 0.8 }, { "monster": "shaman", "count": 3, "interval": 2.0 }] },
+		{ "id": "w12", "gold": 45, "hp": 1.25, "groups": [{ "monster": "spectre", "count": 8, "interval": 1.0 }, { "monster": "wolf", "count": 12, "interval": 0.5 }] },
+		{ "id": "w13", "gold": 45, "hp": 1.3, "groups": [{ "monster": "golem", "count": 2, "interval": 5.0 }, { "monster": "slime", "count": 8, "interval": 1.2 }] },
+		{ "id": "w14", "gold": 50, "hp": 1.35, "groups": [{ "monster": "orc", "count": 16, "interval": 0.6 }, { "monster": "shaman", "count": 4, "interval": 1.8 }] },
+		{ "id": "w15", "gold": 60, "hp": 1.4, "groups": [{ "monster": "dragon", "count": 2, "interval": 6.0 }, { "monster": "spectre", "count": 10, "interval": 0.7 }] },
+		{ "id": "w16", "gold": 55, "hp": 1.5, "groups": [{ "monster": "troll", "count": 5, "interval": 2.5 }, { "monster": "skeleton", "count": 14, "interval": 0.6 }] },
+		{ "id": "w17", "gold": 60, "hp": 1.55, "groups": [{ "monster": "golem", "count": 4, "interval": 3.0 }, { "monster": "bat", "count": 18, "interval": 0.4 }] },
+		{ "id": "w18", "gold": 65, "hp": 1.65, "groups": [{ "monster": "slime", "count": 14, "interval": 0.8 }, { "monster": "shaman", "count": 6, "interval": 1.5 }, { "monster": "spectre", "count": 8, "interval": 0.8 }] },
+		{ "id": "w19", "gold": 70, "hp": 1.75, "groups": [{ "monster": "golem", "count": 5, "interval": 2.5 }, { "monster": "troll", "count": 6, "interval": 2.0 }, { "monster": "dragon", "count": 2, "interval": 5.0 }] },
+		{ "id": "w20", "gold": 0, "hp": 1.8, "groups": [{ "monster": "lich", "count": 1, "interval": 1.0 }, { "monster": "golem", "count": 4, "interval": 3.0 }, { "monster": "spectre", "count": 12, "interval": 0.6 }] }
 	],
 	"maps": [
 		{
 			"id": "prairie", "name": "Prairie",
-			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12"],
+			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15"],
 			"rows": [
 				"..T.....~~~....T",
 				"S============...",
-				".....T......=...",
-				"............=...",
+				".....T......=.!.",
+				"......^.....=...",
 				"...==========...",
-				"...=....#.......",
-				"...=........T...",
+				"...=.*..#.......",
+				"...=........T.$.",
 				"...============E",
 				"T.....~~....#..."
 			]
 		},
 		{
 			"id": "carrefour", "name": "Carrefour",
-			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12"],
+			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15"],
 			"rows": [
 				"....T.....~~~...",
 				"S======.........",
-				"......=....T....",
-				"......=.........",
+				"......=....T.$..",
+				"...^..=.........",
 				"......=========E",
-				"......=....#....",
-				"......=.........",
+				"......=.*..#....",
+				"...!..=.........",
 				"S======.........",
 				"..T.......~~~..T"
 			]
 		},
 		{
 			"id": "heritage", "name": "Héritage (prototype 2021)",
-			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10"],
+			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12"],
 			"rows": [
 				"TS.......T",
 				"T========T",
@@ -104,6 +185,73 @@
 				"T=.......T",
 				"T========T",
 				"T.......ET"
+			]
+		},
+		{
+			"id": "riviere", "name": "Rivière",
+			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
+			"rows": [
+				"....T....~~....T..",
+				".........~~.......",
+				"S=====...~~======.",
+				".....=...~~=....=.",
+				".^...=...~~=..*.=.",
+				".....=..$~~=....=.",
+				"T....=...~~=....=.",
+				".....=======....=E",
+				"..!......~~...T...",
+				"....T....~~......T"
+			]
+		},
+		{
+			"id": "trois_portes", "name": "Trois portes",
+			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
+			"rows": [
+				"...T......~~~.....",
+				"S======.......^...",
+				"......=...=====...",
+				"..*...=...=...=...",
+				"......=...=...=.$.",
+				"S==========...=...",
+				"......=...#...=...",
+				"..!...=.......=...",
+				"......=.......===E",
+				"S======.....T.....",
+				"....~~~.....T....T"
+			]
+		},
+		{
+			"id": "spirale", "name": "Spirale", "flyer_speed": 0.4,
+			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
+			"rows": [
+				"....T.....~~...",
+				"S=============.",
+				"..^.......*..=.",
+				".===========.=.",
+				".=.....$...=.=.",
+				".=.======E.=.=.",
+				".=.=..!....=.=.",
+				".=.=========.=.",
+				".=...........=.",
+				".=============.",
+				"T.....~~~.....T"
+			]
+		},
+		{
+			"id": "labyrinthe", "name": "Labyrinthe", "flyer_speed": 0.55,
+			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
+			"rows": [
+				"...T.......~~~....T.",
+				"S==================.",
+				"..^....*..........=.",
+				".==================.",
+				".=.....$.....!......",
+				".==================.",
+				"..........#.......=.",
+				".==================.",
+				".=....^......*......",
+				".==================E",
+				"T....~~~......T....T"
 			]
 		}
 	]
