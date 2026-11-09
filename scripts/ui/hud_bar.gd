@@ -65,6 +65,10 @@ func refresh() -> void:
 func _timer_text(s: ViewState) -> String:
 	if s.ended:
 		return ""
+	if s.wave == 0:
+		if _game.host_launches() and _game.my_id != _game.order[0]:
+			return "Préparez-vous : l'hôte lancera la première vague"
+		return "Préparez-vous, puis lancez la première vague"
 	var text := ""
 	if s.countdown >= 0.0:
 		var label := "Construction" if _game.rhythm() == SimMatch.Rhythm.BETWEEN else "Prochaine vague"
@@ -80,8 +84,9 @@ func _timer_text(s: ViewState) -> String:
 ## Bonus : secondes restantes, ou tout le compte à rebours si la vague est appelée en pleine vague.
 func _ready_text(s: ViewState, me: Dictionary) -> String:
 	var bonus := int(s.countdown) if s.countdown >= 0.0 else int(SimMatch.BETWEEN_WAVES)
+	var first := s.wave == 0
 	if _game.host_launches():
-		return "Vague suivante (+%d or)" % bonus
+		return "Lancer la 1re vague" if first else "Vague suivante (+%d or)" % bonus
 	var ready_count := 0
 	var total := 0
 	for id in s.players:
@@ -91,6 +96,8 @@ func _ready_text(s: ViewState, me: Dictionary) -> String:
 				ready_count += 1
 	if me.get("ready", false):
 		return "Prêt (%d/%d)" % [ready_count, total]
+	if first:
+		return "Prêt ! (%d/%d)" % [ready_count, total] if total > 1 else "Lancer la 1re vague"
 	if total > 1:
 		return "Prêt ! +%d or (%d/%d)" % [bonus, ready_count, total]
 	return "Vague suivante (+%d or)" % bonus

@@ -8,9 +8,12 @@ extends RefCounted
 ## vide. Construire, améliorer et vendre n'est possible que pendant cette phase, et aucune vague
 ## ne peut être appelée tant qu'une autre est en cours.
 ## Lancement : par vote (tous les joueurs prêts) ou par l'hôte seul.
+## La première vague ne part jamais seule : elle attend d'être lancée (sans limite de temps).
 
 
 static func update(sim: SimMatch, dt: float) -> void:
+	if not sim.started():
+		return
 	if sim.countdown < 0.0:
 		if _should_start_countdown(sim):
 			sim.countdown = SimMatch.BUILD_PHASE if sim.rhythm == SimMatch.Rhythm.BETWEEN else SimMatch.BETWEEN_WAVES
@@ -74,7 +77,10 @@ static func call_wave(sim: SimMatch, id: int) -> String:
 
 ## Or offert à chacun quand une vague part en avance : les secondes d'attente évitées.
 ## Appelée pendant une vague, elle évite tout le compte à rebours qui aurait suivi.
+## La première vague, lancée quand les joueurs le décident, ne rapporte pas de bonus.
 static func early_bonus(sim: SimMatch) -> int:
+	if not sim.started():
+		return 0
 	if sim.countdown >= 0.0:
 		return int(sim.countdown)
 	return int(SimMatch.BETWEEN_WAVES)

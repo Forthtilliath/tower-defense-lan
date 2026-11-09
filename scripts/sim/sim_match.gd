@@ -17,9 +17,7 @@ enum Launch { VOTE, HOST }
 
 const RHYTHM_NAMES := ["Libre", "Entre les vagues"]
 const LAUNCH_NAMES := ["Vote de tous", "Hôte seul"]
-const FIRST_WAVE_DELAY := 20.0
 const BETWEEN_WAVES := 12.0
-const FIRST_BUILD_PHASE := 30.0
 const BUILD_PHASE := 20.0
 const SELL_RATIO := 0.7
 const VERSUS_BASE_INCOME := 10
@@ -38,7 +36,8 @@ var order: Array[int] = []
 var boards: Array[SimBoard] = []
 var wave_index := -1
 ## Secondes avant la prochaine vague ; négatif quand aucun compte à rebours n'est en cours.
-var countdown := FIRST_WAVE_DELAY
+## Avant la première vague : 0, sans décompte (elle attend d'être lancée par les joueurs).
+var countdown := 0.0
 var ended := false
 var result := ""  # "victory", "defeat" ou "winner"
 var winner := 0
@@ -58,7 +57,6 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 	if mode == Mode.COOP:
 		rhythm = clampi(int(options.get("rhythm", Rhythm.FREE)), 0, RHYTHM_NAMES.size() - 1)
 		launch = clampi(int(options.get("launch", Launch.VOTE)), 0, LAUNCH_NAMES.size() - 1)
-	countdown = FIRST_BUILD_PHASE if rhythm == Rhythm.BETWEEN else FIRST_WAVE_DELAY
 	var lives: int = difficulty["lives"]
 	if mode == Mode.COOP:
 		lives *= map.lanes  # chaque couloir défendu à part laisse passer ses propres monstres
@@ -176,6 +174,11 @@ func snapshot() -> Dictionary:
 		"nx": MatchFlow.can_call(self), "tr": MatchFlow.can_trade(self),
 		"pl": pl, "b": bs,
 	}
+
+
+## La première vague a-t-elle été lancée ?
+func started() -> bool:
+	return wave_index >= 0
 
 
 func has_next_wave() -> bool:

@@ -25,8 +25,11 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
 - **Rythme** (hôte, coopération) :
   - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague, même pendant une vague
     (une seule vague d'avance), avec un bonus d'or égal aux secondes d'attente évitées.
-  - *Entre les vagues* : une phase de construction (30 s, puis 20 s) commence quand la carte est vide ; pendant une vague,
+  - *Entre les vagues* : une phase de construction de 20 s commence quand la carte est vide ; pendant une vague,
     impossible de construire, d'améliorer, de vendre ou d'appeler la vague suivante.
+
+Dans tous les cas, **la première vague ne part jamais seule** : on se prépare aussi longtemps qu'on veut, puis on la lance
+(« Prêt ! » de tous les joueurs, ou l'hôte seul selon le lancement choisi).
 - **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
 
 ### En coopération

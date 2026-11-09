@@ -9,6 +9,7 @@ const PLAN := [
 ]
 const MAX_TOWERS := 16
 const NORMAL := 1
+const FIRST_WAVE_AFTER := 20.0
 
 var _lanes := {}  # cache de lane_key
 
@@ -60,6 +61,7 @@ func test_difficulty_ordering() -> void:
 func test_no_tower_loses() -> void:
 	var gd := load_data()
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "Passif", 0]])
+	sim.apply_command(1, {"a": "ready"})
 	for i in int(900.0 / DT):
 		sim.step(DT)
 		if sim.ended:
@@ -86,6 +88,10 @@ func play(gd: GameData, map_index: int, count: int, difficulty: int, options := 
 			timer = 0.5
 			for id in sim.order:
 				act(sim, id, cells, air_cells)
+		# Les bots se préparent 20 s, puis lancent la première vague (elle ne part jamais seule)
+		if not sim.started() and i * DT >= FIRST_WAVE_AFTER:
+			for id in sim.order:
+				sim.apply_command(id, {"a": "ready"})
 		sim.step(DT)
 		if sim.ended:
 			break

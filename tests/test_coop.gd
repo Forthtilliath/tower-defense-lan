@@ -43,7 +43,9 @@ func test_free_rhythm_calls_a_wave_during_a_wave() -> void:
 
 func test_between_rhythm_locks_trading_during_waves() -> void:
 	var sim := _sim(1, 0, {"rhythm": SimMatch.Rhythm.BETWEEN})
-	check(is_equal_approx(sim.countdown, SimMatch.FIRST_BUILD_PHASE), "première phase de construction : %f" % sim.countdown)
+	for i in int(60.0 / DT):
+		sim.step(DT)
+	check(sim.wave_index == -1, "la première phase de construction dure jusqu'au lancement")
 	var cell := 2 * sim.map.width + 2
 	check(_build(sim, 1, cell) == "", "construction pendant la phase")
 	sim.launch_next_wave()
