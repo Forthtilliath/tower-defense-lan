@@ -1,0 +1,93 @@
+extends "res://tests/test_base.gd"
+## Chargement et validation des données, calcul des chemins.
+
+
+func test_bundled_data_is_valid() -> void:
+	var gd := load_data()
+	check(gd.maps.size() == 3, "3 cartes attendues")
+	check(gd.tower_order.size() == 4, "4 tourelles attendues")
+	check(gd.sendable_monsters().size() == 5, "5 monstres envoyables (pas le dragon)")
+
+
+func test_paths_follow_the_route() -> void:
+	var gd := load_data()
+	for m in gd.maps:
+		for p in m.start_count():
+			var pts: PackedVector2Array = m.ground_paths[p]
+			var start := Vector2i(pts[0].floor())
+			var end := Vector2i(pts[pts.size() - 1].floor())
+			check(m.cell_at(start) == MapDef.Cell.START, "%s : le chemin part d'un S" % m.id)
+			check(m.cell_at(end) == MapDef.Cell.END, "%s : le chemin finit sur un E" % m.id)
+			for i in range(1, pts.size()):
+				var d := pts[i] - pts[i - 1]
+				check(is_zero_approx(d.x) or is_zero_approx(d.y), "%s : segment non orthogonal" % m.id)
+
+
+func test_prairie_path_length() -> void:
+	var gd := load_data()
+	var prairie: MapDef = gd.maps[0]
+	# 12 + 3 + 9 + 3 + 12 cases entre les centres du départ et de l'arrivée
+	check(is_equal_approx(prairie.path_length(0, false), 39.0), "longueur %f" % prairie.path_length(0, false))
+	var mid := prairie.position_at(0, 12.0, false)
+	check(mid.is_equal_approx(Vector2(12.5, 1.5)), "position au virage %s" % mid)
+
+
+func test_heritage_matches_legacy_route() -> void:
+	var gd := load_data()
+	var heritage: MapDef = gd.maps[2]
+	# Route du prototype 2021 : 1, 11…18, 28, 38, 48…41, 51, 61, 71…78, 88 (30 cases)
+	check(is_equal_approx(heritage.path_length(0, false), 29.0), "longueur %f" % heritage.path_length(0, false))
+
+
+func test_rejects_unknown_monster_in_wave() -> void:
+	var text := _bundled_text().replace("\"monster\": \"goblin\", \"count\": 8, \"interval\": 1.0", "\"monster\": \"ghost\", \"count\": 8, \"interval\": 1.0")
+	var gd := GameData.from_text(text)
+	check(not gd.is_valid() and gd.error.contains("ghost"), "erreur attendue : " + gd.error)
+	check(gd.towers.is_empty(), "rien ne doit être appliqué")
+
+
+func test_rejects_out_of_bounds_values() -> void:
+	var gd := GameData.from_text(_bundled_text().replace("\"start_gold\": 150", "\"start_gold\": -5"))
+	check(not gd.is_valid(), "or négatif refusé")
+	gd = GameData.from_text(_bundled_text().replace("\"cost\": 50,", "\"cost\": 50.5,"))
+	check(not gd.is_valid(), "coût non entier refusé")
+	gd = GameData.from_text(_bundled_text().replace("\"flying\": false", "\"flying\": \"non\""))
+	check(not gd.is_valid(), "booléen invalide refusé")
+
+
+func test_rejects_broken_maps() -> void:
+	var gd := GameData.from_text(_bundled_text().replace("\"S============...\"", "\"S============..\""))
+	check(not gd.is_valid() and gd.error.contains("caractères"), "ligne trop courte : " + gd.error)
+	gd = GameData.from_text(_bundled_text().replace("\"S============...\"", "\"S=====.======...\""))
+	check(not gd.is_valid() and gd.error.contains("n'atteint"), "route coupée : " + gd.error)
+	gd = GameData.from_text(_bundled_text().replace("\"S============...\"", "\"S============..X\""))
+	check(not gd.is_valid() and gd.error.contains("inconnu"), "caractère inconnu : " + gd.error)
+
+
+func test_rejects_duplicate_ids_and_bad_json() -> void:
+	var gd := GameData.from_text(_bundled_text().replace("\"id\": \"cannon\"", "\"id\": \"crossbow\""))
+	check(not gd.is_valid() and gd.error.contains("double"), "id en double : " + gd.error)
+	gd = GameData.from_text("{ pas du json")
+	check(not gd.is_valid(), "JSON invalide refusé")
+	gd = GameData.from_text("[]")
+	check(not gd.is_valid(), "racine non objet refusée")
+
+
+func test_unknown_keys_are_dropped() -> void:
+	var gd := GameData.from_text(_bundled_text().replace("\"start_lives\": 20", "\"start_lives\": 20, \"hack\": 1"))
+	check(gd.is_valid(), "clé inconnue tolérée")
+	check(not gd.player.has("hack"), "clé inconnue non recopiée")
+
+
+func test_check_helpers() -> void:
+	check(Check.sanitize_name("  Bob" + char(0x202E) + "\n  ") == "Bob", "pseudo nettoyé")
+	check(Check.sanitize_name(12) == "", "pseudo non texte refusé")
+	check(Check.sanitize_name("abcdefghijklmnopqrstuvwxyz").length() == Check.NAME_MAX, "pseudo coupé")
+	check(Check.as_int(3.0, 0, 5) == 3 and Check.as_int(3.5, 0, 5) == null, "as_int")
+	check(Check.as_int(INF, 0, 5) == null and Check.as_num(NAN, 0.0, 5.0) == null, "infini / NaN refusés")
+	check(Check.is_lan_ipv4("192.168.1.20") and not Check.is_lan_ipv4("8.8.8.8"), "IP locale")
+	check(not Check.is_ipv4("192.168.1") and not Check.is_ipv4("::1"), "IPv4 mal formée")
+
+
+func _bundled_text() -> String:
+	return FileAccess.get_file_as_string(GameData.DEFAULT_PATH)
