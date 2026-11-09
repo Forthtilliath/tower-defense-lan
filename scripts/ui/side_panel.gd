@@ -3,10 +3,9 @@ extends VBoxContainer
 ## Panneau contextuel : construire sur une case libre, ou gérer la tourelle sélectionnée.
 ## Reconstruit seulement quand le contexte change ; l'or ne fait que (dés)activer les boutons.
 
-## Affichage des descriptions détaillées des tourelles (gardé pour toute la session).
-static var show_details := false
-
 var _game: GameScreen
+## Tourelle dont la fiche est affichée avant construction (gardée d'une case à l'autre).
+var _previewed := ""
 var _selected := -1
 var _signature := ""
 var _priced: Array = []  # [[bouton, coût, toujours désactivé]]
@@ -40,12 +39,13 @@ func _context() -> String:
 	var b := _game.viewed()
 	var t: Variant = b.get("towers", {}).get(_selected)
 	var tower_sig := "" if t == null else "%s/%d/%d" % [t["type"], t["level"], t["mode"]]
-	return "%d|%d|%s|%s|%s|%s" % [_game.viewed_board, _selected, tower_sig, str(_game.me().get("alive", false)), str(show_details), str(_game.state.can_trade)]
+	return "%d|%d|%s|%s|%s|%s" % [_game.viewed_board, _selected, tower_sig, str(_game.me().get("alive", false)), _previewed, str(_game.state.can_trade)]
 
 
 func _rebuild() -> void:
 	UiTheme.clear(self)
 	_priced.clear()
+	_game.preview_range(0.0)
 	var b := _game.viewed()
 	var t: Variant = b.get("towers", {}).get(_selected)
 	if _game.viewed_board != _game.my_board:
@@ -94,38 +94,53 @@ func _build_panel() -> void:
 		add_child(UiTheme.label(MatchActions.LOCKED + ".", 17, UiTheme.DANGER))
 	var data := _game.state.data
 	var builder := _game.my_builder()
+	if not data.builder_allows(builder, _previewed):
+		_previewed = ""
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	add_child(grid)
-	for i in data.tower_order.size():
-		if not data.builder_allows(builder, data.tower_order[i]):
+	for id in data.tower_order:
+		if not data.builder_allows(builder, id):
 			continue
-		var def: Dictionary = data.towers[data.tower_order[i]]
-		var cost: int = def["levels"][0]["cost"]
-		var index := i
-		var b := UiTheme.button("%s\n%d or" % [def["name"], cost], func() -> void:
-			_game.send({"a": "build", "cell": _selected, "tower": index}), 62, false)
+		var def: Dictionary = data.towers[id]
+		var tower_id: String = id
+		var b := UiTheme.button("%s\n%d or" % [def["name"], def["levels"][0]["cost"]], func() -> void:
+			_previewed = tower_id
+			refresh(true), 62, false)
+		b.toggle_mode = true
+		b.button_pressed = id == _previewed
 		b.size_flags_horizontal = SIZE_EXPAND_FILL
 		b.add_theme_color_override("font_color", Color(def["color"]).lightened(0.35))
 		grid.add_child(b)
-		_priced.append([b, cost, locked])
-	var toggle := CheckButton.new()
-	toggle.text = "Détails des tourelles"
-	toggle.button_pressed = show_details
-	toggle.toggled.connect(func(on: bool) -> void:
-		show_details = on
-		refresh(true))
-	add_child(toggle)
-	if show_details:
-		var special := _game.map.special_at(_selected)
-		for id in data.tower_order:
-			if not data.builder_allows(builder, id):
-				continue
-			var def: Dictionary = data.towers[id]
-			add_child(UiTheme.label(def["name"], 17, Color(def["color"]).lightened(0.35)))
-			add_child(UiTheme.label("%s\n%s" % [def["description"], stats_text(def, data.tower_stats(id, 0, special, builder))], 15, UiTheme.MUTED))
+	if _previewed == "":
+		add_child(UiTheme.label("Touche une tourelle pour voir ce qu'elle fait et sa portée sur la case, puis construis-la.", 16, UiTheme.MUTED))
+		return
+	var special := _game.map.special_at(_selected)
+	_tower_info(_previewed, special, builder)
+	var cost: int = data.tower_levels(_previewed)[0]["cost"]
+	var index := data.tower_order.find(_previewed)
+	var build := UiTheme.button("Construire — %d or" % cost, func() -> void:
+		_game.send({"a": "build", "cell": _selected, "tower": index}))
+	add_child(build)
+	_priced.append([build, cost, locked])
+	_game.preview_range(float(data.tower_stats(_previewed, 0, special, builder)["range"]))
+
+
+## Fiche d'une tourelle avant construction : rôle, niveau 1, niveau max, coût total.
+func _tower_info(id: String, special: int, builder: int) -> void:
+	var data := _game.state.data
+	var def: Dictionary = data.towers[id]
+	var levels: Array = def["levels"]
+	var last := levels.size() - 1
+	add_child(UiTheme.label(def["name"], 22, Color(def["color"]).lightened(0.35)))
+	add_child(UiTheme.label(def["description"], 16, UiTheme.TEXT))
+	var first := data.tower_stats(id, 0, special, builder)
+	var top := data.tower_stats(id, last, special, builder)
+	add_child(UiTheme.label("Niveau 1 : %s · %s dégâts/s" % [stats_text(def, first), _num(first["damage"] * first["rate"])], 15, UiTheme.MUTED))
+	add_child(UiTheme.label("Niveau %d : %s · %s dégâts/s" % [last + 1, stats_text(def, top), _num(top["damage"] * top["rate"])], 15, UiTheme.MUTED))
+	add_child(UiTheme.label("Coût jusqu'au niveau %d : %d or (revente à %d %%)" % [last + 1, data.tower_invested(id, last), roundi(SimMatch.SELL_RATIO * 100.0)], 15, UiTheme.GOLD))
 
 
 func _tower_panel(t: Dictionary) -> void:
