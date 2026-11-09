@@ -86,6 +86,7 @@ static func early_bonus(sim: SimMatch) -> int:
 	return int(SimMatch.BETWEEN_WAVES)
 
 
-## Intérêts versés à chaque vague sur l'or gardé (plafonnés).
-static func interest(data: GameData, gold: int) -> int:
-	return mini(int(data.player["interest_cap"]), floori(gold * float(data.player["interest"])))
+## Intérêts versés à chaque vague sur l'or gardé (plafonnés), bonus du bâtisseur compris.
+static func interest(data: GameData, gold: int, builder := -1) -> int:
+	var rule := data.interest_rule(builder)
+	return mini(int(rule[1]), floori(gold * float(rule[0])))

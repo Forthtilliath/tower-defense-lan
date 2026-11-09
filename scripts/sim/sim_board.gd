@@ -19,6 +19,8 @@ var monsters: Array[SimMonster] = []
 var towers := {}  # index de case -> SimTower
 var projectiles: Array[SimProjectile] = []
 var clock := 0.0
+## Hasard des contrôles (chances) : graine fixe, pour des parties et des tests reproductibles.
+var rng := RandomNumberGenerator.new()
 var _queue: Array[Dictionary] = []  # {time, type, hp_mult, wave (n° de vague, -1 : envoi), mod}
 var _fx: Array[Dictionary] = []  # {kind, pos, to, radius, ttl}
 var _born: Array[SimMonster] = []  # nés pendant le tick (division), ajoutés à la fin
@@ -32,6 +34,7 @@ func _init(p_data: GameData, p_map: MapDef, p_lives: int, p_reward_mult := 1.0) 
 	map = p_map
 	lives = p_lives
 	reward_mult = p_reward_mult
+	rng.seed = 20211109
 
 
 ## Programme les monstres d'une vague, à la suite de ceux déjà prévus.
@@ -91,13 +94,21 @@ func add_tower(cell: int, type: String, owner: int, cost: int, builder := -1) ->
 	t.center = map.cell_center(cell)
 	t.special = map.special_at(cell)
 	t.builder = builder
-	refresh_stats(t)
+	t.support = data.towers[type]["support"]
 	towers[cell] = t
+	refresh_stats(t)
 	return t
 
 
+## Statistiques après construction ou amélioration ; les auras du plateau sont recalculées.
 func refresh_stats(t: SimTower) -> void:
 	t.stats = data.tower_stats(t.type, t.level, t.special, t.builder)
+	BoardAuras.refresh(self)
+
+
+func remove_tower(cell: int) -> void:
+	towers.erase(cell)
+	BoardAuras.refresh(self)
 
 
 ## Plateau perdu ou abandonné : plus rien n'y bouge.
@@ -111,7 +122,7 @@ func eliminate() -> void:
 
 
 ## Avance la simulation de dt secondes.
-## Renvoie les primes à créditer : [[propriétaire de la tourelle, or], ...]
+## Renvoie les parts de primes à créditer : [[id joueur, or], ...]
 func step(dt: float) -> Array:
 	var rewards := []
 	if not alive:
@@ -122,7 +133,7 @@ func step(dt: float) -> Array:
 	if lives <= 0:
 		eliminate()
 		return rewards
-	BoardCombat.update_effects(self, dt, rewards)
+	MonsterEffects.update(self, dt, rewards)
 	BoardCombat.fire_towers(self, dt)
 	BoardCombat.move_projectiles(self, dt, rewards)
 	_remove_dead()
@@ -130,9 +141,10 @@ func step(dt: float) -> Array:
 	return rewards
 
 
-## Mort d'un monstre : prime au tueur, et division éventuelle en petits monstres.
-func kill(m: SimMonster, owner: int, rewards: Array) -> void:
-	rewards.append([owner, m.gold])
+## Mort d'un monstre : prime partagée selon la contribution de chacun (entière au tueur si
+## personne n'a contribué), et division éventuelle en petits monstres.
+func kill(m: SimMonster, killer: int, rewards: Array) -> void:
+	rewards.append_array(Bounty.split(m.gold, m.contrib, killer))
 	for i in m.split_count:
 		if monsters.size() + _born.size() >= MAX_MONSTERS:
 			break
@@ -179,12 +191,14 @@ func snapshot() -> Dictionary:
 	var mons := []
 	for m in monsters:
 		var hp := int(roundf(clampf(m.hp / m.max_hp, 0.0, 1.0) * 255.0))
-		var flags := (1 if m.is_slowed() else 0) | (2 if m.is_poisoned() else 0) | (4 if m.is_elite() else 0)
+		var flags := (1 if m.is_slowed() else 0) | (2 if m.is_poisoned() else 0) | (4 if m.is_elite() else 0) \
+				| (8 if m.is_burning() else 0) | (16 if m.is_bleeding() else 0) | (32 if m.is_stunned() else 0) \
+				| (64 if m.is_feared() else 0) | (128 if m.is_charmed() else 0)
 		mons.append([m.id, m.type_index, m.path, snappedf(m.progress, 0.01), hp, flags])
 	var tws := []
 	for cell in towers:
 		var t: SimTower = towers[cell]
-		tws.append([t.cell, data.tower_order.find(t.type), t.level, t.owner, t.target_mode])
+		tws.append([t.cell, data.tower_order.find(t.type), t.level, t.owner, t.target_mode, t.buff_flags()])
 	var prs := []
 	for p in projectiles:
 		prs.append([p.id, snappedf(p.pos.x, 0.01), snappedf(p.pos.y, 0.01)])

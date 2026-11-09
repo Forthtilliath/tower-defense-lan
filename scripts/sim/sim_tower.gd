@@ -20,3 +20,16 @@ var special := -1
 var builder := -1
 ## Statistiques effectives (niveau + bonus de case), recalculées à chaque amélioration.
 var stats := {}
+## Auras reçues des tourelles de soutien voisines : type -> [bonus, id du joueur qui la pose].
+## Types : "rate", "damage", "cc". Seule la plus forte de chaque type compte.
+var buffs := {}
+var support := false
+
+
+func buff(kind: String) -> float:
+	return float(buffs[kind][0]) if buffs.has(kind) else 0.0
+
+
+## Drapeaux d'aura pour l'affichage : 1 dégâts, 2 cadence, 4 contrôles.
+func buff_flags() -> int:
+	return (1 if buffs.has("damage") else 0) | (2 if buffs.has("rate") else 0) | (4 if buffs.has("cc") else 0)
