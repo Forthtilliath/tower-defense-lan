@@ -1,9 +1,9 @@
 class_name BoardPainter
 extends RefCounted
-## Formes dessinées du plateau (sans image) : cases, tourelles, monstres.
+## Formes dessinées du terrain (sans image) : cases, cases spéciales, trajectoire des volants.
 
 
-static func tile(ci: CanvasItem, map: MapDef, index: int, r: Rect2) -> void:
+static func tile(ci: CanvasItem, map: MapDef, data: GameData, index: int, r: Rect2) -> void:
 	var kind := map.cells[index]
 	var c := map.cell_coords(index)
 	var col: Color = BoardView.TILE_COLORS[kind]
@@ -15,6 +15,9 @@ static func tile(ci: CanvasItem, map: MapDef, index: int, r: Rect2) -> void:
 	match kind:
 		MapDef.Cell.BUILD:
 			ci.draw_rect(r.grow(-1), Color(0, 0, 0, 0.07), false, 1.0)
+			var special := map.special_at(index)
+			if special >= 0 and data != null:
+				_special(ci, data.specials[special], center, s)
 		MapDef.Cell.ROCK:
 			ci.draw_circle(center + Vector2(s * 0.05, s * 0.08), s * 0.3, Color("#6f747c"))
 			ci.draw_circle(center - Vector2(s * 0.08, s * 0.05), s * 0.22, Color("#9aa0a8"))
@@ -38,55 +41,28 @@ static func tile(ci: CanvasItem, map: MapDef, index: int, r: Rect2) -> void:
 			ci.draw_rect(Rect2(center + Vector2(-s * 0.08, s * 0.08), Vector2(s * 0.16, s * 0.22)), Color("#4a3a2a"))
 
 
-static func tower(ci: CanvasItem, data: GameData, t: Dictionary, center: Vector2, ts: float, owner_color: Color) -> void:
-	var def: Dictionary = data.towers[t["type"]]
-	var half := ts * 0.4
-	var base := Rect2(center - Vector2(half, half), Vector2(half, half) * 2.0)
-	ci.draw_rect(base, owner_color.darkened(0.45))
-	ci.draw_rect(base, owner_color, false, maxf(2.0, ts * 0.05))
-	var col := Color(def["color"])
-	var r := ts * 0.24
-	match data.tower_order.find(t["type"]) % 4:
-		0:  # arbalète : arc et carreau
-			ci.draw_circle(center, r, col)
-			ci.draw_arc(center, r * 1.2, PI * 1.15, PI * 1.85, 12, col.lightened(0.4), 3.0)
-			ci.draw_line(center, center - Vector2(0, r * 1.5), Color.WHITE, 2.0)
-		1:  # canon : fût épais
-			ci.draw_circle(center, r * 1.05, col)
-			ci.draw_rect(Rect2(center - Vector2(r * 0.35, r * 1.6), Vector2(r * 0.7, r * 1.2)), col.darkened(0.35))
-		2:  # givre : cristal
-			var pts := PackedVector2Array()
-			for k in 6:
-				pts.append(center + Vector2.from_angle(TAU * k / 6.0 - PI / 2.0) * r * 1.2)
-			ci.draw_colored_polygon(pts, col)
-			ci.draw_circle(center, r * 0.45, Color.WHITE)
-		_:  # baliste : longue arbalète
-			ci.draw_circle(center, r * 0.9, col)
-			ci.draw_line(center + Vector2(-r * 1.3, -r * 0.2), center + Vector2(r * 1.3, -r * 0.2), col.lightened(0.3), 4.0)
-			ci.draw_line(center, center - Vector2(0, r * 1.7), Color.WHITE, 3.0)
-	for l in int(t["level"]) + 1:
-		ci.draw_circle(base.position + Vector2(ts * 0.13 + l * ts * 0.17, ts * 0.68), maxf(2.0, ts * 0.055), UiTheme.GOLD)
+## Case spéciale : cadre lumineux de sa couleur et symbole selon le bonus.
+static func _special(ci: CanvasItem, special: Dictionary, center: Vector2, s: float) -> void:
+	var col := Color(special["color"])
+	var r := Rect2(center - Vector2(s, s) * 0.5, Vector2(s, s)).grow(-s * 0.08)
+	ci.draw_rect(r, Color(col, 0.18))
+	ci.draw_rect(r, Color(col, 0.85), false, maxf(1.5, s * 0.05))
+	var k := s * 0.16
+	if special["range"] > 1.0:  # colline : deux sommets
+		ci.draw_colored_polygon(PackedVector2Array([center + Vector2(-k * 1.6, k), center + Vector2(-k * 0.3, -k), center + Vector2(k, k)]), Color(col, 0.9))
+		ci.draw_colored_polygon(PackedVector2Array([center + Vector2(-k * 0.2, k), center + Vector2(k * 0.8, -k * 0.4), center + Vector2(k * 1.7, k)]), Color(col.darkened(0.2), 0.9))
+	elif special["damage"] > 1.0:  # cristal : losange
+		ci.draw_colored_polygon(PackedVector2Array([center + Vector2(0, -k * 1.5), center + Vector2(k, 0), center + Vector2(0, k * 1.5), center + Vector2(-k, 0)]), Color(col, 0.95))
+	elif special["rate"] > 1.0:  # rune : cercle gravé
+		ci.draw_arc(center, k * 1.3, 0.0, TAU, 20, Color(col, 0.95), maxf(1.5, s * 0.05))
+		ci.draw_line(center - Vector2(0, k), center + Vector2(0, k), Color(col, 0.95), maxf(1.5, s * 0.05))
+	else:  # filon d'or : pépites
+		ci.draw_circle(center + Vector2(-k * 0.6, k * 0.3), k * 0.6, Color(col, 0.95))
+		ci.draw_circle(center + Vector2(k * 0.7, -k * 0.2), k * 0.45, Color(col, 0.95))
 
 
-static func monster(ci: CanvasItem, def: Dictionary, m: Dictionary, pos: Vector2, ts: float) -> void:
-	var r := ts * float(def["size"]) * 0.5
-	var col := Color(def["color"])
-	if m["slowed"]:
-		col = col.lerp(Color("#9fdcff"), 0.55)
-	if m["flying"]:
-		ci.draw_circle(pos + Vector2(0, r * 1.1), r * 0.55, Color(0, 0, 0, 0.25))
-		var wing := col.darkened(0.25)
-		ci.draw_colored_polygon(PackedVector2Array([pos, pos + Vector2(-r * 1.7, -r * 0.6), pos + Vector2(-r * 0.9, r * 0.3)]), wing)
-		ci.draw_colored_polygon(PackedVector2Array([pos, pos + Vector2(r * 1.7, -r * 0.6), pos + Vector2(r * 0.9, r * 0.3)]), wing)
-	ci.draw_circle(pos, r, col)
-	ci.draw_arc(pos, r, 0.0, TAU, 20, col.darkened(0.45), maxf(1.5, ts * 0.03))
-	var eye := Vector2(r * 0.35, -r * 0.2)
-	ci.draw_circle(pos - Vector2(eye.x, -eye.y), maxf(1.5, r * 0.17), Color.WHITE)
-	ci.draw_circle(pos + eye, maxf(1.5, r * 0.17), Color.WHITE)
-	var hp: int = m["hp"]
-	if hp < 255:
-		var w := maxf(ts * 0.6, r * 2.0)
-		var bar := Rect2(pos + Vector2(-w / 2.0, -r - ts * 0.16), Vector2(w, maxf(3.0, ts * 0.07)))
-		ci.draw_rect(bar, Color(0, 0, 0, 0.6))
-		var k := hp / 255.0
-		ci.draw_rect(Rect2(bar.position, Vector2(bar.size.x * k, bar.size.y)), UiTheme.DANGER.lerp(UiTheme.SUCCESS, k))
+## Trajectoire des volants : pointillés du départ à l'arrivée.
+static func flight_paths(ci: CanvasItem, map: MapDef, origin: Vector2, ts: float) -> void:
+	for p in map.start_count():
+		var pts: PackedVector2Array = map.air_paths[p]
+		ci.draw_dashed_line(origin + pts[0] * ts, origin + pts[pts.size() - 1] * ts, Color(1, 1, 1, 0.22), maxf(1.5, ts * 0.04), ts * 0.25)

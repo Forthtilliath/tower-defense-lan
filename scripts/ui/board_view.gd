@@ -58,7 +58,8 @@ func _draw() -> void:
 	_ts = maxf(4.0, floorf(minf(size.x / map.width, size.y / map.height)))
 	_origin = ((size - Vector2(map.width, map.height) * _ts) / 2.0).floor()
 	for i in map.cell_count():
-		BoardPainter.tile(self, map, i, Rect2(_origin + Vector2(map.cell_coords(i)) * _ts, Vector2(_ts, _ts)))
+		BoardPainter.tile(self, map, data, i, Rect2(_origin + Vector2(map.cell_coords(i)) * _ts, Vector2(_ts, _ts)))
+	BoardPainter.flight_paths(self, map, _origin, _ts)
 	if state == null or not state.received or board_index >= state.boards.size():
 		return
 	var b: Dictionary = state.boards[board_index]
@@ -66,19 +67,17 @@ func _draw() -> void:
 	for cell in b["towers"]:
 		var t: Dictionary = b["towers"][cell]
 		var col: Color = player_colors.get(t["owner"], Color.WHITE)
-		BoardPainter.tower(self, data, t, to_px(map.cell_center(cell)), _ts, col)
+		UnitPainter.tower(self, data, t, to_px(map.cell_center(cell)), _ts, col)
 	for id in b["monsters"]:
 		var m: Dictionary = b["monsters"][id]
 		var pos := to_px(map.position_at(m["path"], state.monster_progress(m), m["flying"]))
-		BoardPainter.monster(self, data.monsters[m["type"]], m, pos, _ts)
+		UnitPainter.monster(self, data.monsters[m["type"]], m, pos, _ts)
 	for id in b["proj"]:
 		var p := to_px(state.projectile_pos(b["proj"][id]))
 		draw_circle(p, maxf(2.5, _ts * 0.07), Color(0.1, 0.1, 0.1, 0.7))
 		draw_circle(p, maxf(1.5, _ts * 0.05), Color.WHITE)
 	for f in b["fx"]:
-		var life: float = f["life"]
-		var radius: float = f["radius"] * _ts * (1.2 - 0.4 * life)
-		draw_arc(to_px(f["pos"]), radius, 0.0, TAU, 32, Color(1, 0.8, 0.4, life), 3.0)
+		UnitPainter.fx(self, f, _origin, _ts)
 	if not b["alive"]:
 		draw_rect(Rect2(_origin, Vector2(map.width, map.height) * _ts), Color(0, 0, 0, 0.55))
 		var font := get_theme_default_font()
@@ -95,7 +94,7 @@ func _draw_selection(b: Dictionary) -> void:
 	draw_rect(r.grow(-1), UiTheme.ACCENT, false, 3.0)
 	if b["towers"].has(selected):
 		var t: Dictionary = b["towers"][selected]
-		var reach: float = data.tower_levels(t["type"])[t["level"]]["range"]
+		var reach: float = data.tower_stats(t["type"], t["level"], map.special_at(selected))["range"]
 		var center := to_px(map.cell_center(selected))
 		draw_circle(center, reach * _ts, Color(1, 1, 1, 0.08))
 		draw_arc(center, reach * _ts, 0.0, TAU, 64, Color(1, 1, 1, 0.5), 2.0)

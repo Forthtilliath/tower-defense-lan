@@ -12,6 +12,7 @@ var _players: VBoxContainer
 var _count: Label
 var _mode: OptionButton
 var _map: OptionButton
+var _difficulty: OptionButton
 var _help: Label
 var _preview: BoardView
 var _start: Button
@@ -56,6 +57,11 @@ func _ready() -> void:
 		map_names.append(m.name)
 	_map = _option(options, "Carte", map_names)
 	_map.item_selected.connect(func(i: int) -> void: Net.set_option("map", i))
+	var difficulty_names := []
+	for d in Data.db.difficulties:
+		difficulty_names.append(d["name"])
+	_difficulty = _option(options, "Difficulté", difficulty_names)
+	_difficulty.item_selected.connect(func(i: int) -> void: Net.set_option("difficulty", i))
 	_help = UiTheme.label("", 17, UiTheme.MUTED)
 	right.add_child(_help)
 	_preview = BoardView.new()
@@ -116,7 +122,9 @@ func _refresh() -> void:
 	var mode: int = Net.settings["mode"]
 	_mode.select(mode)
 	_map.select(Net.settings["map"])
-	_help.text = MODE_HELP[mode]
+	_difficulty.select(Net.settings["difficulty"])
+	var map: MapDef = Data.db.maps[Net.settings["map"]]
+	_help.text = "%s\n%s · %d vagues · %s" % [MODE_HELP[mode], map.name, map.waves.size(), _difficulty_text(Net.settings["difficulty"])]
 	_preview.set_map(Data.db.maps[Net.settings["map"]])
 	if not Net.is_host():
 		_hint.text = "En attente du lancement par l'hôte…"
@@ -124,6 +132,13 @@ func _refresh() -> void:
 		_hint.text = "Le versus se joue à 2 ou plus (seul, c'est un entraînement)."
 	else:
 		_hint.text = ""
+
+
+## Résumé d'une difficulté : « Normal : 20 vies, monstres x1, or x1 ».
+static func _difficulty_text(index: int) -> String:
+	var d: Dictionary = Data.db.difficulties[index]
+	return "%s : %d vies, PV des monstres x%s, or de départ x%s" % [
+		d["name"], d["lives"], str(d["hp"]).replace(".", ","), str(d["gold"]).replace(".", ",")]
 
 
 func _address_text() -> String:
