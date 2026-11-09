@@ -83,18 +83,21 @@ func test_tower_kills_reward_owner() -> void:
 	for i in int(15.0 / DT):
 		sim.step(DT)
 	check(sim.players[2]["gold"] > 15, "le propriétaire touche les primes : %d" % sim.players[2]["gold"])
-	# 6 or d'intérêts (4 % de 150) + 15 or de vague + 20 or de bonus (vague lancée 20 s en avance)
-	check(sim.players[1]["gold"] == 150 + 6 + 15 + 20, "l'autre joueur ne touche que les bonus : %d" % sim.players[1]["gold"])
+	# 6 or d'intérêts (4 % de 150) + 15 or de vague ; pas de bonus pour la première vague
+	check(sim.players[1]["gold"] == 150 + 6 + 15, "l'autre joueur ne touche que l'or de vague : %d" % sim.players[1]["gold"])
 
 
-func test_ready_vote_launches_wave_with_bonus() -> void:
+func test_first_wave_waits_for_the_players() -> void:
 	var sim := _coop(2)
-	sim.step(DT)
+	for i in int(120.0 / DT):
+		sim.step(DT)
+	check(sim.wave_index == -1 and sim.boards[0].monsters.is_empty(), "la première vague ne part jamais seule")
+	check(sim.snapshot()["nx"], "elle peut être lancée")
 	check(sim.apply_command(1, _cmd({"a": "ready"}, sim)) == "", "prêt accepté")
 	check(sim.wave_index == -1, "la vague attend le second joueur")
 	sim.apply_command(2, _cmd({"a": "ready"}, sim))
 	check(sim.wave_index == 0, "vague lancée quand tout le monde est prêt")
-	check(sim.players[1]["gold"] == 150 + 6 + 15 + 19, "intérêts, vague et bonus de temps restant : %d" % sim.players[1]["gold"])
+	check(sim.players[1]["gold"] == 150 + 6 + 15, "intérêts et vague, sans bonus pour la première : %d" % sim.players[1]["gold"])
 
 
 func test_coop_defeat_when_lives_reach_zero() -> void:
