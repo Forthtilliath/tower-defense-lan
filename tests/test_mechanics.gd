@@ -19,7 +19,8 @@ func _monster(b: SimBoard, type: String, progress := 10.0) -> SimMonster:
 
 func _projectile(dmg: float) -> SimProjectile:
 	var p := SimProjectile.new()
-	p.damage = dmg
+	p.stats = {"damage": dmg}
+	p.credit = BoardCombat.solo(7)
 	p.owner = 7
 	return p
 
@@ -28,11 +29,11 @@ func test_armor_reduces_but_never_cancels() -> void:
 	var b := _board()
 	var m := _monster(b, "skeleton")  # armure 3
 	var rewards := []
-	BoardCombat.damage(b, m, 4.0, false, 7, rewards)
+	BoardCombat.damage(b, m, 4.0, false, BoardCombat.solo(7), rewards)
 	check(is_equal_approx(m.hp, 29.0), "4 - 3 = 1 dégât : %f" % m.hp)
-	BoardCombat.damage(b, m, 2.0, false, 7, rewards)
+	BoardCombat.damage(b, m, 2.0, false, BoardCombat.solo(7), rewards)
 	check(is_equal_approx(m.hp, 28.5), "au moins 25 %% des dégâts : %f" % m.hp)
-	BoardCombat.damage(b, m, 4.0, true, 7, rewards)
+	BoardCombat.damage(b, m, 4.0, true, BoardCombat.solo(7), rewards)
 	check(is_equal_approx(m.hp, 24.5), "le poison ignore l'armure : %f" % m.hp)
 
 
@@ -42,7 +43,7 @@ func test_poison_kills_and_rewards_owner() -> void:
 	m.apply_poison(10.0, 3.0, 42)
 	var rewards := []
 	for i in int(2.0 / DT):
-		BoardCombat.update_effects(b, DT, rewards)
+		MonsterEffects.update(b, DT, rewards)
 	check(not m.is_alive(), "12 PV, 10 dégâts/s pendant 2 s : mort")
 	check(rewards.size() == 1 and rewards[0][0] == 42, "prime à l'empoisonneur : %s" % str(rewards))
 
@@ -51,7 +52,7 @@ func test_slime_splits_on_death() -> void:
 	var b := _board()
 	var m := _monster(b, "slime", 12.0)
 	var rewards := []
-	BoardCombat.damage(b, m, 1000.0, false, 3, rewards)
+	BoardCombat.damage(b, m, 1000.0, false, BoardCombat.solo(3), rewards)
 	b.step(DT)
 	var minis := b.monsters.filter(func(x: SimMonster) -> bool: return x.type == "mini_slime")
 	check(minis.size() == 2, "2 petites gelées : %d" % minis.size())
@@ -65,7 +66,7 @@ func test_tesla_chains_between_monsters() -> void:
 	var third := _monster(b, "goblin", 7.0)
 	var far := _monster(b, "goblin", 20.0)
 	var p := _projectile(5.0)
-	p.chain = 3
+	p.stats["chain"] = 3
 	p.target_id = first.id
 	p.pos = first.pos
 	p.target_pos = first.pos
@@ -84,7 +85,7 @@ func test_shaman_heals_and_troll_regenerates() -> void:
 	orc.hp = 20.0
 	troll.hp = 100.0
 	for i in int(1.0 / DT):
-		BoardCombat.update_effects(b, DT, [])
+		MonsterEffects.update(b, DT, [])
 	var healed: float = 20.0 + float(b.data.monsters["shaman"]["heal_rate"]) - 0.5
 	check(orc.hp > healed, "l'orc proche est soigné : %f" % orc.hp)
 	check(troll.hp > 101.5, "le troll se régénère : %f" % troll.hp)

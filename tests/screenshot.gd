@@ -38,9 +38,11 @@ func _run() -> void:
 	await _wait(0.3)
 	var map: MapDef = Data.db.maps[_map]
 	var placed := 0
-	for cell in [2 * map.width + 2, 3 * map.width + 6, 5 * map.width + 5, 2 * map.width + 9, 6 * map.width + 5, 3 * map.width + 3]:
-		if map.is_buildable(cell):
-			Net.send_command({"a": "build", "cell": cell, "tower": [0, 4, 5, 7, 6, 1][placed]})
+	# Arbalète, Tambour (aura), Brasier, Gong, Épouvantail, Flûte (indices dans tower_order)
+	var plan := [0, 15, 10, 12, 13, 14]
+	for cell in [2 * map.width + 2, 3 * map.width + 3, 3 * map.width + 6, 5 * map.width + 5, 2 * map.width + 9, 6 * map.width + 5]:
+		if map.is_buildable(cell) and placed < plan.size():
+			Net.send_command({"a": "build", "cell": cell, "tower": plan[placed]})
 			placed += 1
 	Net.send_command({"a": "upgrade", "cell": 2 * map.width + 2})
 	Net.send_command({"a": "ready"})
@@ -53,6 +55,9 @@ func _run() -> void:
 	await _wait(0.4)
 	_shot("3-partie-%s" % tag)
 	screen._on_cell_pressed(4 * map.width + 13)
+	var panel: SidePanel = screen.get("_panel")
+	panel.set("_previewed", "thorns")  # fiche d'une tourelle avant construction
+	panel.refresh(true)
 	await _wait(0.3)
 	_shot("4-construire-%s" % tag)
 	Net.leave()
