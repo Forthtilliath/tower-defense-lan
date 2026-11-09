@@ -53,6 +53,8 @@ func test_corrupted_snapshots_are_ignored() -> void:
 		"trop de plateaux": func(s): s["b"].append(s["b"][0]),
 		"résultat inconnu": func(s): s["res"] = "hack",
 		"vies en texte": func(s): s["b"][0]["lives"] = "20",
+		"appel de vague absent": func(s): s.erase("nx"),
+		"achats en texte": func(s): s["tr"] = "oui",
 		"pas un dictionnaire": func(s): s.clear(),
 	}
 	for label in cases:
@@ -64,21 +66,46 @@ func test_corrupted_snapshots_are_ignored() -> void:
 
 func test_lobby_payloads() -> void:
 	var gd := load_data()
-	var ok = NetPayloads.parse_lobby({"players": [[1, "Hôte", 0], [4, "Bob", 1]], "mode": 1, "map": 6, "difficulty": 3}, gd, 2, 4)
-	check(ok != null and ok["players"].size() == 2 and ok["difficulty"] == 3, "salon valide")
-	var bad := [
-		{"players": [[4, "Bob", 1]], "mode": 0, "map": 0, "difficulty": 1},
-		{"players": [[1, "Hôte", 0], [1, "Double", 1]], "mode": 0, "map": 0, "difficulty": 1},
-		{"players": [[1, "", 0]], "mode": 0, "map": 0, "difficulty": 1},
-		{"players": [[1, "Hôte", 0]], "mode": 5, "map": 0, "difficulty": 1},
-		{"players": [[1, "Hôte", 0]], "mode": 0, "map": 99, "difficulty": 1},
-		{"players": [[1, "Hôte", 0]], "mode": 0, "map": 0, "difficulty": 4},
-		{"players": [[1, "Hôte", 0]], "mode": 0, "map": 0},
-		{"players": [[1, "Hôte", 9]], "mode": 0, "map": 0, "difficulty": 1},
-		"texte",
-	]
-	for raw in bad:
-		check(NetPayloads.parse_lobby(raw, gd, 2, 4) == null, "salon refusé : %s" % str(raw))
+	var good := {"players": [[1, "Hôte", 0, 0, 1], [4, "Bob", 1, 2, 3]], "mode": 1, "map": 9, "rhythm": 1, "launch": 1}
+	var ok = NetPayloads.parse_lobby(good, gd, 2, 4)
+	check(ok != null and ok["players"].size() == 2 and ok["rhythm"] == 1 and ok["launch"] == 1, "salon valide")
+	check(ok != null and ok["players"][4]["builder"] == 2 and ok["players"][4]["vote"] == 3, "bâtisseur et vote reçus")
+	var cases := {
+		"sans hôte": func(d): d["players"].remove_at(0),
+		"id en double": func(d): d["players"][1][0] = 1,
+		"pseudo vide": func(d): d["players"][0][1] = "",
+		"mode inconnu": func(d): d["mode"] = 5,
+		"carte inconnue": func(d): d["map"] = 99,
+		"rythme inconnu": func(d): d["rhythm"] = 2,
+		"lancement absent": func(d): d.erase("launch"),
+		"couleur hors limites": func(d): d["players"][0][2] = 9,
+		"bâtisseur inconnu": func(d): d["players"][1][3] = 4,
+		"vote hors limites": func(d): d["players"][1][4] = 4,
+		"vote absent": func(d): d["players"][1].remove_at(4),
+	}
+	for label in cases:
+		var bad: Dictionary = good.duplicate(true)
+		cases[label].call(bad)
+		check(NetPayloads.parse_lobby(bad, gd, 2, 4) == null, "salon refusé : " + label)
+	check(NetPayloads.parse_lobby("texte", gd, 2, 4) == null, "salon refusé : texte")
+
+
+func test_match_config() -> void:
+	var gd := load_data()
+	var good := {"roster": [[1, "Hôte", 0, 1], [3, "Ana", 1, 3]], "mode": 0, "map": 8, "rhythm": 0, "launch": 1, "difficulty": 2}
+	var ok = NetPayloads.parse_config(good, gd, 2, 4)
+	check(ok != null and ok["difficulty"] == 2 and ok["roster"][1][3] == 3, "configuration valide")
+	for change in [["difficulty", 9], ["difficulty", null], ["launch", -1], ["roster", [[1, "Hôte", 0, 1, 1]]], ["roster", [[1, "Hôte", 0, -1]]]]:
+		var bad: Dictionary = good.duplicate(true)
+		bad[change[0]] = change[1]
+		check(NetPayloads.parse_config(bad, gd, 2, 4) == null, "configuration refusée : %s" % str(change))
+
+
+func test_difficulty_vote() -> void:
+	check(NetPayloads.voted_difficulty({1: {"vote": 2}, 2: {"vote": 2}, 3: {"vote": 0}}, 4) == 2, "majorité")
+	check(NetPayloads.voted_difficulty({1: {"vote": 3}, 2: {"vote": 1}}, 4) == 1, "égalité : la plus facile")
+	check(NetPayloads.voted_difficulty({1: {"vote": 3}}, 4) == 3, "seul : son vote")
+	check(NetPayloads.voted_difficulty({1: {"vote": 9}}, 4) == 0, "vote invalide ignoré")
 
 
 func test_lan_announces() -> void:
