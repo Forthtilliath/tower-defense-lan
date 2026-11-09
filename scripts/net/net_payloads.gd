@@ -29,31 +29,41 @@ static func parse_roster(raw: Variant, max_players: int) -> Variant:
 	return out
 
 
-static func parse_lobby(raw: Variant, map_count: int, mode_count: int, max_players: int) -> Variant:
+static func parse_lobby(raw: Variant, data: GameData, mode_count: int, max_players: int) -> Variant:
 	if typeof(raw) != TYPE_DICTIONARY:
 		return null
 	var d: Dictionary = raw
 	var roster = parse_roster(d.get("players"), max_players)
-	var mode = Check.as_int(d.get("mode"), 0, mode_count - 1)
-	var map = Check.as_int(d.get("map"), 0, map_count - 1)
-	if roster == null or mode == null or map == null:
+	var options = _parse_options(d, data, mode_count)
+	if roster == null or options == null:
 		return null
 	var players := {}
 	for e in roster:
 		players[e[0]] = {"name": e[1], "color": e[2]}
-	return {"players": players, "mode": mode, "map": map}
+	options["players"] = players
+	return options
 
 
-static func parse_config(raw: Variant, map_count: int, mode_count: int, max_players: int) -> Variant:
+static func parse_config(raw: Variant, data: GameData, mode_count: int, max_players: int) -> Variant:
 	if typeof(raw) != TYPE_DICTIONARY:
 		return null
 	var d: Dictionary = raw
 	var roster = parse_roster(d.get("roster"), max_players)
-	var mode = Check.as_int(d.get("mode"), 0, mode_count - 1)
-	var map = Check.as_int(d.get("map"), 0, map_count - 1)
-	if roster == null or mode == null or map == null:
+	var options = _parse_options(d, data, mode_count)
+	if roster == null or options == null:
 		return null
-	return {"mode": mode, "map": map, "roster": roster}
+	options["roster"] = roster
+	return options
+
+
+## Mode, carte et difficulté : indices bornés par les données du jeu.
+static func _parse_options(d: Dictionary, data: GameData, mode_count: int) -> Variant:
+	var mode = Check.as_int(d.get("mode"), 0, mode_count - 1)
+	var map = Check.as_int(d.get("map"), 0, data.maps.size() - 1)
+	var difficulty = Check.as_int(d.get("difficulty"), 0, data.difficulties.size() - 1)
+	if mode == null or map == null or difficulty == null:
+		return null
+	return {"mode": mode, "map": map, "difficulty": difficulty}
 
 
 ## Pseudo unique dans le salon : ajoute un numéro si le nom est déjà pris.

@@ -181,13 +181,14 @@ func _parse_monsters(raw: Variant) -> Variant:
 		var path = Check.as_int(e[2], 0, map.start_count() - 1)
 		var progress = Check.as_num(e[3], 0.0, 100000.0)
 		var hp = Check.as_int(e[4], 0, 255)
-		var slowed = Check.as_bool(e[5])
-		if id == null or type == null or path == null or progress == null or hp == null or slowed == null:
+		var flags = Check.as_int(e[5], 0, 3)
+		if id == null or type == null or path == null or progress == null or hp == null or flags == null:
 			return null
 		var type_id: String = data.monster_order[type]
 		out[id] = {
 			"type": type_id, "path": path, "flying": data.monsters[type_id]["flying"],
-			"from": progress, "to": progress, "hp": hp, "slowed": slowed,
+			"from": progress, "to": progress, "hp": hp,
+			"slowed": flags & 1 != 0, "poisoned": flags & 2 != 0,
 		}
 	return out
 
@@ -213,15 +214,17 @@ func _parse_fx(raw: Variant) -> Variant:
 		return null
 	var out := []
 	for e in raw:
-		if not _is_tuple(e, 4):
+		if not _is_tuple(e, 6):
 			return null
-		var x = Check.as_num(e[0], -2.0, map.width + 2.0)
-		var y = Check.as_num(e[1], -2.0, map.height + 2.0)
-		var radius = Check.as_num(e[2], 0.0, 10.0)
-		var life = Check.as_num(e[3], 0.0, 1.0)
-		if x == null or y == null or radius == null or life == null:
+		var kind = Check.as_int(e[0], 0, 1)
+		var x = Check.as_num(e[1], -2.0, map.width + 2.0)
+		var y = Check.as_num(e[2], -2.0, map.height + 2.0)
+		var a = Check.as_num(e[3], -2.0, maxf(map.width, map.height) + 2.0)
+		var b = Check.as_num(e[4], -2.0, maxf(map.width, map.height) + 2.0)
+		var life = Check.as_num(e[5], 0.0, 1.0)
+		if kind == null or x == null or y == null or a == null or b == null or life == null:
 			return null
-		out.append({"pos": Vector2(x, y), "radius": radius, "life": life})
+		out.append({"kind": kind, "pos": Vector2(x, y), "radius": a, "to": Vector2(a, b), "life": life})
 	return out
 
 
