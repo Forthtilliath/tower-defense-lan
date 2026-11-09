@@ -63,19 +63,22 @@ func test_corrupted_snapshots_are_ignored() -> void:
 
 
 func test_lobby_payloads() -> void:
-	var ok = NetPayloads.parse_lobby({"players": [[1, "Hôte", 0], [4, "Bob", 1]], "mode": 1, "map": 2}, 3, 2, 4)
-	check(ok != null and ok["players"].size() == 2, "salon valide")
+	var gd := load_data()
+	var ok = NetPayloads.parse_lobby({"players": [[1, "Hôte", 0], [4, "Bob", 1]], "mode": 1, "map": 6, "difficulty": 3}, gd, 2, 4)
+	check(ok != null and ok["players"].size() == 2 and ok["difficulty"] == 3, "salon valide")
 	var bad := [
-		{"players": [[4, "Bob", 1]], "mode": 0, "map": 0},
-		{"players": [[1, "Hôte", 0], [1, "Double", 1]], "mode": 0, "map": 0},
-		{"players": [[1, "", 0]], "mode": 0, "map": 0},
-		{"players": [[1, "Hôte", 0]], "mode": 5, "map": 0},
-		{"players": [[1, "Hôte", 0]], "mode": 0, "map": 3},
-		{"players": [[1, "Hôte", 9]], "mode": 0, "map": 0},
+		{"players": [[4, "Bob", 1]], "mode": 0, "map": 0, "difficulty": 1},
+		{"players": [[1, "Hôte", 0], [1, "Double", 1]], "mode": 0, "map": 0, "difficulty": 1},
+		{"players": [[1, "", 0]], "mode": 0, "map": 0, "difficulty": 1},
+		{"players": [[1, "Hôte", 0]], "mode": 5, "map": 0, "difficulty": 1},
+		{"players": [[1, "Hôte", 0]], "mode": 0, "map": 99, "difficulty": 1},
+		{"players": [[1, "Hôte", 0]], "mode": 0, "map": 0, "difficulty": 4},
+		{"players": [[1, "Hôte", 0]], "mode": 0, "map": 0},
+		{"players": [[1, "Hôte", 9]], "mode": 0, "map": 0, "difficulty": 1},
 		"texte",
 	]
 	for raw in bad:
-		check(NetPayloads.parse_lobby(raw, 3, 2, 4) == null, "salon refusé : %s" % str(raw))
+		check(NetPayloads.parse_lobby(raw, gd, 2, 4) == null, "salon refusé : %s" % str(raw))
 
 
 func test_lan_announces() -> void:
