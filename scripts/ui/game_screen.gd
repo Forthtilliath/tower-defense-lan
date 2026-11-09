@@ -13,8 +13,11 @@ var my_board := 0
 var viewed_board := 0
 var names := {}  # id -> pseudo
 var colors := {}  # id -> Color
+var builders := {}  # id -> index du bâtisseur
 var order: Array[int] = []  # ids dans l'ordre de la partie
 var is_versus := false
+var _coop: CoopPanel
+var _last_wave := 0
 var _nav: Node
 var _view: BoardView
 var _hud: HudBar
@@ -40,6 +43,7 @@ func _ready() -> void:
 		order.append(e[0])
 		names[e[0]] = e[1]
 		colors[e[0]] = UiTheme.player_color(e[2])
+		builders[e[0]] = e[3]
 	my_board = maxi(0, order.find(my_id)) if is_versus else 0
 	viewed_board = my_board
 	state = ViewState.new(Data.db, map, order.size() if is_versus else 1)
@@ -61,6 +65,12 @@ func _build_layout() -> void:
 	_view.data = Data.db
 	_view.state = state
 	_view.player_colors = colors
+	_view.builder_of = func(id: int) -> int: return int(builders.get(id, -1))
+	if not is_versus:
+		var ordered: Array[Color] = []
+		for id in order:
+			ordered.append(colors[id])
+		_view.zone_colors = BoardPainter.zone_colors(map, ordered)
 	_view.board_index = viewed_board
 	_view.size_flags_horizontal = SIZE_EXPAND_FILL
 	_view.set_map(map)
@@ -81,6 +91,9 @@ func _build_layout() -> void:
 	if is_versus:
 		_versus = VersusPanel.new(self)
 		side.add_child(_versus)
+	else:
+		_coop = CoopPanel.new(self)
+		side.add_child(_coop)
 	_toast = UiTheme.label("", 20, UiTheme.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	_toast.set_anchors_preset(PRESET_CENTER_BOTTOM)
 	_toast.position.y -= 70
@@ -114,6 +127,13 @@ func _on_snapshot(snap: Dictionary) -> void:
 	_panel.refresh()
 	if _versus != null:
 		_versus.refresh()
+	if _coop != null:
+		_coop.refresh()
+	if state.wave != _last_wave:
+		_last_wave = state.wave
+		var mod := wave_modifier(state.wave - 1)
+		if not mod.is_empty():
+			show_toast("Vague spéciale : %s — %s" % [mod["name"], mod["description"]])
 	if state.ended:
 		_end.show_result()
 
@@ -144,6 +164,26 @@ func view_board(index: int) -> void:
 	_panel.set_selected(-1)
 	if _versus != null:
 		_versus.refresh()
+
+
+## Vague spéciale de la vague n° index (0 = première), dictionnaire vide si normale.
+func wave_modifier(index: int) -> Dictionary:
+	if index < 0:
+		return {}
+	return state.data.wave_modifier(map.waves[mini(index, map.waves.size() - 1)])
+
+
+func my_builder() -> int:
+	return int(builders.get(my_id, 0))
+
+
+## Rythme « entre les vagues » : construire n'est possible que pendant la phase de construction.
+func rhythm() -> int:
+	return int(config.get("rhythm", 0)) if not is_versus else SimMatch.Rhythm.FREE
+
+
+func host_launches() -> bool:
+	return not is_versus and int(config.get("launch", 0)) == SimMatch.Launch.HOST
 
 
 func difficulty_name() -> String:

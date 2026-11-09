@@ -56,6 +56,9 @@ static func monster(ci: CanvasItem, def: Dictionary, m: Dictionary, pos: Vector2
 		col = col.lerp(Color("#9fdcff"), 0.55)
 	if m["poisoned"]:
 		col = col.lerp(Color("#8be04e"), 0.35)
+	if m.get("elite", false):  # vague spéciale : halo doré
+		ci.draw_circle(pos, r * 1.45, Color(UiTheme.ACCENT, 0.18))
+		ci.draw_arc(pos, r * 1.45, 0.0, TAU, 24, Color(UiTheme.ACCENT, 0.75), maxf(1.5, ts * 0.035))
 	if def["heal_radius"] > 0.0:  # aura du soigneur
 		ci.draw_circle(pos, def["heal_radius"] * ts, Color(0.85, 0.5, 0.9, 0.08))
 		ci.draw_arc(pos, def["heal_radius"] * ts, 0.0, TAU, 32, Color(0.85, 0.5, 0.9, 0.3), 1.5)

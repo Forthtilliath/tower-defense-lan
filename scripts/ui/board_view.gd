@@ -18,6 +18,13 @@ var state: ViewState
 var board_index := 0
 var selected := -1
 var player_colors := {}  # id joueur -> Color
+## Couleur de chaque zone de joueur (vide : zones non affichées).
+var zone_colors: Array[Color] = []:
+	set(value):
+		zone_colors = value
+		queue_redraw()
+## Bâtisseur d'un joueur (id -> index), pour la portée affichée des tourelles.
+var builder_of := func(_id: int) -> int: return -1
 var _ts := 32.0
 var _origin := Vector2.ZERO
 
@@ -59,6 +66,7 @@ func _draw() -> void:
 	_origin = ((size - Vector2(map.width, map.height) * _ts) / 2.0).floor()
 	for i in map.cell_count():
 		BoardPainter.tile(self, map, data, i, Rect2(_origin + Vector2(map.cell_coords(i)) * _ts, Vector2(_ts, _ts)))
+	BoardPainter.zones(self, map, zone_colors, _origin, _ts)
 	BoardPainter.flight_paths(self, map, _origin, _ts)
 	if state == null or not state.received or board_index >= state.boards.size():
 		return
@@ -94,7 +102,7 @@ func _draw_selection(b: Dictionary) -> void:
 	draw_rect(r.grow(-1), UiTheme.ACCENT, false, 3.0)
 	if b["towers"].has(selected):
 		var t: Dictionary = b["towers"][selected]
-		var reach: float = data.tower_stats(t["type"], t["level"], map.special_at(selected))["range"]
+		var reach: float = data.tower_stats(t["type"], t["level"], map.special_at(selected), builder_of.call(t["owner"]))["range"]
 		var center := to_px(map.cell_center(selected))
 		draw_circle(center, reach * _ts, Color(1, 1, 1, 0.08))
 		draw_arc(center, reach * _ts, 0.0, TAU, 64, Color(1, 1, 1, 0.5), 2.0)

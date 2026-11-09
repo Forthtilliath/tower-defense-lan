@@ -40,7 +40,7 @@ func _context() -> String:
 	var b := _game.viewed()
 	var t: Variant = b.get("towers", {}).get(_selected)
 	var tower_sig := "" if t == null else "%s/%d/%d" % [t["type"], t["level"], t["mode"]]
-	return "%d|%d|%s|%s|%s" % [_game.viewed_board, _selected, tower_sig, str(_game.me().get("alive", false)), str(show_details)]
+	return "%d|%d|%s|%s|%s|%s" % [_game.viewed_board, _selected, tower_sig, str(_game.me().get("alive", false)), str(show_details), str(_game.state.can_trade)]
 
 
 func _rebuild() -> void:
@@ -57,25 +57,51 @@ func _rebuild() -> void:
 	elif t != null:
 		_tower_panel(t)
 	elif _game.map.is_buildable(_selected):
-		_build_panel()
+		var owners := _zone_owners(_game.map.zone_at(_selected))
+		if owners.is_empty() or owners.has(_game.my_id):
+			_build_panel()
+		else:
+			var who := " / ".join(owners.map(func(id: int) -> String: return _game.names.get(id, "?")))
+			add_child(UiTheme.label("Zone de %s" % who, 22, _game.colors.get(owners[0], UiTheme.TEXT)))
+			add_child(UiTheme.label("Seul le propriétaire de la zone peut y construire. Ta zone a ta couleur.", 17, UiTheme.MUTED))
 	elif _selected >= 0:
 		add_child(UiTheme.label("On ne peut pas construire ici.", 18, UiTheme.MUTED))
 	else:
 		add_child(UiTheme.label("Construire", 24, UiTheme.ACCENT))
 		add_child(UiTheme.label("Touche une case d'herbe libre pour y poser une tourelle, ou une tourelle pour l'améliorer.", 17, UiTheme.MUTED))
 		add_child(UiTheme.label("Les cases encadrées donnent un bonus. Les pointillés montrent la route des volants.", 16, UiTheme.MUTED))
+		if _game.map.zone_count > 0 and not _game.is_versus:
+			add_child(UiTheme.label("Les cases teintées sont des zones de joueur : chacun construit dans la sienne.", 16, UiTheme.MUTED))
+
+
+## Joueurs autorisés à construire dans une zone (vide : case commune).
+func _zone_owners(zone: int) -> Array[int]:
+	var out: Array[int] = []
+	if zone < 0 or _game.is_versus:
+		return out
+	var n := _game.order.size()
+	for i in n:
+		if _game.map.zone_allows(zone, i, n):
+			out.append(_game.order[i])
+	return out
 
 
 func _build_panel() -> void:
 	add_child(UiTheme.label("Construire", 24, UiTheme.ACCENT))
 	_special_info()
+	var locked := not _game.state.can_trade
+	if locked:
+		add_child(UiTheme.label(MatchActions.LOCKED + ".", 17, UiTheme.DANGER))
 	var data := _game.state.data
+	var builder := _game.my_builder()
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	add_child(grid)
 	for i in data.tower_order.size():
+		if not data.builder_allows(builder, data.tower_order[i]):
+			continue
 		var def: Dictionary = data.towers[data.tower_order[i]]
 		var cost: int = def["levels"][0]["cost"]
 		var index := i
@@ -84,7 +110,7 @@ func _build_panel() -> void:
 		b.size_flags_horizontal = SIZE_EXPAND_FILL
 		b.add_theme_color_override("font_color", Color(def["color"]).lightened(0.35))
 		grid.add_child(b)
-		_priced.append([b, cost, false])
+		_priced.append([b, cost, locked])
 	var toggle := CheckButton.new()
 	toggle.text = "Détails des tourelles"
 	toggle.button_pressed = show_details
@@ -95,9 +121,11 @@ func _build_panel() -> void:
 	if show_details:
 		var special := _game.map.special_at(_selected)
 		for id in data.tower_order:
+			if not data.builder_allows(builder, id):
+				continue
 			var def: Dictionary = data.towers[id]
 			add_child(UiTheme.label(def["name"], 17, Color(def["color"]).lightened(0.35)))
-			add_child(UiTheme.label("%s\n%s" % [def["description"], stats_text(def, data.tower_stats(id, 0, special))], 15, UiTheme.MUTED))
+			add_child(UiTheme.label("%s\n%s" % [def["description"], stats_text(def, data.tower_stats(id, 0, special, builder))], 15, UiTheme.MUTED))
 
 
 func _tower_panel(t: Dictionary) -> void:
@@ -108,26 +136,33 @@ func _tower_panel(t: Dictionary) -> void:
 	var special := _game.map.special_at(_selected)
 	add_child(UiTheme.label("%s — niveau %d / %d" % [def["name"], level + 1, levels.size()], 24, UiTheme.ACCENT))
 	var owner: int = t["owner"]
-	add_child(UiTheme.label("Propriétaire : %s" % _game.names.get(owner, "?"), 17, _game.colors.get(owner, UiTheme.TEXT)))
+	var builder := int(_game.builders.get(owner, -1))
+	var builder_name: String = data.builders[builder]["name"] if builder >= 0 else "?"
+	add_child(UiTheme.label("Propriétaire : %s (%s)" % [_game.names.get(owner, "?"), builder_name], 17, _game.colors.get(owner, UiTheme.TEXT)))
 	_special_info()
-	add_child(UiTheme.label(stats_text(def, data.tower_stats(t["type"], level, special)), 16, UiTheme.MUTED))
+	add_child(UiTheme.label(stats_text(def, data.tower_stats(t["type"], level, special, builder)), 16, UiTheme.MUTED))
 	if owner != _game.my_id:
 		add_child(UiTheme.label("Seul son propriétaire peut l'améliorer ou la vendre.", 16, UiTheme.MUTED))
 		return
+	var locked := not _game.state.can_trade
+	if locked:
+		add_child(UiTheme.label(MatchActions.LOCKED + ".", 16, UiTheme.DANGER))
 	if level + 1 < levels.size():
 		var next_cost: int = levels[level + 1]["cost"]
 		var up := UiTheme.button("Améliorer — %d or" % next_cost, func() -> void:
 			_game.send({"a": "upgrade", "cell": _selected}))
 		add_child(up)
-		_priced.append([up, next_cost, false])
-		add_child(UiTheme.label("Niveau suivant : " + stats_text(def, data.tower_stats(t["type"], level + 1, special)), 15, UiTheme.MUTED))
+		_priced.append([up, next_cost, locked])
+		add_child(UiTheme.label("Niveau suivant : " + stats_text(def, data.tower_stats(t["type"], level + 1, special, builder)), 15, UiTheme.MUTED))
 	else:
 		add_child(UiTheme.label("Niveau maximum atteint.", 16, UiTheme.SUCCESS))
 	add_child(UiTheme.button("Cible : %s" % SimTower.TARGET_NAMES[t["mode"]], func() -> void:
 		_game.send({"a": "mode", "cell": _selected})))
 	var refund := int(data.tower_invested(t["type"], level) * SimMatch.SELL_RATIO)
-	add_child(UiTheme.button("Vendre (+%d or)" % refund, func() -> void:
-		_game.send({"a": "sell", "cell": _selected})))
+	var sell := UiTheme.button("Vendre (+%d or)" % refund, func() -> void:
+		_game.send({"a": "sell", "cell": _selected}))
+	sell.disabled = locked
+	add_child(sell)
 
 
 ## Bonus de la case sélectionnée, s'il y en a un.
