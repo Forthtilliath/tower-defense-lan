@@ -96,6 +96,21 @@ func _build_panel() -> void:
 	var builder := _game.my_builder()
 	if not data.builder_allows(builder, _previewed):
 		_previewed = ""
+	# La fiche et « Construire » passent avant la grille : avec beaucoup de tourelles,
+	# la grille dépasse l'écran et la fiche serait invisible sans défiler.
+	if _previewed == "":
+		add_child(UiTheme.label("Touche une tourelle pour voir ce qu'elle fait et sa portée sur la case, puis construis-la.", 16, UiTheme.MUTED))
+	else:
+		var special := _game.map.special_at(_selected)
+		var cost: int = data.tower_levels(_previewed)[0]["cost"]
+		var index := data.tower_order.find(_previewed)
+		_tower_info(_previewed, special, builder)
+		var build := UiTheme.button("Construire — %d or" % cost, func() -> void:
+			_game.send({"a": "build", "cell": _selected, "tower": index}))
+		add_child(build)
+		_priced.append([build, cost, locked])
+		_game.preview_range(float(data.tower_stats(_previewed, 0, special, builder)["range"]))
+		add_child(HSeparator.new())
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 8)
@@ -108,24 +123,12 @@ func _build_panel() -> void:
 		var tower_id: String = id
 		var b := UiTheme.button("%s\n%d or" % [def["name"], def["levels"][0]["cost"]], func() -> void:
 			_previewed = tower_id
-			refresh(true), 62, false)
+			refresh(true), 62)  # retour à la ligne : un nom long n'élargit pas le panneau
 		b.toggle_mode = true
 		b.button_pressed = id == _previewed
 		b.size_flags_horizontal = SIZE_EXPAND_FILL
 		b.add_theme_color_override("font_color", Color(def["color"]).lightened(0.35))
 		grid.add_child(b)
-	if _previewed == "":
-		add_child(UiTheme.label("Touche une tourelle pour voir ce qu'elle fait et sa portée sur la case, puis construis-la.", 16, UiTheme.MUTED))
-		return
-	var special := _game.map.special_at(_selected)
-	_tower_info(_previewed, special, builder)
-	var cost: int = data.tower_levels(_previewed)[0]["cost"]
-	var index := data.tower_order.find(_previewed)
-	var build := UiTheme.button("Construire — %d or" % cost, func() -> void:
-		_game.send({"a": "build", "cell": _selected, "tower": index}))
-	add_child(build)
-	_priced.append([build, cost, locked])
-	_game.preview_range(float(data.tower_stats(_previewed, 0, special, builder)["range"]))
 
 
 ## Fiche d'une tourelle avant construction : rôle, niveau 1, niveau max, coût total.
