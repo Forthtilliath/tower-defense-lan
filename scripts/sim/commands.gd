@@ -5,6 +5,8 @@ extends RefCounted
 ## Une commande mal formée est rejetée en entier.
 
 const INVALID := "Commande invalide"
+const MAX_PLAYER_INDEX := 7
+const MAX_GIFT := 1000000
 
 
 ## Renvoie la commande normalisée (Dictionary) ou un message d'erreur (String).
@@ -33,6 +35,12 @@ static func sanitize(raw: Variant, data: GameData, map: MapDef) -> Variant:
 			if monster == null or d.size() != 2:
 				return INVALID
 			return {"a": action, "monster": data.monster_order[monster]}
+		"give":
+			var to = Check.as_int(d.get("to"), 0, MAX_PLAYER_INDEX)
+			var amount = Check.as_int(d.get("amount"), 1, MAX_GIFT)
+			if to == null or amount == null or d.size() != 3:
+				return INVALID
+			return {"a": action, "to": to, "amount": amount}
 		"ready", "speed":
 			if d.size() != 1:
 				return INVALID
