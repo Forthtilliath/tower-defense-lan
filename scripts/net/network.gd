@@ -22,7 +22,7 @@ const MODE_NAMES := ["Coopération", "Versus"]
 
 var role := Role.NONE
 var players := {}  # id -> {name, color}
-var settings := {"mode": 0, "map": 0}
+var settings := {"mode": 0, "map": 0, "difficulty": 1}
 var config := {}
 var host_loop: HostLoop  # partie en cours (hôte uniquement)
 var discovery: LanDiscovery
@@ -74,7 +74,7 @@ func host(player_name: String) -> String:
 	multiplayer.multiplayer_peer = peer
 	role = Role.HOST
 	players = {1: {"name": player_name, "color": 0}}
-	settings = {"mode": 0, "map": 0}
+	settings = {"mode": 0, "map": 0, "difficulty": 1}
 	discovery.start_broadcast(_announce_info)
 	lobby_changed.emit()
 	return ""
@@ -110,7 +110,8 @@ func leave() -> void:
 func set_option(key: String, value: int) -> void:
 	if not is_host() or host_loop != null or not settings.has(key):
 		return
-	var limit := MODE_NAMES.size() if key == "mode" else Data.db.maps.size()
+	var limits := {"mode": MODE_NAMES.size(), "map": Data.db.maps.size(), "difficulty": Data.db.difficulties.size()}
+	var limit: int = limits[key]
 	if value >= 0 and value < limit:
 		settings[key] = value
 		_sync_lobby()
@@ -122,8 +123,8 @@ func start_match() -> void:
 	var roster := []
 	for id in ordered_ids():
 		roster.append([id, players[id]["name"], players[id]["color"]])
-	config = {"mode": settings["mode"], "map": settings["map"], "roster": roster}
-	host_loop = HostLoop.new(SimMatch.new(Data.db, settings["map"], settings["mode"], roster))
+	config = {"mode": settings["mode"], "map": settings["map"], "difficulty": settings["difficulty"], "roster": roster}
+	host_loop = HostLoop.new(SimMatch.new(Data.db, settings["map"], settings["mode"], roster, settings["difficulty"]))
 	for id in players:
 		if id != 1:
 			_rpc.start.rpc_id(id, config)
@@ -194,7 +195,7 @@ func _sync_lobby() -> void:
 	var list := []
 	for id in ordered_ids():
 		list.append([id, players[id]["name"], players[id]["color"]])
-	var payload := {"players": list, "mode": settings["mode"], "map": settings["map"]}
+	var payload := {"players": list, "mode": settings["mode"], "map": settings["map"], "difficulty": settings["difficulty"]}
 	for id in players:
 		if id != 1:
 			_rpc.lobby.rpc_id(id, payload)

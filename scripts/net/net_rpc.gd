@@ -27,17 +27,17 @@ func command(raw: Variant) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func lobby(payload: Variant) -> void:
-	var parsed = NetPayloads.parse_lobby(payload, Data.db.maps.size(), net.MODE_NAMES.size(), net.MAX_PLAYERS)
+	var parsed = NetPayloads.parse_lobby(payload, Data.db, net.MODE_NAMES.size(), net.MAX_PLAYERS)
 	if parsed == null:
 		return
 	net.players = parsed["players"]
-	net.settings = {"mode": parsed["mode"], "map": parsed["map"]}
+	net.settings = {"mode": parsed["mode"], "map": parsed["map"], "difficulty": parsed["difficulty"]}
 	net.lobby_changed.emit()
 
 
 @rpc("authority", "call_remote", "reliable")
 func start(raw: Variant) -> void:
-	var parsed = NetPayloads.parse_config(raw, Data.db.maps.size(), net.MODE_NAMES.size(), net.MAX_PLAYERS)
+	var parsed = NetPayloads.parse_config(raw, Data.db, net.MODE_NAMES.size(), net.MAX_PLAYERS)
 	if parsed == null:
 		return
 	net.config = parsed
