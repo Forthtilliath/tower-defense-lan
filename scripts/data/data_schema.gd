@@ -20,9 +20,13 @@ const DIFFICULTY := {
 	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0],
 }
 ## Bâtisseur : tourelles autorisées et bonus appliqués à toutes ses tourelles.
+## cc : multiplie les chances et durées de contrôle. bounty : multiplie sa part des primes.
+## interest / interest_cap : s'ajoutent au taux et au plafond d'intérêts du joueur.
 const BUILDER := {
-	"id": ["id"], "name": ["text", 24], "color": ["color"], "description": ["text", 120, ""],
+	"id": ["id"], "name": ["text", 24], "color": ["color"], "description": ["text", 160, ""],
 	"damage": ["num", 0.5, 3.0, 1.0], "range": ["num", 0.5, 3.0, 1.0], "rate": ["num", 0.5, 3.0, 1.0],
+	"cc": ["num", 0.5, 3.0, 1.0], "bounty": ["num", 0.5, 3.0, 1.0],
+	"interest": ["num", 0.0, 0.2, 0.0], "interest_cap": ["int", 0, 10000, 0],
 }
 ## Vague spéciale : multiplicateurs (PV, vitesse, nombre, primes) et ajouts (armure, régénération
 ## en part des PV max par seconde) appliqués à tous les monstres de la vague.
@@ -36,17 +40,29 @@ const SPECIAL := {
 	"description": ["text", 120, ""], "range": ["num", 0.5, 3.0, 1.0], "damage": ["num", 0.5, 5.0, 1.0],
 	"rate": ["num", 0.5, 5.0, 1.0], "gold_per_wave": ["int", 0, 10000, 0],
 }
+## support : tourelle de soutien, qui ne tire pas mais renforce les tourelles dans sa portée.
 const TOWER := {
 	"id": ["id"], "name": ["text", 24], "description": ["text", 120, ""],
-	"color": ["color"], "air": ["bool"], "ground": ["bool"],
+	"color": ["color"], "air": ["bool"], "ground": ["bool"], "support": ["bool", false],
 }
+## Effets : poison (le plus fort garde la main), brûlure (cumul jusqu'à burn_stacks charges),
+## saignement (part des PV max par seconde), contrôles (chance par coup et durée),
+## auras des tourelles de soutien (bonus ajouté, dans la portée de la tourelle).
 const TOWER_LEVEL := {
 	"cost": ["int", 1, 100000], "damage": ["num", 0.0, 100000.0],
 	"range": ["num", 0.5, 12.0], "rate": ["num", 0.05, 20.0],
-	"projectile_speed": ["num", 1.0, 60.0], "splash": ["num", 0.0, 5.0, 0.0],
+	"projectile_speed": ["num", 1.0, 60.0, 10.0], "splash": ["num", 0.0, 5.0, 0.0],
 	"slow_factor": ["num", 0.1, 1.0, 1.0], "slow_duration": ["num", 0.0, 10.0, 0.0],
 	"chain": ["int", 0, 10, 0], "poison_dps": ["num", 0.0, 100000.0, 0.0],
 	"poison_duration": ["num", 0.0, 30.0, 0.0],
+	"burn_dps": ["num", 0.0, 100000.0, 0.0], "burn_duration": ["num", 0.0, 30.0, 0.0],
+	"burn_stacks": ["int", 0, 10, 0],
+	"bleed": ["num", 0.0, 1.0, 0.0], "bleed_duration": ["num", 0.0, 30.0, 0.0],
+	"stun_chance": ["num", 0.0, 1.0, 0.0], "stun_duration": ["num", 0.0, 10.0, 0.0],
+	"fear_chance": ["num", 0.0, 1.0, 0.0], "fear_duration": ["num", 0.0, 10.0, 0.0],
+	"charm_chance": ["num", 0.0, 1.0, 0.0], "charm_duration": ["num", 0.0, 10.0, 0.0],
+	"aura_rate": ["num", 0.0, 3.0, 0.0], "aura_damage": ["num", 0.0, 3.0, 0.0],
+	"aura_cc": ["num", 0.0, 3.0, 0.0],
 }
 const MONSTER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"],
@@ -57,6 +73,7 @@ const MONSTER := {
 	"regen": ["num", 0.0, 100000.0, 0.0], "slow_immune": ["bool", false],
 	"heal_radius": ["num", 0.0, 10.0, 0.0], "heal_rate": ["num", 0.0, 100000.0, 0.0],
 	"split_into": ["id", ""], "split_count": ["int", 0, 10, 0],
+	"cc_resist": ["num", 0.0, 1.0, 0.0],
 }
 const WAVE := {
 	"id": ["id"], "gold": ["int", 0, 100000, 0], "hp": ["num", 0.1, 100.0, 1.0], "modifier": ["id", ""],

@@ -16,7 +16,7 @@ func fill(root: Variant, gd: GameData) -> bool:
 	var scaling = _obj(root.get("coop_scaling"), DataSchema.COOP_SCALING, "coop_scaling")
 	var difficulties = _collection(root.get("difficulties"), 8, "difficulties", _plain.bind(DataSchema.DIFFICULTY))
 	var specials = _specials(root.get("special_tiles"))
-	var towers = _collection(root.get("towers"), 16, "towers", _tower)
+	var towers = _collection(root.get("towers"), 24, "towers", _tower)
 	var monsters = _collection(root.get("monsters"), 32, "monsters", _monster)
 	var modifiers = _collection(root.get("wave_modifiers"), 16, "wave_modifiers", _plain.bind(DataSchema.WAVE_MODIFIER), 0)
 	if player == null or scaling == null or difficulties == null or specials == null \
@@ -89,12 +89,12 @@ func _tower(src: Variant, where: String) -> Variant:
 	return t
 
 
-## Bâtisseur : tourelles connues, sans doublon, de quoi viser l'air et le sol.
+## Bâtisseur : tourelles connues, sans doublon, de quoi tirer sur l'air et le sol (hors soutien).
 func _builder(src: Variant, where: String, towers: Dictionary) -> Variant:
 	var b = _obj(src, DataSchema.BUILDER, where)
 	if b == null:
 		return null
-	var list = _list(src.get("towers"), 1, 16, where + ".towers")
+	var list = _list(src.get("towers"), 1, 24, where + ".towers")
 	if list == null:
 		return null
 	var ids: Array[String] = []
@@ -104,8 +104,9 @@ func _builder(src: Variant, where: String, towers: Dictionary) -> Variant:
 		if typeof(id) != TYPE_STRING or not towers.has(id) or ids.has(id):
 			return _fail("%s.towers : tourelle « %s » inconnue ou en double" % [where, str(id).left(30)])
 		ids.append(id)
-		air = air or towers[id]["air"]
-		ground = ground or towers[id]["ground"]
+		if not towers[id]["support"]:
+			air = air or towers[id]["air"]
+			ground = ground or towers[id]["ground"]
 	if not air or not ground:
 		return _fail("%s : il faut au moins une tourelle contre l'air et une contre le sol" % where)
 	b["towers"] = ids
