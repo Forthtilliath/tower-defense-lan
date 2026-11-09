@@ -23,6 +23,13 @@ func command(raw: Variant) -> void:
 		net.handle_command(multiplayer.get_remote_sender_id(), raw)
 
 
+## Choix personnel dans le salon (bâtisseur, vote de difficulté), revalidé par NetLobby.
+@rpc("any_peer", "call_remote", "reliable")
+func choose(raw_key: Variant, raw_value: Variant) -> void:
+	if net.is_host():
+		net.set_choice(multiplayer.get_remote_sender_id(), raw_key, raw_value)
+
+
 # --- Hôte vers joueurs ---
 
 @rpc("authority", "call_remote", "reliable")
@@ -31,7 +38,7 @@ func lobby(payload: Variant) -> void:
 	if parsed == null:
 		return
 	net.players = parsed["players"]
-	net.settings = {"mode": parsed["mode"], "map": parsed["map"], "difficulty": parsed["difficulty"]}
+	net.settings = {"mode": parsed["mode"], "map": parsed["map"], "rhythm": parsed["rhythm"], "launch": parsed["launch"]}
 	net.lobby_changed.emit()
 
 

@@ -19,6 +19,9 @@ var result := ""
 var winner := 0
 var speed := 1
 var interval := 0.1
+## La vague suivante peut être appelée / construire, améliorer et vendre sont permis.
+var can_call := false
+var can_trade := true
 var players := {}  # id -> {gold, income, ready, alive, board}
 var boards: Array[Dictionary] = []
 var _t := 0.0
@@ -73,6 +76,8 @@ func apply(snap: Variant) -> bool:
 	winner = parsed["win"]
 	speed = parsed["speed"]
 	interval = parsed["iv"]
+	can_call = parsed["nx"]
+	can_trade = parsed["tr"]
 	players = parsed["players"]
 	boards.assign(parsed["boards"])
 	received = true
@@ -93,6 +98,8 @@ func _parse(snap: Variant) -> Variant:
 		"win": Check.as_int(s.get("win"), 0, NetPayloads.MAX_PEER_ID),
 		"speed": Check.as_int(s.get("speed", 1), 1, 4),
 		"iv": Check.as_num(s.get("iv", 0.1), 0.01, 1.0),
+		"nx": Check.as_bool(s.get("nx")),
+		"tr": Check.as_bool(s.get("tr")),
 		"players": _parse_players(s.get("pl")),
 		"boards": _parse_boards(s.get("b")),
 	}
@@ -181,14 +188,14 @@ func _parse_monsters(raw: Variant) -> Variant:
 		var path = Check.as_int(e[2], 0, map.start_count() - 1)
 		var progress = Check.as_num(e[3], 0.0, 100000.0)
 		var hp = Check.as_int(e[4], 0, 255)
-		var flags = Check.as_int(e[5], 0, 3)
+		var flags = Check.as_int(e[5], 0, 7)
 		if id == null or type == null or path == null or progress == null or hp == null or flags == null:
 			return null
 		var type_id: String = data.monster_order[type]
 		out[id] = {
 			"type": type_id, "path": path, "flying": data.monsters[type_id]["flying"],
 			"from": progress, "to": progress, "hp": hp,
-			"slowed": flags & 1 != 0, "poisoned": flags & 2 != 0,
+			"slowed": flags & 1 != 0, "poisoned": flags & 2 != 0, "elite": flags & 4 != 0,
 		}
 	return out
 
