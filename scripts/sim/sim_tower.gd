@@ -16,5 +16,7 @@ var target_mode := 0
 var center := Vector2.ZERO
 ## Case spéciale sous la tourelle (index dans GameData.specials), -1 si aucune.
 var special := -1
+## Bâtisseur du propriétaire (index dans GameData.builders), dont le bonus s'applique.
+var builder := -1
 ## Statistiques effectives (niveau + bonus de case), recalculées à chaque amélioration.
 var stats := {}

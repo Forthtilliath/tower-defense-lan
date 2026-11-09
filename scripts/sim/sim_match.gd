@@ -2,16 +2,25 @@ class_name SimMatch
 extends RefCounted
 ## Partie complète simulée par l'hôte : joueurs, plateaux, vagues, règles, fin de partie.
 ##
-## Coopération : un plateau partagé, vies communes, chacun son or.
+## Coopération : un plateau partagé, vies communes, chacun son or (dons possibles entre alliés).
 ## Versus : un plateau par joueur ; envoyer des monstres chez l'adversaire augmente le revenu.
 ## Après la dernière vague, le versus continue en « mort subite » (vagues de plus en plus dures).
 ## La difficulté choisie règle les PV des monstres, les vies, l'or de départ et les primes ;
 ## en coopération, chaque joueur en plus ajoute des monstres et des PV (coop_scaling).
+## L'enchaînement des vagues (rythme, appel de vague) est dans MatchFlow.
 
 enum Mode { COOP, VERSUS }
+## Rythme de construction (coopération) : à tout moment, ou seulement entre deux vagues.
+enum Rhythm { FREE, BETWEEN }
+## Qui lance la vague suivante : tous les joueurs prêts, ou l'hôte seul (coopération).
+enum Launch { VOTE, HOST }
 
+const RHYTHM_NAMES := ["Libre", "Entre les vagues"]
+const LAUNCH_NAMES := ["Vote de tous", "Hôte seul"]
 const FIRST_WAVE_DELAY := 20.0
 const BETWEEN_WAVES := 12.0
+const FIRST_BUILD_PHASE := 30.0
+const BUILD_PHASE := 20.0
 const SELL_RATIO := 0.7
 const VERSUS_BASE_INCOME := 10
 const ENDLESS_HP_GROWTH := 1.3
@@ -19,8 +28,12 @@ const ENDLESS_HP_GROWTH := 1.3
 var data: GameData
 var map: MapDef
 var mode := Mode.COOP
+var rhythm := Rhythm.FREE
+var launch := Launch.VOTE
 var difficulty: Dictionary
-var players := {}  # id -> {name, gold, income, board, ready, alive, connected}
+## id -> {name, gold, income, board, ready, alive, connected, builder, gold_mult}
+## gold_mult : multiplicateur de l'or de départ et des vagues (voir gold_mult_for).
+var players := {}
 var order: Array[int] = []
 var boards: Array[SimBoard] = []
 var wave_index := -1
@@ -30,23 +43,35 @@ var ended := false
 var result := ""  # "victory", "defeat" ou "winner"
 var winner := 0
 var tick := 0
+## Messages à transmettre à d'autres joueurs que l'auteur d'une action : [[id, texte], ...]
+var notices: Array = []
 
 
-## roster : [[id, nom, couleur], ...] dans l'ordre d'arrivée des joueurs.
+## roster : [[id, nom, couleur, bâtisseur], ...] dans l'ordre d'arrivée (bâtisseur facultatif).
 ## difficulty_index : index dans GameData.difficulties (1 = Normal dans les données fournies).
-func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficulty_index := 1) -> void:
+## options : {rhythm, launch} (coopération uniquement).
+func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficulty_index := 1, options := {}) -> void:
 	data = p_data
 	map = data.maps[map_index]
 	mode = p_mode
 	difficulty = data.difficulties[clampi(difficulty_index, 0, data.difficulties.size() - 1)]
+	if mode == Mode.COOP:
+		rhythm = clampi(int(options.get("rhythm", Rhythm.FREE)), 0, RHYTHM_NAMES.size() - 1)
+		launch = clampi(int(options.get("launch", Launch.VOTE)), 0, LAUNCH_NAMES.size() - 1)
+	countdown = FIRST_BUILD_PHASE if rhythm == Rhythm.BETWEEN else FIRST_WAVE_DELAY
 	var lives: int = difficulty["lives"]
-	var start_gold := int(roundf(float(data.player["start_gold"]) * difficulty["gold"]))
-	for entry in roster:
+	if mode == Mode.COOP:
+		lives *= map.lanes  # chaque couloir défendu à part laisse passer ses propres monstres
+	for i in roster.size():
+		var entry: Array = roster[i]
 		var id: int = entry[0]
+		var builder: int = clampi(int(entry[3]) if entry.size() > 3 else 0, 0, data.builders.size() - 1)
 		if mode == Mode.VERSUS or boards.is_empty():
 			boards.append(SimBoard.new(data, map, lives, difficulty["reward"]))
+		var mult := gold_mult_for(i, roster.size()) if mode == Mode.COOP else 1.0
 		players[id] = {
-			"name": entry[1], "gold": start_gold, "income": 0,
+			"name": entry[1], "builder": builder, "gold_mult": mult, "income": 0,
+			"gold": int(roundf(float(data.player["start_gold"]) * difficulty["gold"] * mult)),
 			"board": boards.size() - 1, "ready": false, "alive": true, "connected": true,
 		}
 		order.append(id)
@@ -56,7 +81,7 @@ func step(dt: float) -> void:
 	if ended:
 		return
 	tick += 1
-	_update_countdown(dt)
+	MatchFlow.update(self, dt)
 	for i in boards.size():
 		var b := boards[i]
 		if not b.alive:
@@ -84,13 +109,15 @@ func apply_command(id: int, cmd: Dictionary) -> String:
 		"upgrade":
 			return MatchActions.upgrade(self, id, p, board, cmd["cell"])
 		"sell":
-			return MatchActions.sell(id, p, board, cmd["cell"])
+			return MatchActions.sell(self, id, p, board, cmd["cell"])
 		"mode":
 			return MatchActions.cycle_target(id, board, cmd["cell"])
 		"send":
 			return MatchActions.send(self, id, p, cmd["monster"])
+		"give":
+			return MatchActions.give(self, id, p, cmd["to"], cmd["amount"])
 		"ready":
-			return _set_ready(id)
+			return MatchFlow.call_wave(self, id)
 	return "Commande inconnue"
 
 
@@ -103,13 +130,13 @@ func player_left(id: int) -> void:
 	if mode == Mode.VERSUS and p["alive"]:
 		p["alive"] = false
 		boards[int(p["board"])].eliminate()
-	if countdown >= 0.0 and _active_count() > 0 and _all_ready():
+	if launch == Launch.VOTE and _active_count() > 0 and all_ready() and MatchFlow.can_call(self):
 		launch_next_wave()
 	_check_end()
 
 
 func launch_next_wave() -> void:
-	var bonus := int(maxf(countdown, 0.0))
+	var bonus := MatchFlow.early_bonus(self)
 	wave_index += 1
 	countdown = -1.0
 	var total := map.waves.size()
@@ -117,19 +144,20 @@ func launch_next_wave() -> void:
 	var hp_mult := float(wave["hp"]) * monster_hp_mult()
 	var count_mult := 1.0
 	if mode == Mode.COOP:
-		var extra := maxi(0, _active_count() - 1)
-		hp_mult *= 1.0 + float(data.coop_scaling["hp"]) * extra
-		count_mult += float(data.coop_scaling["count"]) * extra
+		var scaling := coop_scaling(_active_count())
+		hp_mult *= scaling[0]
+		count_mult = scaling[1]
 	for b in boards:
 		if b.alive:
-			b.queue_wave(wave, hp_mult, count_mult)
+			b.queue_wave(wave, hp_mult, count_mult, wave_index)
 	_pay_gold_tiles()
 	for id in order:
 		var p: Dictionary = players[id]
 		p["ready"] = false
 		if not p["alive"] or not p["connected"]:
 			continue
-		p["gold"] += int(wave["gold"]) + bonus
+		p["gold"] += MatchFlow.interest(data, p["gold"])
+		p["gold"] += roundi(int(wave["gold"]) * float(p["gold_mult"])) + bonus
 		if mode == Mode.VERSUS:
 			p["gold"] += VERSUS_BASE_INCOME + int(p["income"])
 
@@ -145,35 +173,63 @@ func snapshot() -> Dictionary:
 	return {
 		"tick": tick, "wave": wave_index + 1, "total": map.waves.size(),
 		"cd": snappedf(countdown, 0.1), "end": ended, "res": result, "win": winner,
+		"nx": MatchFlow.can_call(self), "tr": MatchFlow.can_trade(self),
 		"pl": pl, "b": bs,
 	}
 
 
-func _update_countdown(dt: float) -> void:
-	if countdown < 0.0:
-		if _has_next_wave() and not _wave_spawning():
-			countdown = BETWEEN_WAVES
-		return
-	countdown -= dt
-	if countdown <= 0.0:
-		countdown = 0.0
-		launch_next_wave()
-
-
-func _has_next_wave() -> bool:
+func has_next_wave() -> bool:
 	return mode == Mode.VERSUS or wave_index + 1 < map.waves.size()
 
 
-func _wave_spawning() -> bool:
-	for b in boards:
-		if b.alive and b.spawns_pending():
-			return true
-	return false
+## Renforcement coop selon le nombre de joueurs : [PV, nombre de monstres, or des joueurs].
+## Sur une carte à plusieurs couloirs séparés (map.lanes), chaque couloir reçoit au moins une
+## vague solo. Avec moins de joueurs que de couloirs, chacun en défend plusieurs : l'or de départ
+## et des vagues est multiplié d'autant, pour monter une défense complète dans chacun.
+func coop_scaling(player_count: int) -> Array:
+	var lanes := float(map.lanes)
+	var per_lane := maxf(1.0, float(player_count)) / lanes
+	if per_lane < 1.0:
+		return [1.0, lanes, 1.0 / per_lane]
+	var extra := per_lane - 1.0
+	var hp := 1.0 + float(data.coop_scaling["hp"]) * extra
+	var count := lanes * (1.0 + float(data.coop_scaling["count"]) * extra)
+	return [hp, count, 1.0]
+
+
+## Or de départ et des vagues du joueur n° index : avec moins de joueurs que de couloirs, chacun
+## reçoit de quoi défendre les siens (selon le nombre de zones qu'il tient sur une carte en zones).
+func gold_mult_for(index: int, player_count: int) -> float:
+	if map.zone_count > 0 and player_count < map.zone_count:
+		var owned := 0
+		for z in map.zone_count:
+			if map.zone_allows(z, index, player_count):
+				owned += 1
+		return float(owned * map.lanes) / float(map.zone_count)
+	return coop_scaling(player_count)[2]
+
+
+## Joueur qui mène la partie (l'hôte : premier de la liste).
+func leader() -> int:
+	return order[0]
 
 
 ## PV des monstres selon la difficulté et la « mort subite » (hors bonus coop).
 func monster_hp_mult() -> float:
 	return float(difficulty["hp"]) * endless_mult()
+
+
+## Multiplicateur de PV de la « mort subite » (après la dernière vague, en versus).
+func endless_mult() -> float:
+	return pow(ENDLESS_HP_GROWTH, maxi(0, wave_index - map.waves.size() + 1))
+
+
+func all_ready() -> bool:
+	for id in order:
+		var p: Dictionary = players[id]
+		if p["connected"] and p["alive"] and not p["ready"]:
+			return false
+	return true
 
 
 ## Filons d'or : chaque tourelle posée dessus rapporte de l'or à son propriétaire à chaque vague.
@@ -187,25 +243,12 @@ func _pay_gold_tiles() -> void:
 				_credit(t.owner, int(data.specials[t.special]["gold_per_wave"]))
 
 
-## Multiplicateur de PV de la « mort subite » (après la dernière vague, en versus).
-func endless_mult() -> float:
-	return pow(ENDLESS_HP_GROWTH, maxi(0, wave_index - map.waves.size() + 1))
-
-
 func _active_count() -> int:
 	var n := 0
 	for id in order:
 		if players[id]["connected"] and players[id]["alive"]:
 			n += 1
 	return n
-
-
-func _all_ready() -> bool:
-	for id in order:
-		var p: Dictionary = players[id]
-		if p["connected"] and p["alive"] and not p["ready"]:
-			return false
-	return true
 
 
 func _credit(owner: int, gold: int) -> void:
@@ -247,15 +290,6 @@ func _finish(p_result: String, p_winner: int) -> void:
 	result = p_result
 	winner = p_winner
 	countdown = -1.0
-
-
-func _set_ready(id: int) -> String:
-	if countdown < 0.0:
-		return "Aucune vague en attente"
-	players[id]["ready"] = true
-	if _all_ready():
-		launch_next_wave()
-	return ""
 
 
 ## Plateau du prochain adversaire encore en jeu, dans l'ordre des joueurs (-1 si aucun).

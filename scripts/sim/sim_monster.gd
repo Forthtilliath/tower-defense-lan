@@ -19,6 +19,8 @@ var heal_radius := 0.0
 var heal_rate := 0.0
 var split_into := ""
 var split_count := 0
+## Vague spéciale qui renforce ce monstre (vide si aucune), transmise à ses divisions.
+var modifier := {}
 var path := 0
 var progress := 0.0
 var length := 1.0
@@ -31,17 +33,20 @@ var poison_owner := 0
 
 
 ## Remplit les caractéristiques depuis la définition du monstre (données du jeu).
-func setup(def: Dictionary, p_hp_mult: float, reward_mult: float) -> void:
+## p_hp_mult inclut déjà le multiplicateur de PV de la vague spéciale `mod`.
+func setup(def: Dictionary, p_hp_mult: float, reward_mult: float, mod := {}) -> void:
+	modifier = mod
 	hp_mult = p_hp_mult
 	max_hp = float(def["hp"]) * hp_mult
 	hp = max_hp
-	speed = def["speed"]
+	speed = float(def["speed"]) * float(mod.get("speed", 1.0))
 	var base_gold: int = def["gold"]
-	gold = maxi(1, roundi(base_gold * reward_mult)) if base_gold > 0 else 0
+	var gold_mult := reward_mult * float(mod.get("gold", 1.0))
+	gold = maxi(1, roundi(base_gold * gold_mult)) if base_gold > 0 else 0
 	damage = def["damage"]
 	flying = def["flying"]
-	armor = def["armor"]
-	regen = def["regen"]
+	armor = float(def["armor"]) + float(mod.get("armor", 0.0))
+	regen = float(def["regen"]) + max_hp * float(mod.get("regen", 0.0))
 	slow_immune = def["slow_immune"]
 	heal_radius = def["heal_radius"]
 	heal_rate = def["heal_rate"]
@@ -68,6 +73,10 @@ func is_slowed() -> bool:
 
 func is_poisoned() -> bool:
 	return poison_timer > 0.0
+
+
+func is_elite() -> bool:
+	return not modifier.is_empty()
 
 
 func move(dt: float) -> void:

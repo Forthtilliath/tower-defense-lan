@@ -19,7 +19,7 @@ var monsters: Array[SimMonster] = []
 var towers := {}  # index de case -> SimTower
 var projectiles: Array[SimProjectile] = []
 var clock := 0.0
-var _queue: Array[Dictionary] = []  # {time, type, hp_mult, wave}
+var _queue: Array[Dictionary] = []  # {time, type, hp_mult, wave (n° de vague, -1 : envoi), mod}
 var _fx: Array[Dictionary] = []  # {kind, pos, to, radius, ttl}
 var _born: Array[SimMonster] = []  # nés pendant le tick (division), ajoutés à la fin
 var _by_id := {}
@@ -36,13 +36,18 @@ func _init(p_data: GameData, p_map: MapDef, p_lives: int, p_reward_mult := 1.0) 
 
 ## Programme les monstres d'une vague, à la suite de ceux déjà prévus.
 ## count_mult multiplie le nombre de monstres et resserre leur espacement d'autant.
-func queue_wave(wave: Dictionary, hp_mult: float, count_mult := 1.0) -> void:
+## Une vague spéciale (champ « modifier ») change aussi leur nombre, leurs PV et leurs capacités.
+func queue_wave(wave: Dictionary, hp_mult: float, count_mult := 1.0, number := 0) -> void:
+	var mod: Dictionary = data.modifiers.get(wave.get("modifier", ""), {})
+	hp_mult *= float(mod.get("hp", 1.0))
+	var spacing := maxf(count_mult, 1.0)
+	count_mult *= float(mod.get("count", 1.0))
 	var t := maxf(clock, _last_wave_time()) + 0.5
 	for group in wave["groups"]:
 		var count := maxi(1, roundi(int(group["count"]) * count_mult))
-		var interval := float(group["interval"]) / maxf(count_mult, 1.0)
+		var interval := float(group["interval"]) / spacing
 		for i in count:
-			_queue.append({"time": t, "type": group["monster"], "hp_mult": hp_mult, "wave": true})
+			_queue.append({"time": t, "type": group["monster"], "hp_mult": hp_mult, "wave": number, "mod": mod})
 			t += interval
 		t += 1.0
 
@@ -51,16 +56,22 @@ func queue_wave(wave: Dictionary, hp_mult: float, count_mult := 1.0) -> void:
 func queue_monster(type: String, hp_mult: float) -> bool:
 	if _queue.size() >= MAX_QUEUE:
 		return false
-	_queue.append({"time": clock + 0.3, "type": type, "hp_mult": hp_mult, "wave": false})
+	_queue.append({"time": clock + 0.3, "type": type, "hp_mult": hp_mult, "wave": -1, "mod": {}})
 	return true
 
 
 ## Vrai tant que des monstres de vague restent à faire apparaître.
 func spawns_pending() -> bool:
+	return pending_waves() > 0
+
+
+## Nombre de vagues dont des monstres restent à faire apparaître.
+func pending_waves() -> int:
+	var seen := {}
 	for e in _queue:
-		if e["wave"]:
-			return true
-	return false
+		if e["wave"] >= 0:
+			seen[e["wave"]] = true
+	return seen.size()
 
 
 func is_clear() -> bool:
@@ -71,7 +82,7 @@ func can_build(cell: int) -> bool:
 	return alive and map.is_buildable(cell) and not towers.has(cell)
 
 
-func add_tower(cell: int, type: String, owner: int, cost: int) -> SimTower:
+func add_tower(cell: int, type: String, owner: int, cost: int, builder := -1) -> SimTower:
 	var t := SimTower.new()
 	t.cell = cell
 	t.type = type
@@ -79,13 +90,14 @@ func add_tower(cell: int, type: String, owner: int, cost: int) -> SimTower:
 	t.invested = cost
 	t.center = map.cell_center(cell)
 	t.special = map.special_at(cell)
+	t.builder = builder
 	refresh_stats(t)
 	towers[cell] = t
 	return t
 
 
 func refresh_stats(t: SimTower) -> void:
-	t.stats = data.tower_stats(t.type, t.level, t.special)
+	t.stats = data.tower_stats(t.type, t.level, t.special, t.builder)
 
 
 ## Plateau perdu ou abandonné : plus rien n'y bouge.
@@ -124,16 +136,16 @@ func kill(m: SimMonster, owner: int, rewards: Array) -> void:
 	for i in m.split_count:
 		if monsters.size() + _born.size() >= MAX_MONSTERS:
 			break
-		_born.append(spawn(m.split_into, m.hp_mult, m.path, maxf(0.0, m.progress - 0.25 * i), false))
+		_born.append(spawn(m.split_into, m.hp_mult, m.path, maxf(0.0, m.progress - 0.25 * i), false, m.modifier))
 
 
-func spawn(type: String, hp_mult: float, path := -1, progress := 0.0, now := true) -> SimMonster:
+func spawn(type: String, hp_mult: float, path := -1, progress := 0.0, now := true, mod := {}) -> SimMonster:
 	var def: Dictionary = data.monsters[type]
 	var m := SimMonster.new()
 	m.id = new_id()
 	m.type = type
 	m.type_index = data.monster_order.find(type)
-	m.setup(def, hp_mult, reward_mult)
+	m.setup(def, hp_mult, reward_mult, mod)
 	if m.flying:
 		m.speed *= map.flyer_speed
 	if path < 0:
@@ -167,7 +179,7 @@ func snapshot() -> Dictionary:
 	var mons := []
 	for m in monsters:
 		var hp := int(roundf(clampf(m.hp / m.max_hp, 0.0, 1.0) * 255.0))
-		var flags := (1 if m.is_slowed() else 0) | (2 if m.is_poisoned() else 0)
+		var flags := (1 if m.is_slowed() else 0) | (2 if m.is_poisoned() else 0) | (4 if m.is_elite() else 0)
 		mons.append([m.id, m.type_index, m.path, snappedf(m.progress, 0.01), hp, flags])
 	var tws := []
 	for cell in towers:
@@ -189,7 +201,7 @@ func snapshot() -> Dictionary:
 func _last_wave_time() -> float:
 	var t := 0.0
 	for e in _queue:
-		if e["wave"]:
+		if e["wave"] >= 0:
 			t = maxf(t, e["time"])
 	return t
 
@@ -198,7 +210,8 @@ func _spawn_due() -> void:
 	var i := 0
 	while i < _queue.size():
 		if _queue[i]["time"] <= clock and monsters.size() < MAX_MONSTERS:
-			spawn(_queue[i]["type"], _queue[i]["hp_mult"])
+			var e: Dictionary = _queue[i]
+			spawn(e["type"], e["hp_mult"], -1, 0.0, true, e["mod"])
 			_queue.remove_at(i)
 		else:
 			i += 1
