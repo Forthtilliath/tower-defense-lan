@@ -51,6 +51,7 @@ func refresh() -> void:
 		_wave.text = "Vague %d (mort subite)" % s.wave
 	else:
 		_wave.text = "Vague %d / %d" % [s.wave, s.total]
+	_wave.text += "  ·  " + _game.difficulty_name()
 	var waiting := s.countdown >= 0.0 and not s.ended
 	_timer.text = ("Prochaine vague : %d s" % ceili(s.countdown)) if waiting else ""
 	_ready_btn.visible = waiting and bool(me.get("alive", false))

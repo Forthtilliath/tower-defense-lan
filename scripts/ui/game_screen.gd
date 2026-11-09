@@ -146,6 +146,10 @@ func view_board(index: int) -> void:
 		_versus.refresh()
 
 
+func difficulty_name() -> String:
+	return Data.db.difficulties[int(config.get("difficulty", 1))]["name"]
+
+
 func player_on_board(index: int) -> int:
 	if not is_versus:
 		return 0
