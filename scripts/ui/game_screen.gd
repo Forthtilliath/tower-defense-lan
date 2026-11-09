@@ -173,6 +173,11 @@ func wave_modifier(index: int) -> Dictionary:
 	return state.data.wave_modifier(map.waves[mini(index, map.waves.size() - 1)])
 
 
+## Portée de la tourelle envisagée, dessinée autour de la case sélectionnée (0 : rien).
+func preview_range(reach: float) -> void:
+	_view.preview_range = reach
+
+
 func my_builder() -> int:
 	return int(builders.get(my_id, 0))
 
