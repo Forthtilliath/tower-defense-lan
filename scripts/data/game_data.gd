@@ -67,11 +67,44 @@ func tower_stats(type: String, level: int, special := -1, builder := -1) -> Dict
 	return stats
 
 
+## Bonus de case ou de bâtisseur. Les auras (tourelles de soutien) ne gagnent que la portée.
 static func _boost(stats: Dictionary, bonus: Dictionary) -> void:
 	stats["range"] *= bonus["range"]
-	stats["damage"] *= bonus["damage"]
-	stats["poison_dps"] *= bonus["damage"]
 	stats["rate"] *= bonus["rate"]
+	scale_damage(stats, bonus["damage"])
+	scale_control(stats, bonus.get("cc", 1.0))
+
+
+## Dégâts directs et dégâts dans le temps (poison, brûlure, saignement).
+static func scale_damage(stats: Dictionary, mult: float) -> void:
+	for key in ["damage", "poison_dps", "burn_dps", "bleed"]:
+		stats[key] *= mult
+
+
+## Contrôles : chances (plafonnées à 100 %) et durées.
+static func scale_control(stats: Dictionary, mult: float) -> void:
+	if is_equal_approx(mult, 1.0):
+		return
+	for kind in ["stun", "fear", "charm"]:
+		stats[kind + "_chance"] = minf(1.0, stats[kind + "_chance"] * mult)
+		stats[kind + "_duration"] *= mult
+	stats["slow_duration"] *= mult
+
+
+## Intérêts d'un joueur : [taux, plafond], bonus de son bâtisseur compris.
+func interest_rule(builder: int) -> Array:
+	var rate := float(player["interest"])
+	var cap := int(player["interest_cap"])
+	if builder >= 0 and builder < builders.size():
+		rate += float(builders[builder]["interest"])
+		cap += int(builders[builder]["interest_cap"])
+	return [rate, cap]
+
+
+func builder_value(builder: int, key: String, fallback := 1.0) -> float:
+	if builder < 0 or builder >= builders.size():
+		return fallback
+	return float(builders[builder].get(key, fallback))
 
 
 ## Le bâtisseur n° builder peut-il construire cette tourelle ?
