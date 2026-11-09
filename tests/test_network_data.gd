@@ -79,7 +79,7 @@ func test_lobby_payloads() -> void:
 		"rythme inconnu": func(d): d["rhythm"] = 2,
 		"lancement absent": func(d): d.erase("launch"),
 		"couleur hors limites": func(d): d["players"][0][2] = 9,
-		"bâtisseur inconnu": func(d): d["players"][1][3] = 4,
+		"bâtisseur inconnu": func(d): d["players"][1][3] = 9,
 		"vote hors limites": func(d): d["players"][1][4] = 4,
 		"vote absent": func(d): d["players"][1].remove_at(4),
 	}

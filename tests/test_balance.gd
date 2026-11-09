@@ -35,9 +35,20 @@ func test_bot_teams_win_big_maps() -> void:
 		check(sim.result == "victory", "%s à %d : %s à la vague %d" % [gd.maps[entry[0]].id, entry[1], sim.result, sim.wave_index + 1])
 
 
-func test_every_builder_wins_solo() -> void:
+## Chaque classe gagne aux côtés d'un Touche-à-tout, et gagne sa part d'or : même l'Enchanteur,
+## qui fait peu de dégâts, est payé pour ses contrôles (prime partagée selon la contribution).
+func test_every_builder_wins_in_a_duo() -> void:
 	var gd := load_data()
 	for b in gd.builders.size():
+		var sim := play(gd, 0, 2, NORMAL, {}, [0, b])
+		check(sim.result == "victory", "%s : %s à la vague %d" % [gd.builders[b]["id"], sim.result, sim.wave_index + 1])
+
+
+func test_damage_builders_win_solo() -> void:
+	var gd := load_data()
+	for b in gd.builders.size():
+		if gd.builders[b]["id"] == "enchanter":
+			continue  # classe de soutien : faite pour jouer en équipe
 		var sim := play(gd, 0, 1, NORMAL, {}, [b])
 		check(sim.result == "victory", "%s : %s à la vague %d" % [gd.builders[b]["id"], sim.result, sim.wave_index + 1])
 
@@ -113,9 +124,9 @@ func act(sim: SimMatch, id: int, cells: Array[int], air_cells: Array[int]) -> vo
 		var plan := builder_plan(sim, id)
 		var type: String = plan[mine.size() % plan.size()]
 		var cell := pick_cell(sim, id, mine, air_cells if type == "sentinel" else cells)
-		if cell >= 0:
-			sim.apply_command(id, {"a": "build", "cell": cell, "tower": type})
+		if cell >= 0 and sim.apply_command(id, {"a": "build", "cell": cell, "tower": type}) == "":
 			return
+		# Pas assez d'or pour la tourelle prévue : il améliore plutôt que d'attendre
 	for t in mine:
 		if sim.apply_command(id, {"a": "upgrade", "cell": t.cell}) == "":
 			return
@@ -169,10 +180,15 @@ func lane_key(m: MapDef, cell: int) -> int:
 	return _lanes[key]
 
 
-## PLAN réduit aux tourelles que le bâtisseur du joueur sait construire.
+## PLAN réduit aux tourelles que le bâtisseur du joueur sait construire, suivi de ses autres
+## tourelles (contrôles, soutien…) dans l'ordre de sa liste.
 func builder_plan(sim: SimMatch, id: int) -> Array:
 	var builder: int = sim.players[id]["builder"]
-	return PLAN.filter(func(type: String) -> bool: return sim.data.builder_allows(builder, type))
+	var plan := PLAN.filter(func(type: String) -> bool: return sim.data.builder_allows(builder, type))
+	for type in sim.data.builders[builder]["towers"]:
+		if not PLAN.has(type):
+			plan.append(type)
+	return plan
 
 
 ## Cases constructibles triées par longueur de chemin (au sol ou aérien) couverte à 2,5 cases.

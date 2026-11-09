@@ -5,8 +5,8 @@ extends "res://tests/test_base.gd"
 func test_bundled_data_is_valid() -> void:
 	var gd := load_data()
 	check(gd.maps.size() == 10, "10 cartes attendues")
-	check(gd.builders.size() == 4 and gd.modifiers.size() == 4, "4 bâtisseurs et 4 vagues spéciales")
-	check(gd.tower_order.size() == 8, "8 tourelles attendues")
+	check(gd.builders.size() == 6 and gd.modifiers.size() == 4, "6 bâtisseurs et 4 vagues spéciales")
+	check(gd.tower_order.size() == 18, "18 tourelles attendues")
 	check(gd.difficulties.size() == 4 and gd.specials.size() == 4, "4 difficultés et 4 cases spéciales")
 	check(gd.sendable_monsters().size() == 11, "11 monstres envoyables : %d" % gd.sendable_monsters().size())
 	for id in gd.tower_order:
@@ -97,8 +97,8 @@ func test_rejects_bad_specials_and_splits() -> void:
 func test_rejects_bad_builders_waves_and_zones() -> void:
 	var text := _bundled_text()
 	var cases := {
-		"tourelle inconnue": ["\"towers\": [\"crossbow\", \"frost\", \"tesla\", \"venom\", \"sentinel\"]", "\"towers\": [\"crossbow\", \"laser\"]", "inconnue"],
-		"rien contre l'air": ["\"towers\": [\"crossbow\", \"cannon\", \"ballista\", \"mortar\", \"sentinel\"]", "\"towers\": [\"cannon\", \"mortar\"]", "air"],
+		"tourelle inconnue": ["\"towers\": [\"crossbow\", \"frost\", \"tesla\", \"venom\", \"sentinel\", \"brazier\", \"totem\"]", "\"towers\": [\"crossbow\", \"laser\"]", "inconnue"],
+		"rien contre l'air (soutien exclu)": ["\"towers\": [\"crossbow\", \"cannon\", \"ballista\", \"mortar\", \"sentinel\", \"dart\", \"crusher\", \"banner\"]", "\"towers\": [\"cannon\", \"mortar\", \"banner\"]", "air"],
 		"vague spéciale inconnue": ["\"modifier\": \"rush\"", "\"modifier\": \"tempete\"", "spéciale"],
 		"zone hors limites": ["111111111111111.222222222222222", "111111111111111.555555555555555", "zones"],
 		"ligne de zones trop courte": ["111111111111111.222222222222222", "1111.2222", "zones"],
