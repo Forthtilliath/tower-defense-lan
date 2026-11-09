@@ -11,7 +11,7 @@ Sa carte vit encore dans le jeu : « Héritage (prototype 2021) ».
 
 | Mode | Principe |
 |------|----------|
-| **Coopération** | Une seule carte, vies communes. Chacun construit avec son propre or ; la prime d'un monstre va au propriétaire de la tourelle qui l'a tué. Chaque joueur supplémentaire ajoute 35 % de monstres (plus serrés) et 15 % de PV. |
+| **Coopération** | Une seule carte, vies communes. Chacun construit avec son propre or ; la prime d'un monstre est partagée entre les joueurs qui ont contribué à sa mort. Chaque joueur supplémentaire ajoute 35 % de monstres (plus serrés) et 15 % de PV. |
 | **Versus** | Chacun son plateau. Envoyer un monstre chez l'adversaire suivant coûte de l'or mais augmente le revenu versé à chaque vague. Après la dernière vague, la « mort subite » rend les vagues toujours plus dures. Le dernier en vie gagne. |
 
 On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne construit jamais sur la route.
@@ -19,21 +19,27 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
 ### Dans le salon
 
 - **Bâtisseur** (chaque joueur) : il fixe les tourelles que l'on peut construire et donne un bonus à toutes les siennes.
-  Touche-à-tout (toutes, sans bonus), Artilleur (+15 % de dégâts), Arcaniste (givre, foudre, poison : +25 % de cadence, +15 % de dégâts),
-  Éclaireur (+15 % de portée).
+  - Touche-à-tout : toutes les tourelles, sans bonus.
+  - Artilleur : armes lourdes, +15 % de dégâts.
+  - Arcaniste : givre, feu, foudre, poison ; +25 % de cadence, +15 % de dégâts.
+  - Éclaireur : tir à distance et saignement, +15 % de portée.
+  - Gobelin : +25 % sur ses parts de primes, +2 % d'intérêts (plafond +20), mais tourelles 10 % moins fortes.
+  - Enchanteur : contrôles (étourdir, effrayer, charmer), chances et durées +30 % ; classe de soutien, faite pour l'équipe.
 - **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile ou Cauchemar. La plus votée l'emporte ; en cas d'égalité, la plus facile.
 - **Rythme** (hôte, coopération) :
   - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague, même pendant une vague
     (une seule vague d'avance), avec un bonus d'or égal aux secondes d'attente évitées.
   - *Entre les vagues* : une phase de construction de 20 s commence quand la carte est vide ; pendant une vague,
     impossible de construire, d'améliorer, de vendre ou d'appeler la vague suivante.
+- **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
 
 Dans tous les cas, **la première vague ne part jamais seule** : on se prépare aussi longtemps qu'on veut, puis on la lance
 (« Prêt ! » de tous les joueurs, ou l'hôte seul selon le lancement choisi).
-- **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
 
 ### En coopération
 
+- **Primes partagées selon la contribution** : la prime d'un monstre se répartit entre les joueurs selon les dégâts infligés,
+  la part apportée par leurs auras et les secondes de contrôle. Un joueur de soutien gagne donc sa part sans tuer.
 - **Intérêts** : à chaque vague, 4 % de l'or gardé (30 or au plus).
 - **Don d'or** à un allié (panneau de droite) : le don coûte cher, l'allié ne reçoit que la moitié du montant.
 - **Vagues spéciales** toutes les 5 vagues, annoncées à l'avance : Ruée (monstres plus rapides), Colosses (moitié moins de monstres,
@@ -50,9 +56,16 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
   et trois grandes cartes pour 2 à 4 joueurs : Grande plaine (partagée, un très long serpentin), Quatre fiefs (4 zones, 4 couloirs),
   Bastion (4 zones autour d'un couloir central commun).
 - **4 difficultés** : Facile, Normal, Difficile, Cauchemar (PV des monstres, vies, or de départ, primes).
-- **8 tourelles à 5 niveaux** (revente à 70 %) : Arbalète (rapide, air et sol), Canon (zone au sol), Givre (ralentit),
-  Baliste (longue portée), Tesla (arc qui rebondit), Venin (poison qui ignore l'armure), Mortier (grosse zone, très longue portée),
-  Sentinelle (anti-aérien).
+- **18 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
+  - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
+    Baliste (tireur d'élite), Canon et Mortier (zone au sol), Sentinelle (anti-aérien) ;
+  - éléments : Givre (ralentit, gèle à partir du niveau 3), Brasier (brûlure qui se cumule), Venin (poison),
+    Épines (saignement en % des PV max), Tesla (foudre qui rebondit) ;
+  - contrôles : Gong (étourdit en zone), Épouvantail (fait reculer), Flûte enchantée (charme : le monstre recule et frappe ses voisins) ;
+  - soutien (ne tirent pas) : Tambour (cadence), Étendard (dégâts), Totem (contrôles), pour les tourelles à portée.
+    La plus forte aura de chaque type s'applique.
+- **Contrôles** : après un contrôle, un monstre en est protégé 1 s. Les gros monstres résistent (Troll, Golem, Dragon, Liche) ;
+  boss et volants ne se laissent pas charmer.
 - **14 monstres** : Gobelin, Rat, Loup, Orc, Squelette (armure), Chauve-souris (volante), Gelée (se divise à sa mort),
   Chaman (soigne ses voisins), Spectre (volant, se régénère), Troll (se régénère), Golem (armure, insensible au ralentissement),
   Dragon (boss volant), Liche (boss final).
