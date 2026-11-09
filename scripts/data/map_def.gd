@@ -4,6 +4,12 @@ extends RefCounted
 ## Les coordonnées sont en cases : le centre de la case (x, y) vaut (x + 0.5, y + 0.5).
 
 enum Cell { BUILD, ROUTE, START, END, ROCK, WATER, TREE }
+## Partagée : tout le monde construit partout. Zones : chaque case constructible appartient
+## à une zone de joueur. Mixte : des zones de joueur et des cases communes.
+enum Layout { SHARED, ZONED, MIXED }
+
+const LAYOUT_NAMES := ["Carte partagée", "Carte en zones", "Carte mixte"]
+const MAX_ZONES := 4
 
 const CHARS := {
 	".": Cell.BUILD, "=": Cell.ROUTE, "S": Cell.START, "E": Cell.END,
@@ -20,9 +26,17 @@ var height := 0
 var cells := PackedInt32Array()
 ## Case spéciale (index dans GameData.specials) par case, -1 si aucune. Une case spéciale est constructible.
 var specials := PackedInt32Array()
+## Zone de joueur par case (0 à MAX_ZONES - 1), -1 pour une case commune.
+var zones := PackedInt32Array()
+var zone_count := 0
 var waves: Array[String] = []
 ## Multiplicateur de vitesse des volants sur cette carte (1 = normal).
 var flyer_speed := 1.0
+## Nombre de joueurs conseillé (indicatif : affiché dans le salon).
+var min_players := 1
+var max_players := 4
+## Nombre de couloirs séparés (chacun défendu par ses propres tourelles), pour le renforcement coop.
+var lanes := 1
 ## Chemins au sol, un par point de départ (points de virage uniquement).
 var ground_paths: Array[PackedVector2Array] = []
 ## Chemins des volants : ligne droite du départ à l'arrivée.
@@ -64,10 +78,66 @@ static func parse(p_id: String, p_name: String, rows: Array, p_waves: Array[Stri
 				m.specials.append(-1)
 			else:
 				return "ligne %d : caractère « %s » inconnu" % [y, ch]
+	m.zones.resize(m.cells.size())
+	m.zones.fill(-1)
 	var err := m._build_paths()
 	if err != "":
 		return err
 	return m
+
+
+## Zones de joueurs : mêmes dimensions que la carte, « 1 » à « 4 » pour une zone, « . » pour
+## une case commune. Seules les cases constructibles comptent. Renvoie "" ou un message d'erreur.
+func set_zones(rows: Array) -> String:
+	if rows.size() != height:
+		return "zones : %d lignes au lieu de %d" % [rows.size(), height]
+	var used := {}
+	for y in rows.size():
+		if typeof(rows[y]) != TYPE_STRING or String(rows[y]).length() != width:
+			return "zones, ligne %d : %d caractères attendus" % [y, width]
+		var line: String = rows[y]
+		for x in width:
+			var ch := line[x]
+			var index := y * width + x
+			if ch == ".":
+				continue
+			if not ch.is_valid_int() or int(ch) < 1 or int(ch) > MAX_ZONES:
+				return "zones, ligne %d : caractère « %s » inconnu (1 à %d ou .)" % [y, ch, MAX_ZONES]
+			if cells[index] == Cell.BUILD:
+				zones[index] = int(ch) - 1
+				used[int(ch) - 1] = true
+	zone_count = used.size()
+	for z in zone_count:
+		if not used.has(z):
+			return "zones : numéros à suivre attendus (1 à %d)" % zone_count
+	return ""
+
+
+func zone_at(index: int) -> int:
+	return zones[index] if index >= 0 and index < zones.size() else -1
+
+
+func layout() -> int:
+	if zone_count == 0:
+		return Layout.SHARED
+	for i in cells.size():
+		if cells[i] == Cell.BUILD and zones[i] < 0:
+			return Layout.MIXED
+	return Layout.ZONED
+
+
+## Le joueur n° player_index (0 = premier) sur player_count peut-il construire dans la zone ?
+## Avec moins de joueurs que de zones, chacun en reçoit plusieurs ; avec plus, ils se les partagent.
+func zone_allows(zone: int, player_index: int, player_count: int) -> bool:
+	if zone < 0:
+		return true
+	var m := mini(maxi(player_count, 1), zone_count)
+	return player_index % m == zone % m
+
+
+## Index du joueur dont la couleur représente la zone (le premier de ses propriétaires).
+func zone_color_index(zone: int, player_count: int) -> int:
+	return zone % mini(maxi(player_count, 1), zone_count)
 
 
 func in_bounds(c: Vector2i) -> bool:

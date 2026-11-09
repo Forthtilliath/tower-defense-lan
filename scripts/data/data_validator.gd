@@ -1,51 +1,8 @@
 class_name DataValidator
 extends RefCounted
-## Valide le JSON des données du jeu avant de l'utiliser.
+## Valide le JSON des données du jeu avant de l'utiliser (schémas : DataSchema).
 ## Le fichier entier est rejeté à la première anomalie (rien n'est appliqué),
 ## les clés inconnues sont ignorées et ne sont pas recopiées.
-##
-## Règle de schéma : [type, arguments..., (valeur par défaut)].
-## Types : "int" (min, max), "num" (min, max), "text" (longueur max), "bool", "id", "color".
-
-const ARGC := {"int": 2, "num": 2, "text": 1}
-
-const PLAYER := {"start_gold": ["int", 0, 100000]}
-const COOP_SCALING := {"hp": ["num", 0.0, 5.0], "count": ["num", 0.0, 5.0]}
-const DIFFICULTY := {
-	"id": ["id"], "name": ["text", 24], "hp": ["num", 0.1, 10.0], "lives": ["int", 1, 1000],
-	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0],
-}
-const SPECIAL := {
-	"char": ["text", 1], "id": ["id"], "name": ["text", 24], "color": ["color"],
-	"description": ["text", 120, ""], "range": ["num", 0.5, 3.0, 1.0], "damage": ["num", 0.5, 5.0, 1.0],
-	"rate": ["num", 0.5, 5.0, 1.0], "gold_per_wave": ["int", 0, 10000, 0],
-}
-const TOWER := {
-	"id": ["id"], "name": ["text", 24], "description": ["text", 120, ""],
-	"color": ["color"], "air": ["bool"], "ground": ["bool"],
-}
-const TOWER_LEVEL := {
-	"cost": ["int", 1, 100000], "damage": ["num", 0.0, 100000.0],
-	"range": ["num", 0.5, 12.0], "rate": ["num", 0.05, 20.0],
-	"projectile_speed": ["num", 1.0, 60.0], "splash": ["num", 0.0, 5.0, 0.0],
-	"slow_factor": ["num", 0.1, 1.0, 1.0], "slow_duration": ["num", 0.0, 10.0, 0.0],
-	"chain": ["int", 0, 10, 0], "poison_dps": ["num", 0.0, 100000.0, 0.0],
-	"poison_duration": ["num", 0.0, 30.0, 0.0],
-}
-const MONSTER := {
-	"id": ["id"], "name": ["text", 24], "color": ["color"],
-	"hp": ["num", 1.0, 1000000.0], "speed": ["num", 0.1, 10.0],
-	"gold": ["int", 0, 100000], "damage": ["int", 1, 1000], "flying": ["bool"],
-	"size": ["num", 0.2, 1.0, 0.5], "send_cost": ["int", 0, 100000, 0],
-	"income": ["int", 0, 10000, 0], "armor": ["num", 0.0, 100000.0, 0.0],
-	"regen": ["num", 0.0, 100000.0, 0.0], "slow_immune": ["bool", false],
-	"heal_radius": ["num", 0.0, 10.0, 0.0], "heal_rate": ["num", 0.0, 100000.0, 0.0],
-	"split_into": ["id", ""], "split_count": ["int", 0, 10, 0],
-}
-const WAVE := {"id": ["id"], "gold": ["int", 0, 100000, 0], "hp": ["num", 0.1, 100.0, 1.0]}
-const GROUP := {"monster": ["id"], "count": ["int", 1, 500], "interval": ["num", 0.05, 30.0]}
-## flyer_speed : ralentit les volants sur les cartes où leur ligne droite est un raccourci énorme.
-const MAP := {"id": ["id"], "name": ["text", 32], "flyer_speed": ["num", 0.2, 1.0, 1.0]}
 
 var error := ""
 
@@ -55,24 +12,28 @@ func fill(root: Variant, gd: GameData) -> bool:
 	if typeof(root) != TYPE_DICTIONARY:
 		_fail("racine : objet attendu")
 		return false
-	var player = _obj(root.get("player"), PLAYER, "player")
-	var scaling = _obj(root.get("coop_scaling"), COOP_SCALING, "coop_scaling")
-	var difficulties = _collection(root.get("difficulties"), 8, "difficulties", _difficulty)
+	var player = _obj(root.get("player"), DataSchema.PLAYER, "player")
+	var scaling = _obj(root.get("coop_scaling"), DataSchema.COOP_SCALING, "coop_scaling")
+	var difficulties = _collection(root.get("difficulties"), 8, "difficulties", _plain.bind(DataSchema.DIFFICULTY))
 	var specials = _specials(root.get("special_tiles"))
 	var towers = _collection(root.get("towers"), 16, "towers", _tower)
 	var monsters = _collection(root.get("monsters"), 32, "monsters", _monster)
+	var modifiers = _collection(root.get("wave_modifiers"), 16, "wave_modifiers", _plain.bind(DataSchema.WAVE_MODIFIER), 0)
 	if player == null or scaling == null or difficulties == null or specials == null \
-			or towers == null or monsters == null or not _check_splits(monsters[0]):
+			or towers == null or monsters == null or modifiers == null or not _check_splits(monsters[0]):
 		return false
-	var waves = _collection(root.get("waves"), 100, "waves", _wave.bind(monsters[0]))
-	if waves == null:
+	var builders = _collection(root.get("builders"), 8, "builders", _builder.bind(towers[0]))
+	var waves = _collection(root.get("waves"), 100, "waves", _wave.bind(monsters[0], modifiers[0]))
+	if builders == null or waves == null:
 		return false
 	var maps = _maps(root.get("maps"), waves[0], specials)
 	if maps == null:
 		return false
 	gd.player = player
 	gd.coop_scaling = scaling
-	gd.difficulties.assign(difficulties[1].map(func(id: String) -> Dictionary: return difficulties[0][id]))
+	gd.difficulties.assign(_ordered(difficulties))
+	gd.builders.assign(_ordered(builders))
+	gd.modifiers = modifiers[0]
 	gd.specials.assign(specials)
 	gd.towers = towers[0]
 	gd.tower_order = towers[1]
@@ -83,9 +44,13 @@ func fill(root: Variant, gd: GameData) -> bool:
 	return true
 
 
+static func _ordered(collection: Array) -> Array:
+	return collection[1].map(func(id: String) -> Dictionary: return collection[0][id])
+
+
 ## Liste d'objets avec un « id » unique. Renvoie [dictionnaire par id, ordre des ids] ou null.
-func _collection(src: Variant, max_size: int, where: String, check: Callable) -> Variant:
-	var list = _list(src, 1, max_size, where)
+func _collection(src: Variant, max_size: int, where: String, check: Callable, min_size := 1) -> Variant:
+	var list = _list(src, min_size, max_size, where)
 	if list == null:
 		return null
 	var by_id := {}
@@ -101,8 +66,12 @@ func _collection(src: Variant, max_size: int, where: String, check: Callable) ->
 	return [by_id, order]
 
 
+func _plain(src: Variant, where: String, schema: Dictionary) -> Variant:
+	return _obj(src, schema, where)
+
+
 func _tower(src: Variant, where: String) -> Variant:
-	var t = _obj(src, TOWER, where)
+	var t = _obj(src, DataSchema.TOWER, where)
 	if t == null:
 		return null
 	if not t["air"] and not t["ground"]:
@@ -112,7 +81,7 @@ func _tower(src: Variant, where: String) -> Variant:
 		return null
 	var out_levels := []
 	for i in levels.size():
-		var lvl = _obj(levels[i], TOWER_LEVEL, "%s.levels[%d]" % [where, i])
+		var lvl = _obj(levels[i], DataSchema.TOWER_LEVEL, "%s.levels[%d]" % [where, i])
 		if lvl == null:
 			return null
 		out_levels.append(lvl)
@@ -120,15 +89,34 @@ func _tower(src: Variant, where: String) -> Variant:
 	return t
 
 
+## Bâtisseur : tourelles connues, sans doublon, de quoi viser l'air et le sol.
+func _builder(src: Variant, where: String, towers: Dictionary) -> Variant:
+	var b = _obj(src, DataSchema.BUILDER, where)
+	if b == null:
+		return null
+	var list = _list(src.get("towers"), 1, 16, where + ".towers")
+	if list == null:
+		return null
+	var ids: Array[String] = []
+	var air := false
+	var ground := false
+	for id in list:
+		if typeof(id) != TYPE_STRING or not towers.has(id) or ids.has(id):
+			return _fail("%s.towers : tourelle « %s » inconnue ou en double" % [where, str(id).left(30)])
+		ids.append(id)
+		air = air or towers[id]["air"]
+		ground = ground or towers[id]["ground"]
+	if not air or not ground:
+		return _fail("%s : il faut au moins une tourelle contre l'air et une contre le sol" % where)
+	b["towers"] = ids
+	return b
+
+
 func _monster(src: Variant, where: String) -> Variant:
-	var m = _obj(src, MONSTER, where)
+	var m = _obj(src, DataSchema.MONSTER, where)
 	if m != null and (m["split_into"] == "") != (m["split_count"] == 0):
 		return _fail("%s : split_into et split_count vont ensemble" % where)
 	return m
-
-
-func _difficulty(src: Variant, where: String) -> Variant:
-	return _obj(src, DIFFICULTY, where)
 
 
 ## Division à la mort : le monstre produit doit exister et ne pas se diviser lui-même.
@@ -155,7 +143,7 @@ func _specials(src: Variant) -> Variant:
 	var seen := {}
 	for i in list.size():
 		var where := "special_tiles[%d]" % i
-		var s = _obj(list[i], SPECIAL, where)
+		var s = _obj(list[i], DataSchema.SPECIAL, where)
 		if s == null:
 			return null
 		var ch: String = s["char"]
@@ -166,16 +154,18 @@ func _specials(src: Variant) -> Variant:
 	return out
 
 
-func _wave(src: Variant, where: String, monsters: Dictionary) -> Variant:
-	var w = _obj(src, WAVE, where)
+func _wave(src: Variant, where: String, monsters: Dictionary, modifiers: Dictionary) -> Variant:
+	var w = _obj(src, DataSchema.WAVE, where)
 	if w == null:
 		return null
+	if w["modifier"] != "" and not modifiers.has(w["modifier"]):
+		return _fail("%s : vague spéciale « %s » inconnue" % [where, w["modifier"]])
 	var groups = _list(src.get("groups"), 1, 10, where + ".groups")
 	if groups == null:
 		return null
 	var out_groups := []
 	for i in groups.size():
-		var g = _obj(groups[i], GROUP, "%s.groups[%d]" % [where, i])
+		var g = _obj(groups[i], DataSchema.GROUP, "%s.groups[%d]" % [where, i])
 		if g == null:
 			return null
 		if not monsters.has(g["monster"]):
@@ -192,9 +182,11 @@ func _maps(src: Variant, waves: Dictionary, specials: Array) -> Variant:
 	var out: Array[MapDef] = []
 	for i in list.size():
 		var where := "maps[%d]" % i
-		var head = _obj(list[i], MAP, where)
+		var head = _obj(list[i], DataSchema.MAP, where)
 		if head == null:
 			return null
+		if head["min_players"] > head["max_players"]:
+			return _fail("%s : min_players dépasse max_players" % where)
 		var rows = _list(list[i].get("rows"), MapDef.MIN_SIZE, MapDef.MAX_SIZE, where + ".rows")
 		var wave_ids = _list(list[i].get("waves"), 1, 100, where + ".waves")
 		if rows == null or wave_ids == null:
@@ -207,7 +199,19 @@ func _maps(src: Variant, waves: Dictionary, specials: Array) -> Variant:
 		var parsed = MapDef.parse(head["id"], head["name"], rows, typed_waves, specials)
 		if typeof(parsed) == TYPE_STRING:
 			return _fail("%s : %s" % [where, parsed])
+		if list[i].has("zones"):
+			var zone_rows = _list(list[i]["zones"], MapDef.MIN_SIZE, MapDef.MAX_SIZE, where + ".zones")
+			if zone_rows == null:
+				return null
+			var zone_err: String = parsed.set_zones(zone_rows)
+			if zone_err != "":
+				return _fail("%s : %s" % [where, zone_err])
 		parsed.flyer_speed = head["flyer_speed"]
+		parsed.min_players = head["min_players"]
+		parsed.max_players = head["max_players"]
+		parsed.lanes = head["lanes"]
+		if parsed.lanes > parsed.start_count():
+			return _fail("%s : %d couloirs pour %d départs" % [where, parsed.lanes, parsed.start_count()])
 		out.append(parsed)
 	return out
 
@@ -219,7 +223,7 @@ func _obj(src: Variant, schema: Dictionary, where: String) -> Variant:
 	var out := {}
 	for key in schema:
 		var rule: Array = schema[key]
-		var argc: int = ARGC.get(rule[0], 0)
+		var argc: int = DataSchema.ARGC.get(rule[0], 0)
 		if not d.has(key):
 			if rule.size() > 1 + argc:
 				out[key] = rule[1 + argc]

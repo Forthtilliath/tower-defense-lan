@@ -8,6 +8,9 @@ const MAX_FILE_SIZE := 512 * 1024
 var player := {}
 var coop_scaling := {}
 var difficulties: Array[Dictionary] = []
+var builders: Array[Dictionary] = []
+## Vagues spéciales, par id.
+var modifiers := {}
 var specials: Array[Dictionary] = []
 var towers := {}
 var tower_order: Array[String] = []
@@ -53,16 +56,33 @@ func tower_levels(type: String) -> Array:
 	return towers[type]["levels"]
 
 
-## Statistiques d'une tourelle à un niveau donné, bonus de case spéciale compris (-1 : aucune).
-func tower_stats(type: String, level: int, special := -1) -> Dictionary:
+## Statistiques d'une tourelle à un niveau donné, avec les bonus de la case spéciale
+## et du bâtisseur de son propriétaire (-1 : aucun).
+func tower_stats(type: String, level: int, special := -1, builder := -1) -> Dictionary:
 	var stats: Dictionary = tower_levels(type)[level].duplicate()
 	if special >= 0 and special < specials.size():
-		var s: Dictionary = specials[special]
-		stats["range"] *= s["range"]
-		stats["damage"] *= s["damage"]
-		stats["poison_dps"] *= s["damage"]
-		stats["rate"] *= s["rate"]
+		_boost(stats, specials[special])
+	if builder >= 0 and builder < builders.size():
+		_boost(stats, builders[builder])
 	return stats
+
+
+static func _boost(stats: Dictionary, bonus: Dictionary) -> void:
+	stats["range"] *= bonus["range"]
+	stats["damage"] *= bonus["damage"]
+	stats["poison_dps"] *= bonus["damage"]
+	stats["rate"] *= bonus["rate"]
+
+
+## Le bâtisseur n° builder peut-il construire cette tourelle ?
+func builder_allows(builder: int, type: String) -> bool:
+	return builder >= 0 and builder < builders.size() and builders[builder]["towers"].has(type)
+
+
+## Vague spéciale d'une vague (dictionnaire vide si vague normale).
+func wave_modifier(wave_id: String) -> Dictionary:
+	var w: Dictionary = waves.get(wave_id, {})
+	return modifiers.get(w.get("modifier", ""), {})
 
 
 ## Total payé pour une tourelle arrivée au niveau `level` (construction + améliorations).
