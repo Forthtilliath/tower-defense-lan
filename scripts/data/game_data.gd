@@ -6,6 +6,9 @@ const DEFAULT_PATH := "res://data/game_data.json"
 const MAX_FILE_SIZE := 512 * 1024
 
 var player := {}
+var coop_scaling := {}
+var difficulties: Array[Dictionary] = []
+var specials: Array[Dictionary] = []
 var towers := {}
 var tower_order: Array[String] = []
 var monsters := {}
@@ -48,6 +51,18 @@ func is_valid() -> bool:
 
 func tower_levels(type: String) -> Array:
 	return towers[type]["levels"]
+
+
+## Statistiques d'une tourelle à un niveau donné, bonus de case spéciale compris (-1 : aucune).
+func tower_stats(type: String, level: int, special := -1) -> Dictionary:
+	var stats: Dictionary = tower_levels(type)[level].duplicate()
+	if special >= 0 and special < specials.size():
+		var s: Dictionary = specials[special]
+		stats["range"] *= s["range"]
+		stats["damage"] *= s["damage"]
+		stats["poison_dps"] *= s["damage"]
+		stats["rate"] *= s["rate"]
+	return stats
 
 
 ## Total payé pour une tourelle arrivée au niveau `level` (construction + améliorations).
