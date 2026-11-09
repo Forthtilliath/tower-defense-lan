@@ -5,6 +5,7 @@ extends Node
 ## les autres joueurs n'envoient que des commandes, toutes revalidées par l'hôte.
 ## Les RPC venant des joueurs sont « any_peer » et vérifient l'expéditeur ;
 ## celles réservées à l'hôte sont « authority » (voir net_rpc.gd).
+## Le salon (options, choix des joueurs) est géré par NetLobby.
 
 signal lobby_changed
 signal match_started(config: Dictionary)
@@ -21,11 +22,12 @@ const REGISTER_TIMEOUT_MS := 5000
 const MODE_NAMES := ["Coopération", "Versus"]
 
 var role := Role.NONE
-var players := {}  # id -> {name, color}
-var settings := {"mode": 0, "map": 0, "difficulty": 1}
+var players := {}  # id -> {name, color, builder, vote}
+var settings := NetLobby.DEFAULT_SETTINGS.duplicate()
 var config := {}
 var host_loop: HostLoop  # partie en cours (hôte uniquement)
 var discovery: LanDiscovery
+var lobby: NetLobby
 var _pending := {}  # id -> instant de connexion, tant que le joueur ne s'est pas présenté
 var end_reason := ""
 var _my_name := ""
@@ -35,6 +37,7 @@ var _rpc: Node
 func _ready() -> void:
 	discovery = LanDiscovery.new()
 	add_child(discovery)
+	lobby = NetLobby.new(self)
 	_rpc = preload("res://scripts/net/net_rpc.gd").new()
 	_rpc.name = "Rpc"
 	_rpc.net = self
@@ -58,6 +61,10 @@ func my_id() -> int:
 	return multiplayer.get_unique_id() if role != Role.NONE else 1
 
 
+func rpc_node() -> Node:
+	return _rpc
+
+
 func ordered_ids() -> Array[int]:
 	var ids: Array[int] = []
 	ids.assign(players.keys())
@@ -73,8 +80,8 @@ func host(player_name: String) -> String:
 		return "Impossible d'ouvrir le port %d : une partie est peut-être déjà hébergée ici." % PORT
 	multiplayer.multiplayer_peer = peer
 	role = Role.HOST
-	players = {1: {"name": player_name, "color": 0}}
-	settings = {"mode": 0, "map": 0, "difficulty": 1}
+	players = {1: NetLobby.new_player(player_name, 0)}
+	settings = NetLobby.DEFAULT_SETTINGS.duplicate()
 	discovery.start_broadcast(_announce_info)
 	lobby_changed.emit()
 	return ""
@@ -107,24 +114,39 @@ func leave() -> void:
 	role = Role.NONE
 
 
+## Option de partie (hôte uniquement, dans le salon).
 func set_option(key: String, value: int) -> void:
-	if not is_host() or host_loop != null or not settings.has(key):
-		return
-	var limits := {"mode": MODE_NAMES.size(), "map": Data.db.maps.size(), "difficulty": Data.db.difficulties.size()}
-	var limit: int = limits[key]
-	if value >= 0 and value < limit:
-		settings[key] = value
-		_sync_lobby()
+	if is_host() and host_loop == null:
+		lobby.set_option(key, value)
+
+
+## Choix personnel dans le salon : « builder » (bâtisseur) ou « vote » (difficulté).
+func choose(key: String, value: int) -> void:
+	if role == Role.HOST:
+		set_choice(1, key, value)
+	elif role == Role.CLIENT:
+		_rpc.choose.rpc_id(1, key, value)
+
+
+func set_choice(id: int, raw_key: Variant, raw_value: Variant) -> void:
+	if is_host() and host_loop == null:
+		lobby.set_choice(id, raw_key, raw_value)
+
+
+## Difficulté qui sera jouée si l'on lance maintenant (vote des joueurs).
+func voted_difficulty() -> int:
+	return NetPayloads.voted_difficulty(players, Data.db.difficulties.size())
 
 
 func start_match() -> void:
 	if not is_host() or host_loop != null:
 		return
-	var roster := []
-	for id in ordered_ids():
-		roster.append([id, players[id]["name"], players[id]["color"]])
-	config = {"mode": settings["mode"], "map": settings["map"], "difficulty": settings["difficulty"], "roster": roster}
-	host_loop = HostLoop.new(SimMatch.new(Data.db, settings["map"], settings["mode"], roster, settings["difficulty"]))
+	var roster := lobby.roster()
+	config = settings.duplicate()
+	config["difficulty"] = voted_difficulty()
+	config["roster"] = roster
+	var options := {"rhythm": settings["rhythm"], "launch": settings["launch"]}
+	host_loop = HostLoop.new(SimMatch.new(Data.db, settings["map"], settings["mode"], roster, config["difficulty"], options))
 	for id in players:
 		if id != 1:
 			_rpc.start.rpc_id(id, config)
@@ -140,7 +162,7 @@ func return_to_lobby() -> void:
 		if id != 1:
 			_rpc.to_lobby.rpc_id(id)
 	back_to_lobby.emit()
-	_sync_lobby()
+	lobby.sync()
 
 
 func send_command(cmd: Dictionary) -> void:
@@ -175,6 +197,10 @@ func handle_command(id: int, raw: Variant) -> void:
 	var err := host_loop.handle(id, raw)
 	if err != "":
 		_notify(id, err)
+	for n in host_loop.sim.notices:
+		if players.has(n[0]):
+			_notify(n[0], n[1])
+	host_loop.sim.notices.clear()
 
 
 func _notify(id: int, message: String) -> void:
@@ -189,17 +215,6 @@ func _announce_info() -> Dictionary:
 		"g": LanDiscovery.MAGIC, "v": version(), "n": players.get(1, {}).get("name", "Hôte"),
 		"m": settings["mode"], "p": players.size(), "x": MAX_PLAYERS, "s": host_loop != null,
 	}
-
-
-func _sync_lobby() -> void:
-	var list := []
-	for id in ordered_ids():
-		list.append([id, players[id]["name"], players[id]["color"]])
-	var payload := {"players": list, "mode": settings["mode"], "map": settings["map"], "difficulty": settings["difficulty"]}
-	for id in players:
-		if id != 1:
-			_rpc.lobby.rpc_id(id, payload)
-	lobby_changed.emit()
 
 
 func _kick(id: int, reason: String) -> void:
@@ -229,13 +244,14 @@ func _on_peer_disconnected(id: int) -> void:
 	if role != Role.HOST:
 		return
 	_pending.erase(id)
+	lobby.forget(id)
 	if not players.has(id):
 		return
 	players.erase(id)
 	if host_loop != null:
 		host_loop.sim.player_left(id)
 		notice.emit("Un joueur a quitté la partie")
-	_sync_lobby()
+	lobby.sync()
 
 
 func _on_connected() -> void:
@@ -268,8 +284,5 @@ func admit(id: int, raw_name: Variant, raw_version: Variant) -> void:
 		var player_name := Check.sanitize_name(raw_name)
 		if player_name == "":
 			player_name = "Joueur"
-		players[id] = {
-			"name": NetPayloads.unique_name(players, player_name),
-			"color": NetPayloads.free_color(players, MAX_PLAYERS),
-		}
-		_sync_lobby()
+		players[id] = NetLobby.new_player(NetPayloads.unique_name(players, player_name), NetPayloads.free_color(players, MAX_PLAYERS))
+		lobby.sync()
