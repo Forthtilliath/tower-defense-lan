@@ -27,9 +27,10 @@ func _ready() -> void:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.size_flags_vertical = SIZE_SHRINK_CENTER
 		row.add_child(l)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
-	row.add_child(spacer)
+	# Le message prend la place libre et se coupe (« … ») plutôt que d'élargir tout l'écran
+	_timer.clip_text = true
+	_timer.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_timer.size_flags_horizontal = SIZE_EXPAND_FILL
 	_ready_btn = UiTheme.button("Lancer maintenant", func() -> void: _game.send({"a": "ready"}), 48, false)
 	_ready_btn.visible = false
 	row.add_child(_ready_btn)
@@ -67,8 +68,8 @@ func _timer_text(s: ViewState) -> String:
 		return ""
 	if s.wave == 0:
 		if _game.host_launches() and _game.my_id != _game.order[0]:
-			return "Préparez-vous : l'hôte lancera la première vague"
-		return "Préparez-vous, puis lancez la première vague"
+			return "L'hôte lancera la 1re vague"
+		return "Construisez, puis lancez"
 	var text := ""
 	if s.countdown >= 0.0:
 		var label := "Construction" if _game.rhythm() == SimMatch.Rhythm.BETWEEN else "Prochaine vague"

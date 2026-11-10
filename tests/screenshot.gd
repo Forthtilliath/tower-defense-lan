@@ -32,6 +32,8 @@ func _run() -> void:
 	await _wait(0.6)
 	_shot("2-salon-%s" % tag)
 	Net.start_match()
+	await _wait(0.4)
+	_shot("2b-avant-premiere-vague-%s" % tag)
 	# Démonstration : assez d'or, et saut à la vague 9 (troll, chamans) pour montrer les effets
 	Net.host_loop.sim.players[1]["gold"] += 1000
 	Net.host_loop.sim.wave_index = 7
