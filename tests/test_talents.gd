@@ -16,9 +16,12 @@ func test_levels_and_match_xp() -> void:
 	check(TalentRules.level_for(gd, 100) == 2 and TalentRules.level_for(gd, 220) == 3, "100 puis 120 XP")
 	check(TalentRules.level_for(gd, 100000000) == 15, "plafonné au niveau 15")
 	check(TalentRules.level_progress(gd, 150) == [50, 120], "50 / 120 XP dans le niveau 2")
-	check(TalentRules.match_xp(gd, true, 15, 15, 1) == 150, "victoire en Normal : 10 XP par vague")
-	check(TalentRules.match_xp(gd, true, 15, 15, 3) == 240, "Cauchemar : x1,6")
-	check(TalentRules.match_xp(gd, false, 7, 14, 1) == 28, "défaite à mi-partie : 40 % x 50 % = 20 %")
+	check(TalentRules.match_xp(gd, true, 20, 20, 1) == 250, "victoire en Normal : 10 XP par vague + 25 %")
+	check(TalentRules.match_xp(gd, true, 20, 20, 3) == 400, "Cauchemar : x1,6")
+	check(TalentRules.match_xp(gd, false, 2, 20, 1) == 2, "défaite au 1er palier : 10 % par vague")
+	check(TalentRules.match_xp(gd, false, 5, 20, 1) == 17, "2e palier dès 25 % : 35 % par vague")
+	check(TalentRules.match_xp(gd, false, 10, 20, 1) == 60, "3e palier à mi-partie : 60 % par vague")
+	check(TalentRules.match_xp(gd, false, 19, 20, 1) == 161, "dernier palier : 85 % par vague")
 	check(TalentRules.match_xp(gd, false, 0, 15, 1) == 0, "défaite immédiate : rien")
 
 

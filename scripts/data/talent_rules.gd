@@ -41,15 +41,27 @@ static func level_progress(data: GameData, xp: int) -> Array:
 	return [left, xp_to_next(data, level)]
 
 
-## Expérience d'une partie : victoire = xp_per_wave × vagues × xp de la difficulté ;
-## défaite = defeat_share de cette somme, au prorata des vagues passées.
+## Expérience d'une partie : victoire = xp_per_wave × vagues × xp de la difficulté, plus
+## win_bonus de cette somme ; défaite = vagues passées × xp_per_wave × part du palier atteint.
 static func match_xp(data: GameData, won: bool, waves_passed: int, total_waves: int, difficulty: int) -> int:
 	var d: Dictionary = data.difficulties[clampi(difficulty, 0, data.difficulties.size() - 1)]
-	var full := float(data.progression["xp_per_wave"]) * total_waves * float(d["xp"])
+	var per_wave := float(data.progression["xp_per_wave"]) * float(d["xp"])
+	var total := maxi(1, total_waves)
 	if won:
-		return roundi(full)
-	var progress := clampf(float(waves_passed) / maxf(1.0, total_waves), 0.0, 1.0)
-	return floori(full * float(data.progression["defeat_share"]) * progress)
+		return roundi(per_wave * total * (1.0 + float(data.progression["win_bonus"])))
+	var passed := clampi(waves_passed, 0, total)
+	return floori(per_wave * passed * defeat_rate(data, float(passed) / total))
+
+
+## Part de l'expérience par vague gardée après une défaite, selon la progression (0 à 1) :
+## palier par palier, de defeat_rate_min à defeat_rate_max.
+static func defeat_rate(data: GameData, progress: float) -> float:
+	var p := data.progression
+	var steps := int(p["defeat_steps"])
+	var step := clampi(floori(progress * steps), 0, steps - 1)
+	if steps <= 1:
+		return float(p["defeat_rate_max"])
+	return lerpf(float(p["defeat_rate_min"]), float(p["defeat_rate_max"]), float(step) / (steps - 1))
 
 
 ## Talents d'un bâtisseur : id -> [index de branche, définition].

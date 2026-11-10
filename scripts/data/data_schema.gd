@@ -16,12 +16,16 @@ const PLAYER := {
 }
 const COOP_SCALING := {"hp": ["num", 0.0, 5.0], "count": ["num", 0.0, 5.0]}
 ## Progression : expérience pour passer du niveau n au suivant = xp_base × xp_growth^(n-1) ;
-## une victoire rapporte xp_per_wave par vague (× xp de la difficulté), une défaite
-## defeat_share de cette somme, au prorata des vagues passées. 1 point de talent par niveau.
+## une victoire rapporte xp_per_wave par vague (× xp de la difficulté), plus win_bonus de
+## cette somme. Défaite : chaque vague passée rapporte une part de xp_per_wave qui dépend du
+## palier atteint (la partie est découpée en defeat_steps paliers égaux) : defeat_rate_min au
+## premier, defeat_rate_max au dernier, en progression régulière. 1 point de talent par niveau.
 ## tiers : points à dépenser dans une branche pour atteindre chaque palier (le premier vaut 0).
 const PROGRESSION := {
 	"max_level": ["int", 1, 50, 15], "xp_base": ["int", 1, 100000, 100], "xp_growth": ["num", 1.0, 3.0, 1.2],
-	"xp_per_wave": ["int", 0, 10000, 10], "defeat_share": ["num", 0.0, 1.0, 0.4],
+	"xp_per_wave": ["int", 0, 10000, 10], "win_bonus": ["num", 0.0, 2.0, 0.25],
+	"defeat_steps": ["int", 1, 10, 4], "defeat_rate_min": ["num", 0.0, 1.0, 0.1],
+	"defeat_rate_max": ["num", 0.0, 1.0, 0.85],
 }
 const DIFFICULTY := {
 	"id": ["id"], "name": ["text", 24], "hp": ["num", 0.1, 10.0], "lives": ["int", 1, 1000],
