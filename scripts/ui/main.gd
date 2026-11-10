@@ -2,6 +2,7 @@ extends Control
 ## Racine de l'application : affiche un écran à la fois (menu, rejoindre, salon, partie).
 
 var _screen: Control
+var _backdrop: MangaBackdrop
 
 
 func _ready() -> void:
@@ -11,6 +12,8 @@ func _ready() -> void:
 	bg.set_anchors_preset(PRESET_FULL_RECT)
 	bg.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(bg)
+	_backdrop = MangaBackdrop.new()
+	add_child(_backdrop)
 	Net.match_started.connect(show_game)
 	Net.session_ended.connect(show_menu)
 	Net.back_to_lobby.connect(show_lobby)
@@ -42,6 +45,7 @@ func _switch(screen: Control) -> void:
 	if _screen != null:
 		_screen.queue_free()
 	_screen = screen
+	_backdrop.visible = not (screen is GameScreen)  # pas de lignes de vitesse derrière le plateau
 	add_child(screen)
 
 

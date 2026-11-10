@@ -18,7 +18,7 @@ func _ready() -> void:
 	var box := UiTheme.vbox(14)
 	box.custom_minimum_size.x = 460
 	add_child(box)
-	box.add_child(UiTheme.label("Tower Defense LAN", 46, UiTheme.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(UiTheme.title("Tower Defense LAN", 48))
 	box.add_child(UiTheme.label("Défendez ensemble ou affrontez-vous en réseau local.", 18, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(UiTheme.label("Ton pseudo", 18, UiTheme.MUTED))
 	_name_edit = LineEdit.new()
