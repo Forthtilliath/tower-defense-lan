@@ -17,19 +17,28 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
 
 ### Dans le salon
 
-- **Classe** (chaque joueur) : 3 tourelles de base, un bonus de classe, et un arbre de talents à 3 branches.
-  - Touche-à-tout : sans bonus ; branches Artillerie, Éléments, Contrôle.
-  - Artilleur : +15 % de dégâts ; Siège, Précision, Commandement (auras).
-  - Arcaniste : +25 % de cadence, +15 % de dégâts ; Foudre, Alchimie (poison, feu), Hiver.
-  - Éclaireur : +15 % de portée ; Tireur d'élite, Pièges (saignement, poison), Embuscade.
-  - Gobelin : +25 % sur ses parts de primes, +2 % d'intérêts (plafond +20), tourelles 10 % moins fortes ; Usure, Bricolage, Coups bas.
-  - Enchanteur : contrôles +30 % ; Envoûtement (charme), Terreur (peur), Choc (étourdissement) ; classe de soutien, faite pour l'équipe.
+- **Classe** (chaque joueur) : un bonus de classe, un tronc de talents et **4 spécialisations, dont une seule se choisit**.
+  Tout le monde construit les 11 tourelles du tronc commun (Arbalète, Sentinelle, Fléchettes, Canon, Givre, Tesla,
+  Brasier, Salamandre, Venin, Épines, Gong) ; chaque spécialisation renforce les siennes et en débloque 1 ou 2 au plus.
+  - Artilleur (+10 % de dégâts des tirs physiques) : Brute (Broyeur), Tireur d'élite (Baliste), Artificier (Mortier), Mitrailleur.
+  - Arcaniste (+10 % de dégâts du feu, de la foudre et de la glace) : Mage de feu (Lentille, Feu grégeois),
+    de foudre (Pylône, Lance-foudre), de glace (Obélisque, Brise-glace), du vent (anti-aérien).
+  - Fléau (+15 % de dégâts des effets continus) : Poison (Peste, Miasmes), Saignement (Faux), Gelure, Électrocution.
+  - Support (+15 % de contrôles et d'auras) : Dompteur (Épouvantail, Flûte), Corrupteur (Alambic),
+    Chef de guerre (Tambour, Étendard), Gardien (Totem) ; fait pour l'équipe.
+  - Gobelin (+15 % sur ses parts de primes) : Chasseur de primes, Usurier (intérêts), Mécène (dons moins chers), Parieur.
+  - Bâtisseur (+50 or de départ, tronc commun seulement) : Architecte (prix réduits), Ferrailleur (revente),
+    Contremaître, Terrassier.
+
+  Quelques spécialisations attendent encore leur mécanique propre (tourelles à rafales, du vent, de gelure,
+  d'électrocution, Phare, Comptoir, Chantier, décor à raser) et n'ont pour l'instant que des bonus en pourcentage.
 - **Talents et progression** (bouton « Talents » du salon) : chaque classe gagne de l'expérience à chaque partie
   (victoire : 10 XP par vague × difficulté, + 25 % ; défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 %
   de ses 10 XP selon le quart de la partie atteint, donc presque rien en perdant tôt) et monte
-  jusqu'au niveau 15, avec 1 point de talent par niveau. Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
-  déjà placés dans cette branche ; les tourelles avancées se débloquent ainsi. Une branche complète coûte 7 points :
-  au niveau 15, on en maîtrise deux sur trois, et deux joueurs de la même classe peuvent jouer très différemment.
+  jusqu'au niveau 15, avec 1 point de talent par niveau. Le tronc coûte 5 points, une spécialisation 10 : au niveau 15,
+  on a tout son tronc et toute sa spécialisation. Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
+  déjà placés dans cette branche. Placer un point dans une spécialisation ferme les trois autres ; on en change
+  entre deux parties en retirant ses points.
   La progression est enregistrée sur chaque appareil (`progression.json`) et vérifiée à la relecture ; l'hôte revalide
   les talents de chacun (le niveau annoncé, lui, n'est pas vérifiable sans serveur).
 - **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile ou Cauchemar. La plus votée l'emporte ; en cas d'égalité, la plus facile.
