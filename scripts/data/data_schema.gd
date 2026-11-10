@@ -30,6 +30,7 @@ const PROGRESSION := {
 const DIFFICULTY := {
 	"id": ["id"], "name": ["text", 24], "hp": ["num", 0.1, 10.0], "lives": ["int", 1, 1000],
 	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0], "xp": ["num", 0.0, 10.0, 1.0],
+	"armor": ["num", 0.0, 20.0, 0.0],
 }
 ## Branche de talents. trunk : tronc commun de la classe ; les autres branches sont ses
 ## spécialisations, exclusives (des points dans une seule à la fois).
@@ -81,14 +82,21 @@ const BUILDER := {
 }
 ## Éléments des tourelles ("" : coups physiques), auxquels certains monstres résistent.
 const ELEMENTS := ["fire", "ice", "lightning", "poison", "bleed", "wind"]
+## Coups physiques : perçants (flèches, carreaux, fléchettes) ou contondants (boulets, obus,
+## masse). Une tourelle sans élément (contrôle, soutien) frappe aussi physiquement.
+const PHYSICAL := ["pierce", "blunt"]
 ## Bonus passifs d'un monstre, qu'une vague spéciale peut aussi donner à tous ses monstres.
 ## hover : lévite, les nappes au sol ne le touchent pas. mechanical : véhicule, insensible au
 ## poison, à la brûlure, au saignement, à la peur et au charme. resist_* : part des dégâts (et
-## des effets) de cet élément évitée ; resist_elements vaut pour tous les éléments.
+## des effets) de cet élément évitée ; resist_elements vaut pour tous les éléments (la magie et
+## les effets continus) ; resist_physical pour tous les coups physiques (1 : intangible, comme
+## un fantôme) ; resist_pierce / resist_blunt pour les coups perçants / contondants.
 const PASSIVE_TRAITS := {
 	"hover": ["bool", false], "mechanical": ["bool", false],
 	"resist_fire": ["num", 0.0, 0.9, 0.0], "resist_ice": ["num", 0.0, 0.9, 0.0],
 	"resist_lightning": ["num", 0.0, 0.9, 0.0], "resist_elements": ["num", 0.0, 0.9, 0.0],
+	"resist_physical": ["num", 0.0, 1.0, 0.0], "resist_pierce": ["num", 0.0, 1.0, 0.0],
+	"resist_blunt": ["num", 0.0, 1.0, 0.0],
 }
 ## Vague spéciale : multiplicateurs (PV, vitesse, nombre, primes) et ajouts (armure, régénération
 ## en part des PV max par seconde, bonus passifs) appliqués à tous les monstres de la vague.

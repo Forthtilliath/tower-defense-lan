@@ -21,6 +21,8 @@ var map: MapDef
 var lives := 20
 var alive := true
 var reward_mult := 1.0
+## Armure ajoutée à chaque monstre (difficulté).
+var armor_bonus := 0.0
 var monsters: Array[SimMonster] = []
 var towers := {}  # index de case -> SimTower
 var projectiles: Array[SimProjectile] = []
@@ -177,6 +179,7 @@ func spawn(type: String, hp_mult: float, path := -1, progress := 0.0, now := tru
 	m.type = type
 	m.type_index = data.monster_order.find(type)
 	m.setup(def, hp_mult, reward_mult, mod)
+	m.armor += armor_bonus
 	if m.flying:
 		m.speed *= map.flyer_speed
 	if path < 0:
