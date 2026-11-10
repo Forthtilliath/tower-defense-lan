@@ -30,8 +30,11 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
   - Bâtisseur (+50 or de départ, tronc commun seulement) : Architecte (prix réduits), Ferrailleur (revente),
     Contremaître, Terrassier.
 
-  Quelques spécialisations attendent encore leur mécanique propre (tourelles à rafales, du vent, de gelure,
-  d'électrocution, Phare, Comptoir, Chantier, décor à raser) et n'ont pour l'instant que des bonus en pourcentage.
+  Tourelles et mécaniques propres : Rafale (plusieurs cibles), Tourbillon (cloue les volants au sol), Stèle de gelure
+  et Paratonnerre (imprègnent les tourelles voisines : gelure, monstres électrifiés qui subissent plus de dégâts),
+  Phare (portée), Comptoir (prime des monstres tués à portée), Chantier (constructions moins chères autour, alliés
+  compris), Alambic qui coupe les soins, primes d'équipe du Mécène, or des vagues lancées en avance ou sans fuite
+  du Parieur. Le Terrassier (raser le décor, poser des cases bonus) n'a encore que des bonus en pourcentage.
 - **Talents et progression** (bouton « Talents » du salon) : chaque classe gagne de l'expérience à chaque partie
   (victoire : 10 XP par vague × difficulté, + 25 % ; défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 %
   de ses 10 XP selon le quart de la partie atteint, donc presque rien en perdant tôt) et monte
@@ -72,7 +75,7 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
   et trois grandes cartes pour 2 à 4 joueurs : Grande plaine (partagée, un très long serpentin), Quatre fiefs (4 zones, 4 couloirs),
   Bastion (4 zones autour d'un couloir central commun).
 - **4 difficultés** : Facile, Normal, Difficile, Cauchemar (PV des monstres, vies, or de départ, primes).
-- **29 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
+- **36 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
   - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
     Baliste (tireur d'élite), Canon et Mortier (zone au sol), Sentinelle (anti-aérien) ;
   - foudre : Tesla (rebondit), Pylône (onde autour de lui), Lance-foudre (traverse les monstres alignés, perce l'armure) ;
