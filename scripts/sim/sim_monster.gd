@@ -52,6 +52,9 @@ var slow_timer := 0.0
 var poison_dps := 0.0
 var poison_timer := 0.0
 var poison_owner := 0
+## Charges de poison et de saignement (1 sauf talents du Fléau : ses effets se cumulent).
+var poison_stacks := 1
+var bleed_stacks := 1
 ## Portée de contagion du poison en cours (0 : il ne se propage pas) et horloge de propagation.
 var poison_spread := 0.0
 var spread_clock := 0.0
@@ -213,9 +216,12 @@ func apply_slow(factor: float, duration: float) -> float:
 
 ## Empoisonne : garde le poison le plus fort (et son auteur pour la prime, et sa contagion),
 ## prolonge la durée.
-func apply_poison(dps: float, duration: float, owner: int, spread := 0.0) -> void:
+## max_stacks > 1 (Fléau) : chaque coup ajoute une charge, comme la brûlure ; une source au
+## plafond plus bas ne retire jamais de charges déjà posées.
+func apply_poison(dps: float, duration: float, owner: int, spread := 0.0, max_stacks := 1) -> void:
 	if mechanical or dps <= 0.0 or duration <= 0.0:
 		return
+	poison_stacks = 1 if poison_timer <= 0.0 else maxi(poison_stacks, mini(poison_stacks + 1, max_stacks))
 	if poison_timer <= 0.0 or dps >= poison_dps:
 		poison_dps = dps
 		poison_owner = owner
@@ -252,9 +258,10 @@ func apply_burn(dps: float, duration: float, max_stacks: int, owner: int) -> voi
 
 
 ## Saignement : part des PV max par seconde (les boss y résistent en partie).
-func apply_bleed(rate: float, duration: float, owner: int) -> void:
+func apply_bleed(rate: float, duration: float, owner: int, max_stacks := 1) -> void:
 	if mechanical or rate <= 0.0 or duration <= 0.0:
 		return
+	bleed_stacks = 1 if bleed_timer <= 0.0 else maxi(bleed_stacks, mini(bleed_stacks + 1, max_stacks))
 	if bleed_timer <= 0.0 or rate >= bleed_rate:
 		bleed_rate = rate
 		bleed_owner = owner

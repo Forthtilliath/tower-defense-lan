@@ -56,6 +56,7 @@ const GRANT := {
 	"stun_chance": ["num", 0.0, 1.0, 0.0], "stun_duration": ["num", 0.0, 5.0, 0.0],
 	"patch_radius": ["num", 0.0, 2.0, 0.0], "patch_duration": ["num", 0.0, 10.0, 0.0], "patch_dps": ["num", 0.0, 1000.0, 0.0],
 	"multishot": ["int", 0, 4, 0], "burn_stacks": ["int", 0, 5, 0], "chain": ["int", 0, 5, 0],
+	"poison_stacks": ["int", 0, 5, 0], "bleed_stacks": ["int", 0, 5, 0],
 	"vs_stunned": ["num", 0.0, 5.0, 0.0], "ground_duration": ["num", 0.0, 5.0, 0.0], "poison_spread": ["num", 0.0, 3.0, 0.0],
 	"bleed": ["num", 0.0, 0.1, 0.0], "shred": ["num", 0.0, 0.5, 0.0], "heal_block": ["num", 0.0, 1.0, 0.0],
 }
@@ -121,7 +122,8 @@ const ATTACKS := ["shot", "pulse", "line", "cone", "beam"]
 ## vs_slowed / vs_stunned : dégâts en plus contre un monstre ralenti / étourdi (gelé).
 ## shred : part de l'armure rongée. poison_spread : portée de contagion du poison.
 ## crit_every / crit_mult : un coup sur crit_every est critique (dégâts × crit_mult).
-## multishot : nombre de monstres visés à chaque tir. heal_block : part des soins et de la
+## poison_stacks / bleed_stacks : charges maximales (le poison ou le saignement se cumule à chaque
+## coup, comme la brûlure ; 1 : il ne se cumule pas). multishot : nombre de monstres visés à chaque tir. heal_block : part des soins et de la
 ## régénération coupée (heal_block_duration s). ground_duration : un volant touché est cloué
 ## au sol (toutes les tourelles peuvent le toucher) pendant ces secondes.
 ## Auras des tourelles de soutien : aura_range (portée des voisines), aura_frostbite (gelure,
@@ -151,6 +153,7 @@ const TOWER_LEVEL := {
 	"shred": ["num", 0.0, 0.9, 0.0], "shred_duration": ["num", 0.0, 30.0, 0.0],
 	"poison_spread": ["num", 0.0, 5.0, 0.0],
 	"crit_every": ["int", 0, 20, 0], "crit_mult": ["num", 1.0, 10.0, 1.0],
+	"poison_stacks": ["int", 1, 10, 1], "bleed_stacks": ["int", 1, 10, 1],
 	"multishot": ["int", 1, 8, 1], "heal_block": ["num", 0.0, 1.0, 0.0], "heal_block_duration": ["num", 0.0, 30.0, 0.0],
 	"ground_duration": ["num", 0.0, 10.0, 0.0],
 	"aura_range": ["num", 0.0, 1.0, 0.0], "aura_frostbite": ["num", 0.0, 100000.0, 0.0],

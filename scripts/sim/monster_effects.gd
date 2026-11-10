@@ -64,13 +64,13 @@ static func _damage_over_time(b: SimBoard, m: SimMonster, dt: float, rewards: Ar
 		BoardCombat.damage(b, m, mk.frost_dps * mult * dt, true, BoardCombat.solo(mk.frost_owner), rewards)
 	if m.poison_timer > 0.0:
 		m.poison_timer = maxf(0.0, m.poison_timer - dt)
-		BoardCombat.damage(b, m, m.poison_dps * m.taken("poison") * dt, true, BoardCombat.solo(m.poison_owner), rewards)
+		BoardCombat.damage(b, m, m.poison_dps * m.poison_stacks * m.taken("poison") * dt, true, BoardCombat.solo(m.poison_owner), rewards)
 	if m.burn_timer > 0.0 and m.is_alive():
 		m.burn_timer = maxf(0.0, m.burn_timer - dt)
 		BoardCombat.damage(b, m, m.burn_dps * m.burn_stacks * m.taken("fire") * dt, true, BoardCombat.solo(m.burn_owner), rewards)
 	if m.bleed_timer > 0.0 and m.is_alive():
 		m.bleed_timer = maxf(0.0, m.bleed_timer - dt)
-		var rate := m.bleed_rate * (1.0 - m.cc_resist * BLEED_RESIST) * m.taken("bleed")
+		var rate := m.bleed_rate * m.bleed_stacks * (1.0 - m.cc_resist * BLEED_RESIST) * m.taken("bleed")
 		BoardCombat.damage(b, m, m.max_hp * rate * dt, true, BoardCombat.solo(m.bleed_owner), rewards)
 
 
