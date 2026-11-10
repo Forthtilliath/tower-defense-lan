@@ -732,7 +732,7 @@
 	],
 	"maps": [
 		{
-			"id": "prairie", "name": "Prairie", "max_players": 2,
+			"id": "prairie", "name": "Prairie", "tier": 0, "max_players": 2,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"..T.....~~~....T",
@@ -747,7 +747,7 @@
 			]
 		},
 		{
-			"id": "carrefour", "name": "Carrefour", "max_players": 2,
+			"id": "carrefour", "name": "Carrefour", "tier": 0, "max_players": 2,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"....T.....~~~...",
@@ -762,7 +762,7 @@
 			]
 		},
 		{
-			"id": "riviere", "name": "Rivière", "max_players": 3,
+			"id": "riviere", "name": "Rivière", "tier": 1, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"....T....~~....T..",
@@ -778,7 +778,7 @@
 			]
 		},
 		{
-			"id": "trois_portes", "name": "Trois portes", "max_players": 3,
+			"id": "trois_portes", "name": "Trois portes", "tier": 2, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"...T......~~~.....",
@@ -795,7 +795,7 @@
 			]
 		},
 		{
-			"id": "spirale", "name": "Spirale", "flyer_speed": 0.4, "max_players": 3,
+			"id": "spirale", "name": "Spirale", "tier": 0, "flyer_speed": 0.4, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"....T.....~~...",
@@ -812,7 +812,7 @@
 			]
 		},
 		{
-			"id": "labyrinthe", "name": "Labyrinthe", "flyer_speed": 0.55, "max_players": 3,
+			"id": "labyrinthe", "name": "Labyrinthe", "tier": 1, "flyer_speed": 0.55, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"...T.......~~~....T.",
@@ -829,7 +829,7 @@
 			]
 		},
 		{
-			"id": "grande_plaine", "name": "Grande plaine", "flyer_speed": 0.5, "min_players": 2, "max_players": 4,
+			"id": "grande_plaine", "name": "Grande plaine", "tier": 1, "flyer_speed": 0.5, "min_players": 2, "max_players": 4,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"..T.........~~~~.........T....",
@@ -850,7 +850,7 @@
 			]
 		},
 		{
-			"id": "quatre_fiefs", "name": "Quatre fiefs", "flyer_speed": 0.5, "lanes": 4, "min_players": 2, "max_players": 4,
+			"id": "quatre_fiefs", "name": "Quatre fiefs", "tier": 2, "flyer_speed": 0.5, "lanes": 4, "min_players": 2, "max_players": 4,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"..T.......^....~....^.......T..",
@@ -892,7 +892,7 @@
 			]
 		},
 		{
-			"id": "bastion", "name": "Bastion", "flyer_speed": 0.5, "lanes": 4, "min_players": 2, "max_players": 4,
+			"id": "bastion", "name": "Bastion", "tier": 2, "flyer_speed": 0.5, "lanes": 4, "min_players": 2, "max_players": 4,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"....^........=====........^....",
