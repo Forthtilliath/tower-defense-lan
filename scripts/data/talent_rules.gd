@@ -105,6 +105,22 @@ static func validate(data: GameData, builder: int, raw: Variant, available: int)
 	return out
 
 
+## Héritage reçu tel quel (sauvegarde ou réseau) : liste d'index de classes connues, sans
+## doublon. Renvoie la liste triée, ou null au moindre défaut. (Comme le niveau, il n'est pas
+## vérifiable sans serveur : seule sa forme l'est.)
+static func parse_heritage(data: GameData, raw: Variant) -> Variant:
+	if typeof(raw) != TYPE_ARRAY or raw.size() > data.builders.size():
+		return null
+	var out: Array[int] = []
+	for e in raw:
+		var b = Check.as_int(e, 0, data.builders.size() - 1)
+		if b == null or out.has(b):
+			return null
+		out.append(b)
+	out.sort()
+	return out
+
+
 ## Points de talent au niveau maximum (le talent ultime n'est permis qu'à ce niveau).
 static func max_points(data: GameData) -> int:
 	return points(int(data.progression["max_level"]))

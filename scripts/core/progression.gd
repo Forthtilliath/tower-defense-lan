@@ -30,6 +30,15 @@ func talents(builder: int) -> Dictionary:
 	return _entry(builder).get("talents", {}).duplicate()
 
 
+## Héritage : classes montées au niveau maximum (index), dont le bonus profite aux autres.
+func heritage() -> Array[int]:
+	var out: Array[int] = []
+	for b in Data.db.builders.size():
+		if level(b) >= int(Data.db.progression["max_level"]):
+			out.append(b)
+	return out
+
+
 func points_left(builder: int) -> int:
 	return TalentRules.points(level(builder)) - TalentRules.spent(talents(builder))
 
