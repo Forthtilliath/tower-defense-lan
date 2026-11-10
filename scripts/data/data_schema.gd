@@ -63,13 +63,25 @@ const SPECIAL := {
 	"rate": ["num", 0.5, 5.0, 1.0], "gold_per_wave": ["int", 0, 10000, 0],
 }
 ## support : tourelle de soutien, qui ne tire pas mais renforce les tourelles dans sa portée.
+## attack : façon de frapper (voir ATTACKS). element : voir ELEMENTS (vide : physique).
 const TOWER := {
 	"id": ["id"], "name": ["text", 24], "description": ["text", 120, ""],
 	"color": ["color"], "air": ["bool"], "ground": ["bool"], "support": ["bool", false],
+	"attack": ["id", "shot"], "element": ["id", ""],
 }
+## shot : projectile ; pulse : onde autour de la tourelle (tous les monstres à portée) ;
+## line : trait qui traverse tous les monstres alignés jusqu'au bout de la portée ;
+## cone : souffle en cône vers la cible ; beam : rayon continu qui s'accroche à sa cible.
+const ATTACKS := ["shot", "pulse", "line", "cone", "beam"]
 ## Effets : poison (le plus fort garde la main), brûlure (cumul jusqu'à burn_stacks charges),
 ## saignement (part des PV max par seconde), contrôles (chance par coup et durée),
 ## auras des tourelles de soutien (bonus ajouté, dans la portée de la tourelle).
+## armor_pierce : part de l'armure ignorée. patch_* : nappe au sol laissée à l'impact
+## (dégâts/s qui ignorent l'armure, effets du tir réappliqués). ramp / ramp_max : chaque coup
+## d'un rayon sur la même cible ajoute ramp aux dégâts (multiplicateur plafonné à ramp_max).
+## vs_slowed / vs_stunned : dégâts en plus contre un monstre ralenti / étourdi (gelé).
+## shred : part de l'armure rongée. poison_spread : portée de contagion du poison.
+## crit_every / crit_mult : un coup sur crit_every est critique (dégâts × crit_mult).
 const TOWER_LEVEL := {
 	"cost": ["int", 1, 100000], "damage": ["num", 0.0, 100000.0],
 	"range": ["num", 0.5, 12.0], "rate": ["num", 0.05, 20.0],
@@ -85,6 +97,14 @@ const TOWER_LEVEL := {
 	"charm_chance": ["num", 0.0, 1.0, 0.0], "charm_duration": ["num", 0.0, 10.0, 0.0],
 	"aura_rate": ["num", 0.0, 3.0, 0.0], "aura_damage": ["num", 0.0, 3.0, 0.0],
 	"aura_cc": ["num", 0.0, 3.0, 0.0],
+	"armor_pierce": ["num", 0.0, 1.0, 0.0],
+	"patch_radius": ["num", 0.0, 3.0, 0.0], "patch_duration": ["num", 0.0, 20.0, 0.0],
+	"patch_dps": ["num", 0.0, 100000.0, 0.0],
+	"ramp": ["num", 0.0, 2.0, 0.0], "ramp_max": ["num", 1.0, 10.0, 1.0],
+	"vs_slowed": ["num", 0.0, 5.0, 0.0], "vs_stunned": ["num", 0.0, 5.0, 0.0],
+	"shred": ["num", 0.0, 0.9, 0.0], "shred_duration": ["num", 0.0, 30.0, 0.0],
+	"poison_spread": ["num", 0.0, 5.0, 0.0],
+	"crit_every": ["int", 0, 20, 0], "crit_mult": ["num", 1.0, 10.0, 1.0],
 }
 const MONSTER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"],

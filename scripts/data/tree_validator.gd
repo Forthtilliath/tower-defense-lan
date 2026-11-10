@@ -57,7 +57,7 @@ static func _talent(v: DataValidator, src: Variant, where: String, towers: Dicti
 		return v._fail("%s : palier %d inexistant" % [where, t["tier"]])
 	if t["unlock"] != "" and not towers.has(t["unlock"]):
 		return v._fail("%s : tourelle à débloquer « %s » inconnue" % [where, t["unlock"]])
-	var targets = v._list(src.get("towers", []), 0, 24, where + ".towers")
+	var targets = v._list(src.get("towers", []), 0, DataValidator.MAX_TOWERS, where + ".towers")
 	if targets == null:
 		return null
 	var ids: Array[String] = []
