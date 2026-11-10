@@ -48,7 +48,7 @@ func _ready() -> void:
 		names[e[0]] = e[1]
 		colors[e[0]] = UiTheme.player_color(e[2])
 		builders[e[0]] = e[3]
-		kits[e[0]] = PlayerKit.make(Data.db, e[3], e[4])
+		kits[e[0]] = PlayerKit.make(Data.db, e[3], e[4], e[5] if e.size() > 5 else [])
 	my_board = maxi(0, order.find(my_id)) if is_versus else 0
 	viewed_board = my_board
 	state = ViewState.new(Data.db, map, order.size() if is_versus else 1)
