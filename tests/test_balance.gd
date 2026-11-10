@@ -8,7 +8,9 @@ const PLAN := [
 	"mortar", "crossbow", "venom", "sentinel", "cannon", "tesla", "mortar", "ballista",
 ]
 const MAX_TOWERS := 16
+const EASY := 0
 const NORMAL := 1
+const HARD := 2
 const FIRST_WAVE_AFTER := 20.0
 ## Niveau des bots : un joueur qui a déjà quelques parties (deux branches presque complètes).
 const BOT_LEVEL := 10
@@ -88,13 +90,37 @@ func _score(sim: SimMatch) -> float:
 	return sim.wave_index + float(sim.boards[0].lives) / float(sim.difficulty["lives"])
 
 
-## Débutants : niveau 1, un seul point de talent, tourelles de base presque seulement.
-func test_level_one_beginners_win() -> void:
+## Courbe de progression voulue : au niveau 1 (0 XP, un seul point de talent), chaque classe gagne
+## en Facile la carte la plus facile ; en Normal, le joueur tient jusqu'à la vague 8 au moins sur les
+## cartes difficiles, mais ne les gagne pas toutes : il faut progresser pour les finir.
+func test_level_one_beginners() -> void:
 	var gd := load_data()
-	var solo := play(gd, 0, 1, NORMAL, {}, [], 1)
-	check(solo.result == "victory", "débutant seul : %s à la vague %d" % [solo.result, solo.wave_index + 1])
-	var duo := play(gd, 1, 2, NORMAL, {}, [], 1)
-	check(duo.result == "victory", "débutants à deux : %s à la vague %d" % [duo.result, duo.wave_index + 1])
+	for b in gd.builders.size():
+		var sim := play(gd, 0, 1, EASY, {}, [b], 1)
+		check(sim.result == "victory", "%s niveau 1 en Facile : %s à la vague %d" % [gd.builders[b]["id"], sim.result, sim.wave_index + 1])
+	var lost := 0
+	for m in hard_maps(gd):
+		var sim := play(gd, m, 1, NORMAL, {}, [], 1)
+		check(sim.result == "victory" or sim.wave_index + 1 >= 8, "%s niveau 1 en Normal : perdu dès la vague %d" % [gd.maps[m].id, sim.wave_index + 1])
+		lost += 0 if sim.result == "victory" else 1
+	check(lost > 0, "niveau 1 en Normal : les cartes difficiles demandent de progresser")
+
+
+## Au niveau 15, une classe de dégâts finit les cartes difficiles en Difficile (les classes
+## utilitaires, elles, comptent sur le groupe).
+func test_level_fifteen_wins_hard_maps_in_hard() -> void:
+	var gd := load_data()
+	for m in hard_maps(gd):
+		var sim := play(gd, m, 1, HARD, {}, [], 15)
+		check(sim.result == "victory", "%s niveau 15 en Difficile : %s à la vague %d" % [gd.maps[m].id, sim.result, sim.wave_index + 1])
+
+
+func hard_maps(gd: GameData) -> Array[int]:
+	var out: Array[int] = []
+	for m in gd.maps.size():
+		if gd.maps[m].tier == 2:
+			out.append(m)
+	return out
 
 
 ## Branches de spécialisation d'une classe (hors tronc), dans l'ordre des données.
