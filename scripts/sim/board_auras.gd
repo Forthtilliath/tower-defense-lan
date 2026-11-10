@@ -2,7 +2,8 @@ class_name BoardAuras
 extends RefCounted
 ## Auras des tourelles de soutien : chaque tourelle qui tire reçoit, pour chaque type d'aura
 ## (cadence, dégâts, contrôles), le bonus de la plus forte tourelle de soutien dont la portée
-## l'atteint. Les bonus ne s'additionnent pas entre eux.
+## l'atteint. Les bonus ne s'additionnent pas entre eux. Une tourelle de soutien brouillée
+## n'en donne plus (MonsterAbilities refait les auras quand elle s'éteint ou se rallume).
 ## Le joueur qui pose l'aura est crédité d'une part des dégâts et contrôles qu'elle apporte.
 
 const KINDS := {"rate": "aura_rate", "damage": "aura_damage", "cc": "aura_cc"}
@@ -14,7 +15,7 @@ static func refresh(b: SimBoard) -> void:
 		b.towers[cell].buffs = {}
 	for cell in b.towers:
 		var s: SimTower = b.towers[cell]
-		if not s.support:
+		if not s.support or s.is_jammed():
 			continue
 		var reach: float = s.stats["range"]
 		for other_cell in b.towers:

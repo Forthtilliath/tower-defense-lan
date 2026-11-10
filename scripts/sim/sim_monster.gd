@@ -7,6 +7,9 @@ extends RefCounted
 ## Après un contrôle dur, une courte immunité évite de bloquer un monstre indéfiniment ;
 ## cc_resist (boss) raccourcit les contrôles et protège du charme à partir de 0,5.
 ## contrib : contribution de chaque joueur à sa mort (dégâts, contrôles), pour partager la prime.
+## Bonus (DataSchema.PASSIVE_TRAITS) : lévitation, véhicule (insensible aux effets continus, à
+## la peur et au charme), résistances aux éléments. Capacités (DataSchema.ABILITIES, jouées par
+## MonsterAbilities) : bond en avant, protection des voisins, brouillage des tourelles.
 
 enum Crowd { STUN, FEAR, CHARM }
 
@@ -49,6 +52,12 @@ var slow_timer := 0.0
 var poison_dps := 0.0
 var poison_timer := 0.0
 var poison_owner := 0
+## Portée de contagion du poison en cours (0 : il ne se propage pas) et horloge de propagation.
+var poison_spread := 0.0
+var spread_clock := 0.0
+## Armure rongée (part retirée) et durée restante.
+var shred := 0.0
+var shred_timer := 0.0
 var burn_dps := 0.0  # par charge
 var burn_stacks := 0
 var burn_timer := 0.0
@@ -62,6 +71,21 @@ var charm_timer := 0.0
 var charm_owner := 0
 var control_guard := 0.0
 var contrib := {}  # id joueur -> points
+var hover := false
+var mechanical := false
+## Élément -> part des dégâts (et des effets) de cet élément réellement subie.
+var element_taken := {}
+var blink_interval := 0.0
+var blink_distance := 0.0
+var blink_clock := 0.0
+var ward_radius := 0.0
+var ward := 0.0
+## Protection reçue du meilleur protecteur voisin (part des dégâts évitée), à chaque pas.
+var warded := 0.0
+var jam_radius := 0.0
+var jam_interval := 0.0
+var jam_duration := 0.0
+var jam_clock := 0.0
 
 
 ## Remplit les caractéristiques depuis la définition du monstre (données du jeu).
@@ -85,6 +109,23 @@ func setup(def: Dictionary, p_hp_mult: float, reward_mult: float, mod := {}) -> 
 	heal_rate = def["heal_rate"]
 	split_into = def["split_into"]
 	split_count = def["split_count"]
+	hover = def["hover"] or mod.get("hover", false)
+	mechanical = def["mechanical"] or mod.get("mechanical", false)
+	var all := 1.0 - _trait(def, mod, "resist_elements")
+	for e in DataSchema.ELEMENTS:
+		element_taken[e] = all * (1.0 - _trait(def, mod, "resist_" + e))
+	for key in DataSchema.ABILITIES:  # blink_*, ward*, jam_* : mêmes noms que les variables
+		set(key, float(def[key]))
+
+
+## Bonus passif chiffré du monstre ou de sa vague spéciale : le plus fort des deux.
+static func _trait(def: Dictionary, mod: Dictionary, key: String) -> float:
+	return maxf(float(def.get(key, 0.0)), float(mod.get(key, 0.0)))
+
+
+## Part des dégâts d'un élément réellement subie ("" : coups physiques, toujours entiers).
+func taken(element: String) -> float:
+	return float(element_taken.get(element, 1.0))
 
 
 func is_alive() -> bool:
@@ -168,31 +209,49 @@ func apply_slow(factor: float, duration: float) -> float:
 	return slow_timer - before
 
 
-## Empoisonne : garde le poison le plus fort (et son auteur pour la prime), prolonge la durée.
-func apply_poison(dps: float, duration: float, owner: int) -> void:
-	if dps <= 0.0 or duration <= 0.0:
+## Empoisonne : garde le poison le plus fort (et son auteur pour la prime, et sa contagion),
+## prolonge la durée.
+func apply_poison(dps: float, duration: float, owner: int, spread := 0.0) -> void:
+	if mechanical or dps <= 0.0 or duration <= 0.0:
 		return
 	if poison_timer <= 0.0 or dps >= poison_dps:
 		poison_dps = dps
 		poison_owner = owner
+		poison_spread = spread
 	poison_timer = maxf(poison_timer, duration)
 
 
+## Ronge l'armure : garde la plus forte part retirée, prolonge la durée.
+func apply_shred(part: float, duration: float) -> void:
+	if part <= 0.0 or duration <= 0.0:
+		return
+	if shred_timer <= 0.0 or part > shred:
+		shred = part
+	shred_timer = maxf(shred_timer, duration)
+
+
+## Armure restante face à un coup qui en ignore la part `pierce`.
+func armor_against(pierce: float) -> float:
+	var left := armor * (1.0 - pierce)
+	return left * (1.0 - shred) if shred_timer > 0.0 else left
+
+
 ## Brûlure : chaque coup ajoute une charge (jusqu'à max_stacks) et relance la durée.
+## Une source au plafond plus bas ne retire jamais de charges déjà posées.
 func apply_burn(dps: float, duration: float, max_stacks: int, owner: int) -> void:
-	if dps <= 0.0 or duration <= 0.0 or max_stacks <= 0:
+	if mechanical or dps <= 0.0 or duration <= 0.0 or max_stacks <= 0:
 		return
 	if burn_timer <= 0.0:
 		burn_stacks = 0
 	burn_dps = maxf(burn_dps if burn_timer > 0.0 else 0.0, dps)
-	burn_stacks = mini(burn_stacks + 1, max_stacks)
+	burn_stacks = maxi(burn_stacks, mini(burn_stacks + 1, max_stacks))
 	burn_owner = owner
 	burn_timer = duration
 
 
 ## Saignement : part des PV max par seconde (les boss y résistent en partie).
 func apply_bleed(rate: float, duration: float, owner: int) -> void:
-	if rate <= 0.0 or duration <= 0.0:
+	if mechanical or rate <= 0.0 or duration <= 0.0:
 		return
 	if bleed_timer <= 0.0 or rate >= bleed_rate:
 		bleed_rate = rate
@@ -205,6 +264,8 @@ func apply_control(kind: int, duration: float, owner: int) -> float:
 	if control_guard > 0.0 or duration <= 0.0:
 		return 0.0
 	if kind == Crowd.CHARM and (cc_resist >= CHARM_IMMUNE_FROM or flying):
+		return 0.0
+	if kind != Crowd.STUN and mechanical:  # un véhicule ne s'effraie pas et ne se laisse pas charmer
 		return 0.0
 	var d := duration * (1.0 - cc_resist)
 	if d < 0.1:
