@@ -26,7 +26,8 @@ func test_levels_and_match_xp() -> void:
 	check(TalentRules.match_xp(gd, false, 0, 15, 1) == 0, "défaite immédiate : rien")
 
 
-## Chaque classe : un tronc de 5 points et 4 spécialisations de 10 points (niveau 15 = 15 points).
+## Chaque classe : un tronc de 4 points et 4 spécialisations de 10 points plus un talent ultime
+## d'un point (niveau 15 = 15 points : tout le tronc, toute la spécialisation et l'ultime).
 func test_every_class_has_a_trunk_and_four_specs() -> void:
 	var gd := load_data()
 	for b in gd.builders:
@@ -34,15 +35,40 @@ func test_every_class_has_a_trunk_and_four_specs() -> void:
 		var specs := 0
 		for branch in b["branches"]:
 			var points := 0
+			var ultimates := []
 			for t in branch["talents"]:
-				points += int(t["max_rank"])
+				if t["ultimate"]:
+					ultimates.append(int(t["max_rank"]))
+				else:
+					points += int(t["max_rank"])
 			if branch["trunk"]:
 				trunk += 1
-				check(points == 5, "%s : tronc de 5 points (%d)" % [b["id"], points])
+				check(points == 4 and ultimates.is_empty(), "%s : tronc de 4 points, sans ultime (%d)" % [b["id"], points])
 			else:
 				specs += 1
 				check(points == 10, "%s / %s : 10 points (%d)" % [b["id"], branch["id"], points])
+				check(ultimates == [1], "%s / %s : un ultime d'un point" % [b["id"], branch["id"]])
 		check(trunk == 1 and specs == 4, "%s : 1 tronc et 4 spécialisations" % b["id"])
+
+
+func test_ultimate_only_at_max_level() -> void:
+	var gd := load_data()
+	var a := _builder(gd, "arcanist")
+	var full := {"ar_conductive": 3, "ar_pylon": 1, "ar_overload": 2, "ar_tempest": 2, "ar_railgun": 1, "ar_voltage": 1}
+	var with_ult := full.duplicate()
+	with_ult["ar_storm_eternal"] = 1
+	check(TalentRules.validate(gd, a, with_ult, 14) == null, "ultime refusé au niveau 14")
+	check(TalentRules.validate(gd, a, with_ult, 15) != null, "ultime permis au niveau 15")
+	check(TalentRules.add_refusal(gd, a, full, "ar_storm_eternal", 14).contains("ultime"), "refus expliqué")
+	check(TalentRules.add_refusal(gd, a, full, "ar_storm_eternal", 15) == "", "ajout permis au niveau 15")
+	var kit := PlayerKit.make(gd, a, with_ult)
+	check(int(gd.tower_stats("tesla", 0, -1, kit)["chain"]) == 4, "la Tesla rebondit 2 fois de plus")
+	var gunner := _builder(gd, "gunner")
+	var sniper := PlayerKit.make(gd, gunner, {"gu_pierce": 1})
+	check(is_equal_approx(gd.tower_stats("ballista", 0, -1, sniper)["armor_pierce"], 0.5), "la Baliste ignore la moitié de l'armure")
+	var deluge := PlayerKit.make(gd, gunner, {"gu_deluge": 1})
+	check(int(gd.tower_stats("gatling", 0, -1, deluge)["multishot"]) == 3, "Rafale : une cible de plus")
+	check(int(gd.tower_stats("crossbow", 0, -1, deluge)["multishot"]) == 1, "l'Arbalète n'est pas concernée")
 
 
 func test_validation_of_received_talents() -> void:
@@ -58,7 +84,7 @@ func test_validation_of_received_talents() -> void:
 	check(TalentRules.validate(gd, a, "texte", 10) == null, "pas un dictionnaire")
 	check(TalentRules.validate(gd, a, {}, 0) == {}, "aucun talent : valable")
 	check(TalentRules.validate(gd, a, {"ar_conductive": 1, "ar_embers": 1}, 10) == null, "deux spécialisations refusées")
-	check(TalentRules.validate(gd, a, {"ar_focus": 3, "ar_flow": 2, "ar_embers": 1}, 10) != null, "tronc + une spécialisation")
+	check(TalentRules.validate(gd, a, {"ar_focus": 3, "ar_flow": 1, "ar_embers": 1}, 10) != null, "tronc + une spécialisation")
 
 
 func test_add_and_remove_rules() -> void:
