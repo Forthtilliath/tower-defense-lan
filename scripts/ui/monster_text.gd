@@ -28,6 +28,12 @@ static func traits_text(def: Dictionary) -> String:
 			parts.append("résiste %s (%d %%)" % [RESIST_TEXT[e], _pct(def["resist_" + e])])
 	if def["resist_elements"] > 0.0:
 		parts.append("résiste à tous les éléments (%d %%)" % _pct(def["resist_elements"]))
+	for e in [["physical", "aux coups physiques"], ["pierce", "aux coups perçants (flèches, carreaux)"], ["blunt", "aux coups contondants (boulets, obus)"]]:
+		var part: float = def["resist_" + e[0]]
+		if part >= 1.0:
+			parts.append("insensible %s" % e[1])
+		elif part > 0.0:
+			parts.append("résiste %s (%d %%)" % [e[1], _pct(part)])
 	if def["regen"] > 0.0:
 		parts.append("se régénère")
 	if def["heal_rate"] > 0.0:

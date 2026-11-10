@@ -7,6 +7,7 @@ const ATTACK_TEXT := {
 	"pulse": "onde autour d'elle", "line": "traverse les monstres alignés",
 	"cone": "souffle en cône", "beam": "rayon continu",
 }
+const PHYSICAL_NAMES := {"pierce": "coups perçants (sans effet sur squelettes et fantômes)", "blunt": "coups contondants (sans effet sur les fantômes)"}
 const ELEMENT_NAMES := {"fire": "feu", "ice": "glace", "lightning": "foudre", "poison": "poison", "bleed": "saignement", "wind": "vent"}
 
 
@@ -16,6 +17,8 @@ static func stats_text(def: Dictionary, s: Dictionary) -> String:
 	var parts := ["Dégâts %s" % num(s["damage"]) if s["damage"] > 0.0 else "Aucun dégât", "portée %s" % num(s["range"]), "%s tir/s" % num(s["rate"])]
 	if ELEMENT_NAMES.has(def.get("element", "")):
 		parts.append("élément %s" % ELEMENT_NAMES[def["element"]])
+	elif PHYSICAL_NAMES.has(def.get("element", "")):
+		parts.append(PHYSICAL_NAMES[def["element"]])
 	if ATTACK_TEXT.has(def.get("attack", "shot")):
 		parts.append(ATTACK_TEXT[def["attack"]])
 	if s["splash"] > 0.0:
