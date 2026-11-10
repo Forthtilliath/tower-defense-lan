@@ -194,6 +194,45 @@ func set_cell(index: int, kind: int, special: int) -> void:
 	specials[index] = special
 
 
+## Couloirs ouverts pour `players` joueurs sur une carte à plusieurs couloirs : un par joueur
+## (jusqu'à `lanes`), celui qui traverse la zone de chacun (zone 0 pour le 1er, etc.) ; tous les
+## départs sur une carte à un seul couloir.
+func open_paths(players: int) -> Array[int]:
+	var out: Array[int] = []
+	if lanes <= 1:
+		for p in start_count():
+			out.append(p)
+		return out
+	for z in clampi(players, 1, lanes):
+		for p in start_count():
+			if not out.has(p) and _start_zone(p) == z:
+				out.append(p)
+				break
+	for p in start_count():  # carte sans zones ou zones incomplètes : les premiers départs
+		if out.size() >= clampi(players, 1, lanes):
+			break
+		if not out.has(p):
+			out.append(p)
+	return out
+
+
+## Zone la plus présente autour du départ d'un chemin (-1 si aucune).
+func _start_zone(path: int) -> int:
+	var c := Vector2i(ground_paths[path][0].floor())
+	var counts := {}
+	for dy in range(-2, 3):
+		for dx in range(-2, 3):
+			var at := c + Vector2i(dx, dy)
+			if in_bounds(at) and zones[at.y * width + at.x] >= 0:
+				var z: int = zones[at.y * width + at.x]
+				counts[z] = int(counts.get(z, 0)) + 1
+	var best := -1
+	for z in counts:
+		if best < 0 or counts[z] > counts[best]:
+			best = z
+	return best
+
+
 func start_count() -> int:
 	return ground_paths.size()
 

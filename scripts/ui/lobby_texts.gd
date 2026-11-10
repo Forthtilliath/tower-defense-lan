@@ -39,7 +39,9 @@ static func map_text(map: MapDef, mode: int, player_count: int) -> String:
 		parts.append("conseillée de %d à %d joueurs" % [map.min_players, map.max_players])
 	var text := " · ".join(parts)
 	if mode == SimMatch.Mode.COOP and map.lanes > 1:
-		text += "\n%d couloirs séparés : %d fois plus de vies, et plus d'or si vous êtes moins nombreux que les couloirs." % [map.lanes, map.lanes]
+		var open := clampi(player_count, 1, map.lanes)
+		text += "\n%d couloirs séparés : un par joueur reçoit des monstres (%d ouvert%s à %d), chacun avec la vague complète." % [
+			map.lanes, open, "s" if open > 1 else "", player_count]
 	if mode == SimMatch.Mode.COOP and map.layout() != MapDef.Layout.SHARED:
 		text += "\nChacun ne construit que dans sa zone (couleur du joueur)%s." % (" ; les cases neutres sont communes" if map.layout() == MapDef.Layout.MIXED else "")
 	return text

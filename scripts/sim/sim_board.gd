@@ -23,6 +23,8 @@ var alive := true
 var reward_mult := 1.0
 ## Armure ajoutée à chaque monstre (difficulté).
 var armor_bonus := 0.0
+## Chemins où les monstres apparaissent (vide : tous) : sur une carte à plusieurs couloirs, un par joueur.
+var open_paths: Array[int] = []
 var monsters: Array[SimMonster] = []
 var towers := {}  # index de case -> SimTower
 var projectiles: Array[SimProjectile] = []
@@ -183,7 +185,7 @@ func spawn(type: String, hp_mult: float, path := -1, progress := 0.0, now := tru
 	if m.flying:
 		m.speed *= map.flyer_speed
 	if path < 0:
-		path = _spawn_turn % map.start_count()
+		path = open_paths[_spawn_turn % open_paths.size()] if not open_paths.is_empty() else _spawn_turn % map.start_count()
 		_spawn_turn += 1
 	m.path = path
 	m.length = map.path_length(m.path, m.flying)
