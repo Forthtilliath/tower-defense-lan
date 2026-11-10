@@ -102,7 +102,7 @@ func _build_panel() -> void:
 		add_child(UiTheme.label("Touche une tourelle pour voir ce qu'elle fait et sa portée sur la case, puis construis-la.", 16, UiTheme.MUTED))
 	else:
 		var special := _game.map.special_at(_selected)
-		var cost: int = builder.cost(data.tower_levels(_previewed)[0]["cost"])
+		var cost: int = builder.cost(data.tower_levels(_previewed)[0]["cost"], _zone_discount(_selected))
 		var index := data.tower_order.find(_previewed)
 		_tower_info(_previewed, special, builder)
 		var build := UiTheme.button("Construire — %d or" % cost, func() -> void:
@@ -116,12 +116,13 @@ func _build_panel() -> void:
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	add_child(grid)
+	var discount := _zone_discount(_selected)
 	for id in data.tower_order:
 		if not builder.allows(id):
 			continue
 		var def: Dictionary = data.towers[id]
 		var tower_id: String = id
-		var b := UiTheme.button("%s\n%d or" % [def["name"], builder.cost(def["levels"][0]["cost"])], func() -> void:
+		var b := UiTheme.button("%s\n%d or" % [def["name"], builder.cost(def["levels"][0]["cost"], discount)], func() -> void:
 			_previewed = tower_id
 			refresh(true), 62)  # retour à la ligne : un nom long n'élargit pas le panneau
 		b.toggle_mode = true
@@ -169,7 +170,7 @@ func _tower_panel(t: Dictionary) -> void:
 	if locked:
 		add_child(UiTheme.label(MatchActions.LOCKED + ".", 16, UiTheme.DANGER))
 	if level + 1 < levels.size():
-		var next_cost: int = _game.my_kit().cost(levels[level + 1]["cost"])
+		var next_cost: int = _game.my_kit().cost(levels[level + 1]["cost"], _zone_discount(_selected))
 		var up := UiTheme.button("Améliorer — %d or" % next_cost, func() -> void:
 			_game.send({"a": "upgrade", "cell": _selected}))
 		add_child(up)
@@ -179,12 +180,27 @@ func _tower_panel(t: Dictionary) -> void:
 		add_child(UiTheme.label("Niveau maximum atteint.", 16, UiTheme.SUCCESS))
 	add_child(UiTheme.button("Cible : %s" % SimTower.TARGET_NAMES[t["mode"]], func() -> void:
 		_game.send({"a": "mode", "cell": _selected})))
-	var mine := _game.my_kit()
-	var refund := int(mine.invested(data, t["type"], level) * mine.sell_ratio())
+	var refund := int(int(t["invested"]) * _game.my_kit().sell_ratio())
 	var sell := UiTheme.button("Vendre (+%d or)" % refund, func() -> void:
 		_game.send({"a": "sell", "cell": _selected}))
 	sell.disabled = locked
 	add_child(sell)
+
+
+## Réduction du Chantier le plus fort qui atteint la case (même règle que MatchActions.zone_discount,
+## calculée sur l'instantané du plateau affiché).
+func _zone_discount(cell: int) -> float:
+	if cell < 0:
+		return 0.0
+	var data := _game.state.data
+	var entries := []
+	var towers: Dictionary = _game.viewed().get("towers", {})
+	for c in towers:
+		var t: Dictionary = towers[c]
+		if data.towers[t["type"]]["support"] and int(t.get("buffs", 0)) & 8 == 0:
+			var stats := data.tower_stats(t["type"], t["level"], _game.map.special_at(c), _game.kits.get(t["owner"]))
+			entries.append([_game.map.cell_center(c), stats, t["owner"]])
+	return float(BoardAuras.best_among(entries, _game.map.cell_center(cell), "aura_discount")[0])
 
 
 ## Bonus de la case sélectionnée, s'il y en a un.

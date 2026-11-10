@@ -161,20 +161,21 @@ func _parse_towers(raw: Variant) -> Variant:
 		return null
 	var out := {}
 	for e in raw:
-		if not _is_tuple(e, 6):
+		if not _is_tuple(e, 7):
 			return null
 		var cell = Check.as_int(e[0], 0, map.cell_count() - 1)
 		var type = Check.as_int(e[1], 0, data.tower_order.size() - 1)
+		var invested = Check.as_int(e[6], 0, 1000000)  # or payé (revente exacte, réductions comprises)
 		if cell == null or type == null or not map.is_buildable(cell):
 			return null
 		var id: String = data.tower_order[type]
 		var level = Check.as_int(e[2], 0, data.tower_levels(id).size() - 1)
 		var owner = Check.as_int(e[3], 1, NetPayloads.MAX_PEER_ID)
 		var mode = Check.as_int(e[4], 0, SimTower.TARGET_NAMES.size() - 1)
-		var buffs = Check.as_int(e[5], 0, 15)  # auras reçues, et 8 : brouillée
-		if level == null or owner == null or mode == null or buffs == null:
+		var buffs = Check.as_int(e[5], 0, 127)  # auras reçues, et 8 : brouillée
+		if level == null or owner == null or mode == null or buffs == null or invested == null:
 			return null
-		out[cell] = {"type": id, "level": level, "owner": owner, "mode": mode, "buffs": buffs}
+		out[cell] = {"type": id, "level": level, "owner": owner, "mode": mode, "buffs": buffs, "invested": invested}
 	return out
 
 
@@ -190,7 +191,7 @@ func _parse_monsters(raw: Variant) -> Variant:
 		var path = Check.as_int(e[2], 0, map.start_count() - 1)
 		var progress = Check.as_num(e[3], 0.0, 100000.0)
 		var hp = Check.as_int(e[4], 0, 255)
-		var flags = Check.as_int(e[5], 0, 511)
+		var flags = Check.as_int(e[5], 0, 4095)
 		if id == null or type == null or path == null or progress == null or hp == null or flags == null:
 			return null
 		var type_id: String = data.monster_order[type]
@@ -200,6 +201,7 @@ func _parse_monsters(raw: Variant) -> Variant:
 			"slowed": flags & 1 != 0, "poisoned": flags & 2 != 0, "elite": flags & 4 != 0,
 			"burning": flags & 8 != 0, "bleeding": flags & 16 != 0, "stunned": flags & 32 != 0,
 			"feared": flags & 64 != 0, "charmed": flags & 128 != 0, "warded": flags & 256 != 0,
+			"frostbitten": flags & 512 != 0, "shocked": flags & 1024 != 0, "grounded": flags & 2048 != 0,
 		}
 	return out
 
