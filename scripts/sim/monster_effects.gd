@@ -8,6 +8,8 @@ const BLEED_RESIST := 0.5
 ## Un monstre charmé frappe le monstre le plus proche à portée : part de ses PV max par seconde.
 const CHARM_DPS := 0.2
 const CHARM_REACH := 0.8
+## Un poison contagieux saute vers un voisin toutes les SPREAD_INTERVAL secondes.
+const SPREAD_INTERVAL := 1.0
 
 
 static func update(b: SimBoard, dt: float, rewards: Array) -> void:
@@ -16,21 +18,50 @@ static func update(b: SimBoard, dt: float, rewards: Array) -> void:
 			continue
 		if m.regen > 0.0:
 			m.hp = minf(m.max_hp, m.hp + m.regen * dt)
+		m.shred_timer = maxf(0.0, m.shred_timer - dt)
 		_damage_over_time(b, m, dt, rewards)
+	_contagion(b, dt)
 	_heal(b, dt)
 	_charmed_attacks(b, dt, rewards)
 
 
+## Poison contagieux : saute vers le monstre le plus proche à portée qui n'a pas de poison
+## aussi fort, avec la durée qu'il lui reste (la contagion finit donc par s'éteindre).
+static func _contagion(b: SimBoard, dt: float) -> void:
+	for m in b.monsters:
+		if not m.is_alive() or m.poison_timer <= 0.0 or m.poison_spread <= 0.0:
+			continue
+		m.spread_clock += dt
+		if m.spread_clock < SPREAD_INTERVAL:
+			continue
+		m.spread_clock -= SPREAD_INTERVAL
+		var next: SimMonster = null
+		var best := m.poison_spread * m.poison_spread
+		for other in b.monsters:
+			if other == m or not other.is_alive() or other.is_charmed():
+				continue
+			if other.poison_timer > 0.0 and other.poison_dps >= m.poison_dps:
+				continue
+			var d2 := other.pos.distance_squared_to(m.pos)
+			if d2 <= best:
+				best = d2
+				next = other
+		if next != null:
+			next.apply_poison(m.poison_dps, m.poison_timer, m.poison_owner, m.poison_spread)
+			b.add_fx(SimBoard.Fx.SPREAD, m.pos, next.pos)
+
+
+## Poison, brûlure (feu) et saignement, réduits par la résistance du monstre à leur élément.
 static func _damage_over_time(b: SimBoard, m: SimMonster, dt: float, rewards: Array) -> void:
 	if m.poison_timer > 0.0:
 		m.poison_timer = maxf(0.0, m.poison_timer - dt)
-		BoardCombat.damage(b, m, m.poison_dps * dt, true, BoardCombat.solo(m.poison_owner), rewards)
+		BoardCombat.damage(b, m, m.poison_dps * m.taken("poison") * dt, true, BoardCombat.solo(m.poison_owner), rewards)
 	if m.burn_timer > 0.0 and m.is_alive():
 		m.burn_timer = maxf(0.0, m.burn_timer - dt)
-		BoardCombat.damage(b, m, m.burn_dps * m.burn_stacks * dt, true, BoardCombat.solo(m.burn_owner), rewards)
+		BoardCombat.damage(b, m, m.burn_dps * m.burn_stacks * m.taken("fire") * dt, true, BoardCombat.solo(m.burn_owner), rewards)
 	if m.bleed_timer > 0.0 and m.is_alive():
 		m.bleed_timer = maxf(0.0, m.bleed_timer - dt)
-		var rate := m.bleed_rate * (1.0 - m.cc_resist * BLEED_RESIST)
+		var rate := m.bleed_rate * (1.0 - m.cc_resist * BLEED_RESIST) * m.taken("bleed")
 		BoardCombat.damage(b, m, m.max_hp * rate * dt, true, BoardCombat.solo(m.bleed_owner), rewards)
 
 
