@@ -134,7 +134,7 @@ func choose(key: String, value: Variant) -> void:
 ## Annonce la classe choisie, avec le niveau et les talents enregistrés pour elle sur cet appareil.
 ## Envois espacés (KIT_INTERVAL_MS) : seul le dernier état part, rien n'est perdu.
 func choose_kit(builder: int) -> void:
-	_pending_kit = {"b": builder, "lv": Progress.level(builder), "t": Progress.talents(builder)}
+	_pending_kit = {"b": builder, "lv": Progress.level(builder), "t": Progress.talents(builder), "h": Progress.heritage()}
 	_flush_kit()
 
 

@@ -8,8 +8,8 @@ const MAX_PEER_ID := 2147483647
 
 ## Liste des joueurs : ids uniques, hôte (1) présent, noms non vides, valeurs bornées par les
 ## données du jeu, talents conformes à l'arbre de la classe.
-## Salon (with_lobby) : [[id, nom, couleur, bâtisseur, vote, niveau, talents], ...]
-## Partie : [[id, nom, couleur, bâtisseur, talents], ...]
+## Salon (with_lobby) : [[id, nom, couleur, bâtisseur, vote, niveau, talents, héritage], ...]
+## Partie : [[id, nom, couleur, bâtisseur, talents, héritage], ...]
 static func parse_roster(raw: Variant, data: GameData, max_players: int, with_lobby: bool) -> Variant:
 	if typeof(raw) != TYPE_ARRAY:
 		return null
@@ -20,7 +20,7 @@ static func parse_roster(raw: Variant, data: GameData, max_players: int, with_lo
 	var seen := {}
 	var max_level := int(data.progression["max_level"])
 	for e in list:
-		if typeof(e) != TYPE_ARRAY or e.size() != (7 if with_lobby else 5):
+		if typeof(e) != TYPE_ARRAY or e.size() != (8 if with_lobby else 6):
 			return null
 		var id = Check.as_int(e[0], 1, MAX_PEER_ID)
 		var player_name := Check.sanitize_name(e[1])
@@ -31,10 +31,11 @@ static func parse_roster(raw: Variant, data: GameData, max_players: int, with_lo
 		if id == null or player_name == "" or color == null or builder == null or vote == null or level == null or seen.has(id):
 			return null
 		var talents = TalentRules.validate(data, builder, e[6] if with_lobby else e[4], TalentRules.points(level))
-		if talents == null:
+		var heritage = TalentRules.parse_heritage(data, e[7] if with_lobby else e[5])
+		if talents == null or heritage == null:
 			return null
 		seen[id] = true
-		out.append([id, player_name, color, builder, vote, level, talents] if with_lobby else [id, player_name, color, builder, talents])
+		out.append([id, player_name, color, builder, vote, level, talents, heritage] if with_lobby else [id, player_name, color, builder, talents, heritage])
 	if not seen.has(1):
 		return null
 	return out
@@ -50,7 +51,7 @@ static func parse_lobby(raw: Variant, data: GameData, mode_count: int, max_playe
 		return null
 	var players := {}
 	for e in roster:
-		players[e[0]] = {"name": e[1], "color": e[2], "builder": e[3], "vote": e[4], "level": e[5], "talents": e[6]}
+		players[e[0]] = {"name": e[1], "color": e[2], "builder": e[3], "vote": e[4], "level": e[5], "talents": e[6], "heritage": e[7]}
 	options["players"] = players
 	return options
 
