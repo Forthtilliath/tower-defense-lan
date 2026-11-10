@@ -68,8 +68,27 @@ func _run() -> void:
 	panel.refresh(true)
 	await _wait(0.3)
 	_shot("4-construire-%s" % tag)
+	await _showcase(map)
 	Net.leave()
 	get_tree().quit(0)
+
+
+## Vitrine du rendu : toutes les tourelles posées d'office et un monstre de chaque sorte,
+## placés directement dans la simulation (sans les règles de construction ni les talents).
+func _showcase(map: MapDef) -> void:
+	var board: SimBoard = Net.host_loop.sim.boards[0]
+	var free: Array[int] = []
+	for i in map.cell_count():
+		if board.can_build(i):
+			free.append(i)
+	var types: Array = Data.db.tower_order
+	for k in mini(types.size(), free.size()):
+		board.add_tower(free[k * free.size() / types.size()], types[k], 1, 0)
+	var monsters: Array = Data.db.monster_order
+	for k in monsters.size():
+		board.spawn(monsters[k], 50.0, -1, 2.0 + k * 1.6)
+	await _wait(1.2)
+	_shot("5-vitrine")
 
 
 func _wait(seconds: float) -> void:

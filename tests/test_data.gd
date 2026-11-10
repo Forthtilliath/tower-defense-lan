@@ -4,9 +4,9 @@ extends "res://tests/test_base.gd"
 
 func test_bundled_data_is_valid() -> void:
 	var gd := load_data()
-	check(gd.maps.size() == 10, "10 cartes attendues")
+	check(gd.maps.size() == 9, "9 cartes attendues")
 	check(gd.builders.size() == 6 and gd.modifiers.size() == 4, "6 bâtisseurs et 4 vagues spéciales")
-	check(gd.tower_order.size() == 18, "18 tourelles attendues")
+	check(gd.tower_order.size() == 29, "29 tourelles attendues")
 	check(gd.difficulties.size() == 4 and gd.specials.size() == 4, "4 difficultés et 4 cases spéciales")
 	check(gd.sendable_monsters().size() == 11, "11 monstres envoyables : %d" % gd.sendable_monsters().size())
 	for id in gd.tower_order:
@@ -34,13 +34,6 @@ func test_prairie_path_length() -> void:
 	check(is_equal_approx(prairie.path_length(0, false), 39.0), "longueur %f" % prairie.path_length(0, false))
 	var mid := prairie.position_at(0, 12.0, false)
 	check(mid.is_equal_approx(Vector2(12.5, 1.5)), "position au virage %s" % mid)
-
-
-func test_heritage_matches_legacy_route() -> void:
-	var gd := load_data()
-	var heritage: MapDef = gd.maps[2]
-	# Route du prototype 2021 : 1, 11…18, 28, 38, 48…41, 51, 61, 71…78, 88 (30 cases)
-	check(is_equal_approx(heritage.path_length(0, false), 29.0), "longueur %f" % heritage.path_length(0, false))
 
 
 func test_rejects_unknown_monster_in_wave() -> void:
