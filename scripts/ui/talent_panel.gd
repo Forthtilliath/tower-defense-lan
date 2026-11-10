@@ -113,8 +113,13 @@ static func _spent(branch: Dictionary, talents: Dictionary) -> int:
 
 static func _sorted(branch: Dictionary) -> Array:
 	var sorted: Array = branch["talents"].duplicate()
-	sorted.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["tier"] < b["tier"])
+	sorted.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _rank_key(a) < _rank_key(b))
 	return sorted
+
+
+## Ordre d'affichage : par palier, le talent ultime toujours en dernier.
+static func _rank_key(t: Dictionary) -> int:
+	return int(t["tier"]) + (100 if t["ultimate"] else 0)
 
 
 func _talent_row(t: Dictionary, talents: Dictionary) -> HBoxContainer:
@@ -122,12 +127,15 @@ func _talent_row(t: Dictionary, talents: Dictionary) -> HBoxContainer:
 	var rank := int(talents.get(t["id"], 0))
 	var id: String = t["id"]
 	var open := TalentRules.add_refusal(Data.db, _builder, talents, id, 999) == "" or rank > 0
-	var b := UiTheme.button("Palier %d · %s  %d/%d\n%s" % [t["tier"], t["name"], rank, t["max_rank"], t["description"]],
+	var step := "Ultime · niveau %d" % int(Data.db.progression["max_level"]) if t["ultimate"] else "Palier %d" % t["tier"]
+	var b := UiTheme.button("%s · %s  %d/%d\n%s" % [step, t["name"], rank, t["max_rank"], t["description"]],
 		func() -> void: _change(id, true), 70)
 	b.size_flags_horizontal = SIZE_EXPAND_FILL
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	if rank > 0:
 		b.add_theme_color_override("font_color", UiTheme.SUCCESS)
+	elif t["ultimate"]:
+		b.add_theme_color_override("font_color", UiTheme.GOLD)
 	elif not open:
 		b.add_theme_color_override("font_color", UiTheme.MUTED.darkened(0.3))
 	row.add_child(b)
