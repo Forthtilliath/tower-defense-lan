@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 
 Settings="*res://scripts/core/settings.gd"
 Data="*res://scripts/data/data_autoload.gd"
+Progress="*res://scripts/core/progression.gd"
 Net="*res://scripts/net/network.gd"
 
 [display]
