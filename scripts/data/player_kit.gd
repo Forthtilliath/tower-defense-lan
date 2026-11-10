@@ -5,7 +5,10 @@ extends RefCounted
 ## bonus par tourelle (classe × talents), économie (primes, intérêts, or de départ, coûts, revente, dons).
 
 const STATS := ["damage", "rate", "range", "cc", "aura"]
-const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus"]
+const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
+	"team_bounty", "early_bonus", "clean_gold"]
+## Auras des tourelles de soutien, toutes renforcées par la statistique « aura ».
+const AURAS := ["aura_rate", "aura_damage", "aura_cc", "aura_range", "aura_frostbite", "aura_shock", "aura_bounty", "aura_discount"]
 ## Plafonds : réduction des prix, part de revente, part d'un don reçue par l'allié.
 const MAX_DISCOUNT := 0.5
 const MAX_SELL := 0.9
@@ -23,6 +26,11 @@ var start_gold := 0
 var build_cost := 0.0
 var sell_bonus := 0.0
 var gift_bonus := 0.0
+var team_bounty := 0.0
+var early_bonus := 0.0
+var clean_gold := 0
+## Ses tourelles d'imprégnation renforcent toutes leurs voisines (pas seulement leur élément).
+var imbue_all := false
 var _base := {}  # multiplicateurs de la classe
 var _bonus_towers := {}  # tourelles visées par le bonus de classe (vide : toutes)
 var _all := {}  # bonus des talents sur toutes les tourelles
@@ -65,6 +73,10 @@ func _apply(t: Dictionary, rank: int) -> void:
 	build_cost += float(t["build_cost"]) * rank
 	sell_bonus += float(t["sell_bonus"]) * rank
 	gift_bonus += float(t["gift_bonus"]) * rank
+	team_bounty += float(t["team_bounty"]) * rank
+	early_bonus += float(t["early_bonus"]) * rank
+	clean_gold += int(t["clean_gold"]) * rank
+	imbue_all = imbue_all or t["imbue_all"]
 	for s in STATS:
 		var v := float(t[s]) * rank
 		if v <= 0.0:
@@ -106,7 +118,7 @@ func boost(stats: Dictionary, type: String) -> void:
 	GameData.scale_damage(stats, mult(type, "damage"))
 	GameData.scale_control(stats, mult(type, "cc"))
 	var aura := mult(type, "aura")
-	for key in ["aura_rate", "aura_damage", "aura_cc"]:
+	for key in AURAS:
 		stats[key] *= aura
 
 
@@ -115,9 +127,10 @@ func interest_rule(data: GameData) -> Array:
 	return [float(data.player["interest"]) + interest, int(data.player["interest_cap"]) + interest_cap]
 
 
-## Prix payé pour une construction ou une amélioration affichée à `base` or.
-func cost(base: int) -> int:
-	return maxi(1, roundi(base * (1.0 - minf(build_cost, MAX_DISCOUNT))))
+## Prix payé pour une construction ou une amélioration affichée à `base` or ; `zone` : réduction
+## d'un Chantier voisin (le total reste plafonné).
+func cost(base: int, zone := 0.0) -> int:
+	return maxi(1, roundi(base * (1.0 - minf(build_cost + zone, MAX_DISCOUNT))))
 
 
 ## Total payé pour une tourelle arrivée au niveau `level`, réductions comprises.

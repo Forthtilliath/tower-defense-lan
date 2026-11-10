@@ -13,6 +13,8 @@ enum Fx { RING, BOLT, CONE, BEAM, WAVE, SPREAD, BLINK, JAM }
 const FX_DURATION := 0.35
 const MAX_QUEUE := 400
 const MAX_MONSTERS := 600
+## Part du supplément de prime d'un Comptoir versée en plus à son propriétaire.
+const COUNTER_CUT := 0.25
 
 var data: GameData
 var map: MapDef
@@ -151,9 +153,15 @@ func step(dt: float) -> Array:
 
 
 ## Mort d'un monstre : prime partagée selon la contribution de chacun (entière au tueur si
-## personne n'a contribué), et division éventuelle en petits monstres.
+## personne n'a contribué), majorée s'il meurt près d'un Comptoir (dont le propriétaire touche
+## en plus une part du supplément), et division éventuelle en petits monstres.
 func kill(m: SimMonster, killer: int, rewards: Array) -> void:
-	rewards.append_array(Bounty.split(m.gold, m.contrib, killer))
+	var counter := BoardAuras.best_at(self, m.pos, "aura_bounty")
+	var gold := m.gold
+	if float(counter[0]) > 0.0 and m.gold > 0:
+		gold = roundi(m.gold * (1.0 + float(counter[0])))
+		rewards.append([counter[1], maxi(1, roundi(m.gold * float(counter[0]) * COUNTER_CUT))])
+	rewards.append_array(Bounty.split(gold, m.contrib, killer))
 	for i in m.split_count:
 		if monsters.size() + _born.size() >= MAX_MONSTERS:
 			break
@@ -202,12 +210,14 @@ func snapshot() -> Dictionary:
 		var hp := int(roundf(clampf(m.hp / m.max_hp, 0.0, 1.0) * 255.0))
 		var flags := (1 if m.is_slowed() else 0) | (2 if m.is_poisoned() else 0) | (4 if m.is_elite() else 0) \
 				| (8 if m.is_burning() else 0) | (16 if m.is_bleeding() else 0) | (32 if m.is_stunned() else 0) \
-				| (64 if m.is_feared() else 0) | (128 if m.is_charmed() else 0) | (256 if m.warded > 0.0 else 0)
+				| (64 if m.is_feared() else 0) | (128 if m.is_charmed() else 0) | (256 if m.warded > 0.0 else 0) \
+				| (512 if m.marks.is_frostbitten() else 0) | (1024 if m.marks.is_shocked() else 0) \
+				| (2048 if m.marks.is_grounded() else 0)
 		mons.append([m.id, m.type_index, m.path, snappedf(m.progress, 0.01), hp, flags])
 	var tws := []
 	for cell in towers:
 		var t: SimTower = towers[cell]
-		tws.append([t.cell, data.tower_order.find(t.type), t.level, t.owner, t.target_mode, t.buff_flags()])
+		tws.append([t.cell, data.tower_order.find(t.type), t.level, t.owner, t.target_mode, t.buff_flags(), t.invested])
 	var prs := []
 	for p in projectiles:
 		prs.append([p.id, snappedf(p.pos.x, 0.01), snappedf(p.pos.y, 0.01)])

@@ -43,7 +43,9 @@ func is_jammed() -> bool:
 	return jammed > 0.0
 
 
-## Drapeaux pour l'affichage : auras reçues (1 dégâts, 2 cadence, 4 contrôles), 8 brouillée.
+## Drapeaux pour l'affichage : auras reçues (1 dégâts, 2 cadence, 4 contrôles, 16 portée,
+## 32 gelure, 64 électrifié), 8 brouillée.
 func buff_flags() -> int:
 	return (1 if buffs.has("damage") else 0) | (2 if buffs.has("rate") else 0) | (4 if buffs.has("cc") else 0) \
-			| (8 if is_jammed() else 0)
+			| (8 if is_jammed() else 0) | (16 if buffs.has("range") else 0) | (32 if buffs.has("frostbite") else 0) \
+			| (64 if buffs.has("shock") else 0)

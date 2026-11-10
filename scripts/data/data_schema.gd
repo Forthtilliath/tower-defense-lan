@@ -45,7 +45,13 @@ const TALENT := {
 	"cc": ["num", 0.0, 1.0, 0.0], "aura": ["num", 0.0, 1.0, 0.0], "bounty": ["num", 0.0, 1.0, 0.0],
 	"interest": ["num", 0.0, 0.1, 0.0], "interest_cap": ["int", 0, 1000, 0], "start_gold": ["int", 0, 10000, 0],
 	"build_cost": ["num", 0.0, 0.2, 0.0], "sell_bonus": ["num", 0.0, 0.1, 0.0], "gift_bonus": ["num", 0.0, 0.25, 0.0],
+	"team_bounty": ["num", 0.0, 0.2, 0.0], "early_bonus": ["num", 0.0, 2.0, 0.0], "clean_gold": ["int", 0, 1000, 0],
+	"imbue_all": ["bool", false],
 }
+## team_bounty : part de prime en plus pour toute l'équipe (le joueur compris). early_bonus : or
+## des vagues lancées en avance multiplié d'autant en plus. clean_gold : or par vague franchie
+## sans perdre de vie. imbue_all : ses tourelles d'imprégnation (Stèle de gelure, Paratonnerre)
+## renforcent toutes les tourelles voisines, pas seulement celles de leur élément.
 ## Classe : tourelles en plus du tronc commun (« towers », souvent aucune : les spécialisations
 ## débloquent les leurs), branches de talents, et bonus de classe. Les multiplicateurs (dégâts,
 ## portée, cadence, contrôles, auras) valent pour les tourelles de « bonus_towers » (toutes si vide).
@@ -58,7 +64,7 @@ const BUILDER := {
 	"interest": ["num", 0.0, 0.2, 0.0], "interest_cap": ["int", 0, 10000, 0], "start_gold": ["int", 0, 10000, 0],
 }
 ## Éléments des tourelles ("" : coups physiques), auxquels certains monstres résistent.
-const ELEMENTS := ["fire", "ice", "lightning", "poison", "bleed"]
+const ELEMENTS := ["fire", "ice", "lightning", "poison", "bleed", "wind"]
 ## Bonus passifs d'un monstre, qu'une vague spéciale peut aussi donner à tous ses monstres.
 ## hover : lévite, les nappes au sol ne le touchent pas. mechanical : véhicule, insensible au
 ## poison, à la brûlure, au saignement, à la peur et au charme. resist_* : part des dégâts (et
@@ -100,6 +106,13 @@ const ATTACKS := ["shot", "pulse", "line", "cone", "beam"]
 ## vs_slowed / vs_stunned : dégâts en plus contre un monstre ralenti / étourdi (gelé).
 ## shred : part de l'armure rongée. poison_spread : portée de contagion du poison.
 ## crit_every / crit_mult : un coup sur crit_every est critique (dégâts × crit_mult).
+## multishot : nombre de monstres visés à chaque tir. heal_block : part des soins et de la
+## régénération coupée (heal_block_duration s). ground_duration : un volant touché est cloué
+## au sol (toutes les tourelles peuvent le toucher) pendant ces secondes.
+## Auras des tourelles de soutien : aura_range (portée des voisines), aura_frostbite (gelure,
+## dégâts/s ajoutés aux coups des voisines de glace), aura_shock (électrifie : part de dégâts
+## subis en plus, coups des voisines de foudre), aura_bounty (prime en plus des monstres tués à
+## portée), aura_discount (réduction des constructions et améliorations à portée).
 const TOWER_LEVEL := {
 	"cost": ["int", 1, 100000], "damage": ["num", 0.0, 100000.0],
 	"range": ["num", 0.5, 12.0], "rate": ["num", 0.05, 20.0],
@@ -123,6 +136,10 @@ const TOWER_LEVEL := {
 	"shred": ["num", 0.0, 0.9, 0.0], "shred_duration": ["num", 0.0, 30.0, 0.0],
 	"poison_spread": ["num", 0.0, 5.0, 0.0],
 	"crit_every": ["int", 0, 20, 0], "crit_mult": ["num", 1.0, 10.0, 1.0],
+	"multishot": ["int", 1, 8, 1], "heal_block": ["num", 0.0, 1.0, 0.0], "heal_block_duration": ["num", 0.0, 30.0, 0.0],
+	"ground_duration": ["num", 0.0, 10.0, 0.0],
+	"aura_range": ["num", 0.0, 1.0, 0.0], "aura_frostbite": ["num", 0.0, 100000.0, 0.0],
+	"aura_shock": ["num", 0.0, 1.0, 0.0], "aura_bounty": ["num", 0.0, 2.0, 0.0], "aura_discount": ["num", 0.0, 0.5, 0.0],
 }
 const MONSTER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"],
