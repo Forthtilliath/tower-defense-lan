@@ -38,6 +38,7 @@ var _base := {}  # multiplicateurs de la classe
 var _bonus_towers := {}  # tourelles visées par le bonus de classe (vide : toutes)
 var _all := {}  # bonus des talents sur toutes les tourelles
 var _per := {}  # id de tourelle -> bonus des talents qui la visent
+var _grants := {}  # id de tourelle ("" : toutes) -> effets ajoutés par les talents (DataSchema.GRANT)
 
 
 static func make(data: GameData, p_builder: int, p_talents := {}) -> PlayerKit:
@@ -82,6 +83,12 @@ func _apply(t: Dictionary, rank: int) -> void:
 	raze_charges += int(t["raze_charges"]) * rank
 	tile_charges += int(t["tile_charges"]) * rank
 	imbue_all = imbue_all or t["imbue_all"]
+	for key in t["grant"]:
+		if t["grant"][key] > 0:
+			for id in (t["towers"] if not t["towers"].is_empty() else [""]):
+				if not _grants.has(id):
+					_grants[id] = {}
+				_grants[id][key] = _grants[id].get(key, 0) + t["grant"][key] * rank
 	for s in STATS:
 		var v := float(t[s]) * rank
 		if v <= 0.0:
@@ -125,6 +132,11 @@ func boost(stats: Dictionary, type: String) -> void:
 	var aura := mult(type, "aura")
 	for key in AURAS:
 		stats[key] *= aura
+	for id in ["", type]:  # effets ajoutés (talents ultimes), après les multiplicateurs
+		for key in _grants.get(id, {}):
+			stats[key] += _grants[id][key]
+			if DataSchema.GRANT_CAPS.has(key):
+				stats[key] = minf(stats[key], DataSchema.GRANT_CAPS[key])
 
 
 ## Intérêts : [taux, plafond], bonus de la classe et des talents compris.
