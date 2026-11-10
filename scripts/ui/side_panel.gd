@@ -141,8 +141,8 @@ func _tower_info(id: String, special: int, builder: PlayerKit) -> void:
 	add_child(UiTheme.label(def["description"], 16, UiTheme.TEXT))
 	var first := data.tower_stats(id, 0, special, builder)
 	var top := data.tower_stats(id, last, special, builder)
-	add_child(UiTheme.label("Niveau 1 : %s%s" % [stats_text(def, first), _dps(def, first)], 15, UiTheme.MUTED))
-	add_child(UiTheme.label("Niveau %d : %s%s" % [last + 1, stats_text(def, top), _dps(def, top)], 15, UiTheme.MUTED))
+	add_child(UiTheme.label("Niveau 1 : %s%s" % [TowerText.stats_text(def, first), TowerText.dps(def, first)], 15, UiTheme.MUTED))
+	add_child(UiTheme.label("Niveau %d : %s%s" % [last + 1, TowerText.stats_text(def, top), TowerText.dps(def, top)], 15, UiTheme.MUTED))
 	add_child(UiTheme.label("Coût jusqu'au niveau %d : %d or (revente à %d %%)" % [last + 1, data.tower_invested(id, last), roundi(SimMatch.SELL_RATIO * 100.0)], 15, UiTheme.GOLD))
 
 
@@ -158,8 +158,8 @@ func _tower_panel(t: Dictionary) -> void:
 	var builder_name: String = data.builders[builder.builder]["name"] if builder != null else "?"
 	add_child(UiTheme.label("Propriétaire : %s (%s)" % [_game.names.get(owner, "?"), builder_name], 17, _game.colors.get(owner, UiTheme.TEXT)))
 	_special_info()
-	add_child(UiTheme.label(stats_text(def, data.tower_stats(t["type"], level, special, builder)), 16, UiTheme.MUTED))
-	var boosted := buffs_text(int(t.get("buffs", 0)))
+	add_child(UiTheme.label(TowerText.stats_text(def, data.tower_stats(t["type"], level, special, builder)), 16, UiTheme.MUTED))
+	var boosted := TowerText.buffs_text(int(t.get("buffs", 0)))
 	if boosted != "":
 		add_child(UiTheme.label(boosted, 15, UiTheme.SUCCESS))
 	if owner != _game.my_id:
@@ -174,7 +174,7 @@ func _tower_panel(t: Dictionary) -> void:
 			_game.send({"a": "upgrade", "cell": _selected}))
 		add_child(up)
 		_priced.append([up, next_cost, locked])
-		add_child(UiTheme.label("Niveau suivant : " + stats_text(def, data.tower_stats(t["type"], level + 1, special, builder)), 15, UiTheme.MUTED))
+		add_child(UiTheme.label("Niveau suivant : " + TowerText.stats_text(def, data.tower_stats(t["type"], level + 1, special, builder)), 15, UiTheme.MUTED))
 	else:
 		add_child(UiTheme.label("Niveau maximum atteint.", 16, UiTheme.SUCCESS))
 	add_child(UiTheme.button("Cible : %s" % SimTower.TARGET_NAMES[t["mode"]], func() -> void:
@@ -193,59 +193,3 @@ func _special_info() -> void:
 		return
 	var s: Dictionary = _game.state.data.specials[special]
 	add_child(UiTheme.label("%s : %s" % [s["name"], s["description"]], 16, Color(s["color"])))
-
-
-static func stats_text(def: Dictionary, s: Dictionary) -> String:
-	if def.get("support", false):
-		return _aura_text(s)
-	var parts := ["Dégâts %s" % _num(s["damage"]), "portée %s" % _num(s["range"]), "%s tir/s" % _num(s["rate"])]
-	if s["splash"] > 0.0:
-		parts.append("zone %s" % _num(s["splash"]))
-	if s["slow_factor"] < 1.0:
-		parts.append("ralentit de %d %% (%s s)" % [roundi((1.0 - s["slow_factor"]) * 100.0), _num(s["slow_duration"])])
-	if s["chain"] > 0:
-		parts.append("%d rebonds" % s["chain"])
-	if s["poison_dps"] > 0.0:
-		parts.append("poison %s/s pendant %s s" % [_num(s["poison_dps"]), _num(s["poison_duration"])])
-	if s["burn_dps"] > 0.0:
-		parts.append("brûlure %s/s par charge, %d charges, %s s" % [_num(s["burn_dps"]), s["burn_stacks"], _num(s["burn_duration"])])
-	if s["bleed"] > 0.0:
-		parts.append("saignement %s %% des PV max/s pendant %s s" % [_num(s["bleed"] * 100.0), _num(s["bleed_duration"])])
-	for kind in [["stun", "étourdit"], ["fear", "effraie"], ["charm", "charme"]]:
-		if s[kind[0] + "_chance"] > 0.0:
-			parts.append("%s %d %% du temps (%s s)" % [kind[1], roundi(s[kind[0] + "_chance"] * 100.0), _num(s[kind[0] + "_duration"])])
-	parts.append("air et sol" if def["air"] and def["ground"] else ("sol" if def["ground"] else "air"))
-	return " · ".join(parts)
-
-
-static func _aura_text(s: Dictionary) -> String:
-	var parts := ["Aura de portée %s" % _num(s["range"])]
-	if s["aura_rate"] > 0.0:
-		parts.append("+%d %% de cadence" % roundi(s["aura_rate"] * 100.0))
-	if s["aura_damage"] > 0.0:
-		parts.append("+%d %% de dégâts" % roundi(s["aura_damage"] * 100.0))
-	if s["aura_cc"] > 0.0:
-		parts.append("+%d %% de chances et durées de contrôle" % roundi(s["aura_cc"] * 100.0))
-	parts.append("la plus forte aura de chaque type s'applique")
-	return " · ".join(parts)
-
-
-## Auras reçues par une tourelle (drapeaux de l'instantané).
-static func buffs_text(flags: int) -> String:
-	var names := []
-	if flags & 1:
-		names.append("dégâts")
-	if flags & 2:
-		names.append("cadence")
-	if flags & 4:
-		names.append("contrôles")
-	return "" if names.is_empty() else "Renforcée par une aura : " + ", ".join(names) + "."
-
-
-## « · 9,6 dégâts/s » (coups directs seulement), vide pour une tourelle de soutien.
-static func _dps(def: Dictionary, s: Dictionary) -> String:
-	return "" if def.get("support", false) else " · %s dégâts/s" % _num(s["damage"] * s["rate"])
-
-
-static func _num(v: float) -> String:
-	return str(snappedf(v, 0.01)).replace(".", ",")
