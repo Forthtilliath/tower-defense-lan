@@ -4,7 +4,11 @@ extends RefCounted
 ## Le combat (tirs, projectiles, effets) est dans BoardCombat.
 ## En coopération il n'y a qu'un plateau partagé ; en versus, un par joueur.
 
-enum Fx { RING, BOLT }
+## RING : éclat d'explosion (rayon) ; BOLT : éclair ; CONE : souffle de flammes (jusqu'au point
+## visé) ; BEAM : rayon ardent ; WAVE : onde autour d'une tourelle (rayon, teinte = index de
+## la tourelle) ; SPREAD : contagion du poison d'un monstre à l'autre ; BLINK : bond d'un
+## monstre ; JAM : onde de brouillage autour d'un monstre (rayon).
+enum Fx { RING, BOLT, CONE, BEAM, WAVE, SPREAD, BLINK, JAM }
 
 const FX_DURATION := 0.35
 const MAX_QUEUE := 400
@@ -18,11 +22,13 @@ var reward_mult := 1.0
 var monsters: Array[SimMonster] = []
 var towers := {}  # index de case -> SimTower
 var projectiles: Array[SimProjectile] = []
+## Nappes au sol (feu, nuage toxique), gérées par BoardPatches.
+var patches: Array[Dictionary] = []
 var clock := 0.0
 ## Hasard des contrôles (chances) : graine fixe, pour des parties et des tests reproductibles.
 var rng := RandomNumberGenerator.new()
 var _queue: Array[Dictionary] = []  # {time, type, hp_mult, wave (n° de vague, -1 : envoi), mod}
-var _fx: Array[Dictionary] = []  # {kind, pos, to, radius, ttl}
+var _fx: Array[Dictionary] = []  # {kind, pos, to, radius, tint, ttl}
 var _born: Array[SimMonster] = []  # nés pendant le tick (division), ajoutés à la fin
 var _by_id := {}
 var _next_id := 1
@@ -116,6 +122,7 @@ func eliminate() -> void:
 	alive = false
 	_queue.clear()
 	projectiles.clear()
+	patches.clear()
 	monsters.clear()
 	_born.clear()
 	_by_id.clear()
@@ -133,8 +140,10 @@ func step(dt: float) -> Array:
 	if lives <= 0:
 		eliminate()
 		return rewards
+	MonsterAbilities.update(self, dt)
 	MonsterEffects.update(self, dt, rewards)
-	BoardCombat.fire_towers(self, dt)
+	BoardPatches.update(self, dt, rewards)
+	BoardCombat.fire_towers(self, dt, rewards)
 	BoardCombat.move_projectiles(self, dt, rewards)
 	_remove_dead()
 	_age_fx(dt)
@@ -177,9 +186,9 @@ func monster_by_id(monster_id: int) -> SimMonster:
 	return _by_id.get(monster_id)
 
 
-func add_fx(kind: int, pos: Vector2, to := Vector2.ZERO, radius := 0.0) -> void:
+func add_fx(kind: int, pos: Vector2, to := Vector2.ZERO, radius := 0.0, tint := 0) -> void:
 	if _fx.size() < 200:
-		_fx.append({"kind": kind, "pos": pos, "to": to, "radius": radius, "ttl": FX_DURATION})
+		_fx.append({"kind": kind, "pos": pos, "to": to, "radius": radius, "tint": tint, "ttl": FX_DURATION})
 
 
 func new_id() -> int:
@@ -193,7 +202,7 @@ func snapshot() -> Dictionary:
 		var hp := int(roundf(clampf(m.hp / m.max_hp, 0.0, 1.0) * 255.0))
 		var flags := (1 if m.is_slowed() else 0) | (2 if m.is_poisoned() else 0) | (4 if m.is_elite() else 0) \
 				| (8 if m.is_burning() else 0) | (16 if m.is_bleeding() else 0) | (32 if m.is_stunned() else 0) \
-				| (64 if m.is_feared() else 0) | (128 if m.is_charmed() else 0)
+				| (64 if m.is_feared() else 0) | (128 if m.is_charmed() else 0) | (256 if m.warded > 0.0 else 0)
 		mons.append([m.id, m.type_index, m.path, snappedf(m.progress, 0.01), hp, flags])
 	var tws := []
 	for cell in towers:
@@ -206,10 +215,16 @@ func snapshot() -> Dictionary:
 	for f in _fx:
 		var pos: Vector2 = f["pos"]
 		var to: Vector2 = f["to"]
-		var a: float = f["radius"] if f["kind"] == Fx.RING else to.x
-		var b: float = 0.0 if f["kind"] == Fx.RING else to.y
+		var circle := is_round_fx(f["kind"])
+		var a: float = f["radius"] if circle else to.x
+		var b: float = float(f["tint"]) if circle else to.y
 		fx.append([f["kind"], snappedf(pos.x, 0.01), snappedf(pos.y, 0.01), snappedf(a, 0.01), snappedf(b, 0.01), snappedf(f["ttl"] / FX_DURATION, 0.01)])
-	return {"lives": lives, "alive": alive, "m": mons, "t": tws, "p": prs, "fx": fx}
+	return {"lives": lives, "alive": alive, "m": mons, "t": tws, "p": prs, "fx": fx, "z": BoardPatches.snapshot(self)}
+
+
+## Effet rond (rayon et teinte), les autres vont d'un point à un autre.
+static func is_round_fx(kind: int) -> bool:
+	return kind == Fx.RING or kind == Fx.WAVE or kind == Fx.JAM
 
 
 func _last_wave_time() -> float:
