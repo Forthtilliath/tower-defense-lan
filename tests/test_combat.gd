@@ -156,8 +156,8 @@ func test_goblin_economy() -> void:
 	var goblin := _builder(gd, "goblin")
 	check(MatchFlow.interest(gd, 500, PlayerKit.make(gd, goblin, {"go_stocking": 2})) == 25, "4 + 1 %% d'intérêts (Bas de laine)")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 0], [2, "G", 1, goblin]])
-	sim._credit_bounty(1, 20)
-	sim._credit_bounty(2, 20)
+	MatchEconomy.credit_bounty(sim, 1, 20)
+	MatchEconomy.credit_bounty(sim, 2, 20)
 	check(sim.players[1]["gold"] == 170 and sim.players[2]["gold"] == 173, "+15 %% sur ses primes : %d / %d" % [sim.players[1]["gold"], sim.players[2]["gold"]])
 
 
