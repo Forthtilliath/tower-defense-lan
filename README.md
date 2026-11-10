@@ -42,7 +42,11 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
   jusqu'au niveau 15, avec 1 point de talent par niveau. Le tronc coûte 4 points, une spécialisation 10, et chaque
   spécialisation a un **talent ultime** (1 point) réservé au niveau 15 : au niveau max, on a tout son tronc, toute sa
   spécialisation et son ultime (ex. Tir perçant : la Baliste ignore la moitié de l'armure ; Épidémie : tous ses
-  poisons deviennent contagieux). Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
+  poisons deviennent contagieux).
+- **Héritage** : chaque classe montée au niveau 15 donne un bonus à toutes les autres, cumulable — Artilleur
+  +20 % de dégâts des tirs physiques, Arcaniste +20 % des tourelles élémentaires, Fléau +20 % des effets continus,
+  Support +25 % de contrôles et d'auras, Gobelin +100 or de départ et +15 % de primes, Bâtisseur −10 % sur les
+  constructions et +10 % à la revente. Plus on a monté de classes, plus les suivantes sont faciles à monter. Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
   déjà placés dans cette branche. Placer un point dans une spécialisation ferme les trois autres ; on en change
   entre deux parties en retirant ses points.
   La progression est enregistrée sur chaque appareil (`progression.json`) et vérifiée à la relecture ; l'hôte revalide
