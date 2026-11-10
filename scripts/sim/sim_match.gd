@@ -44,6 +44,8 @@ var winner := 0
 var tick := 0
 ## Messages à transmettre à d'autres joueurs que l'auteur d'une action : [[id, texte], ...]
 var notices: Array = []
+## Vies de chaque plateau au départ de la vague précédente (vagues sans fuite du Parieur).
+var _lives_mark := {}
 
 
 ## roster : [[id, nom, couleur, bâtisseur, talents], ...] dans l'ordre d'arrivée (bâtisseur et
@@ -87,7 +89,7 @@ func step(dt: float) -> void:
 		if not b.alive:
 			continue
 		for reward in b.step(dt):
-			_credit_bounty(reward[0], reward[1])
+			MatchEconomy.credit_bounty(self, reward[0], reward[1])
 		if not b.alive:
 			_on_board_lost(i)
 	_check_end()
@@ -147,19 +149,15 @@ func launch_next_wave() -> void:
 		var scaling := coop_scaling(_active_count())
 		hp_mult *= scaling[0]
 		count_mult = scaling[1]
-	for b in boards:
+	var clean := {}
+	for i in boards.size():
+		var b := boards[i]
 		if b.alive:
+			if wave_index > 0 and b.lives == _lives_mark.get(i, -1):
+				clean[i] = true
+			_lives_mark[i] = b.lives
 			b.queue_wave(wave, hp_mult, count_mult, wave_index)
-	_pay_gold_tiles()
-	for id in order:
-		var p: Dictionary = players[id]
-		p["ready"] = false
-		if not p["alive"] or not p["connected"]:
-			continue
-		p["gold"] += MatchFlow.interest(data, p["gold"], p["kit"])
-		p["gold"] += roundi(int(wave["gold"]) * float(p["gold_mult"])) + bonus
-		if mode == Mode.VERSUS:
-			p["gold"] += VERSUS_BASE_INCOME + int(p["income"])
+	MatchEconomy.pay_wave(self, wave, bonus, clean)
 
 
 func snapshot() -> Dictionary:
@@ -237,36 +235,12 @@ func all_ready() -> bool:
 	return true
 
 
-## Filons d'or : chaque tourelle posée dessus rapporte de l'or à son propriétaire à chaque vague.
-func _pay_gold_tiles() -> void:
-	for b in boards:
-		if not b.alive:
-			continue
-		for cell in b.towers:
-			var t: SimTower = b.towers[cell]
-			if t.special >= 0:
-				_credit(t.owner, int(data.specials[t.special]["gold_per_wave"]))
-
-
 func _active_count() -> int:
 	var n := 0
 	for id in order:
 		if players[id]["connected"] and players[id]["alive"]:
 			n += 1
 	return n
-
-
-## Part de prime d'un monstre tué, multipliée selon le bâtisseur (ex. : Gobelin).
-func _credit_bounty(owner: int, gold: int) -> void:
-	var p: Dictionary = players.get(owner, {})
-	if not p.is_empty():
-		_credit(owner, roundi(gold * float(p["kit"].bounty)))
-
-
-func _credit(owner: int, gold: int) -> void:
-	var p: Dictionary = players.get(owner, {})
-	if not p.is_empty() and p["connected"]:
-		p["gold"] += gold
 
 
 func _on_board_lost(index: int) -> void:
