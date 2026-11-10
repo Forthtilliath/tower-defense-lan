@@ -7,10 +7,13 @@ extends RefCounted
 ## - Les classes inconnues des données sont ignorées (non recopiées).
 ## - Des talents qui ne respectent plus l'arbre actuel (mise à jour du jeu) sont remis à zéro
 ##   pour cette classe ; l'expérience est gardée.
+## - Classes renommées (LEGACY) : l'expérience passe à la nouvelle classe, si elle n'en a pas déjà.
 
 const VERSION := 1
 const MAX_XP := 100000000
 const MAX_CLASSES := 32
+## Refonte des classes (2026-11) : l'Enchanteur devient le Support.
+const LEGACY := {"enchanter": "support"}
 
 
 ## Renvoie [classes, index de la dernière classe] ou null si le fichier est invalide.
@@ -38,12 +41,13 @@ static func parse(data: GameData, text: String) -> Variant:
 		var amount = Check.as_int(e.get("xp"), 0, MAX_XP)
 		if amount == null or typeof(e.get("talents")) != TYPE_DICTIONARY:
 			return null
-		if not index.has(key):
+		var id: String = key if index.has(key) else LEGACY.get(key, "")
+		if not index.has(id) or (id != key and raw.has(id)):
 			continue
 		var level := TalentRules.level_for(data, amount)
-		var chosen = TalentRules.validate(data, index[key], e["talents"], TalentRules.points(level))
-		out[key] = {"xp": amount, "talents": chosen if chosen != null else {}}
-	return [out, index.get(last_raw, 0)]
+		var chosen = TalentRules.validate(data, index[id], e["talents"], TalentRules.points(level))
+		out[id] = {"xp": amount, "talents": chosen if chosen != null else {}}
+	return [out, index.get(LEGACY.get(last_raw, last_raw), 0)]
 
 
 static func serialize(data: GameData, classes: Dictionary, last_builder: int) -> String:
