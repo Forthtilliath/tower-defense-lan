@@ -96,8 +96,8 @@
 		},
 		{
 			"id": "scourge", "name": "Fléau", "color": "#8fd14f",
-			"description": "Effets continus : +15 % de dégâts du Venin, de la Peste, des Miasmes, des Épines et de la Faux.",
-			"damage": 1.15, "bonus_towers": ["venom", "plague", "miasma", "thorns", "scythe"],
+			"description": "Effets continus : +25 % de dégâts du Venin, de la Peste, des Miasmes, des Épines et de la Faux.",
+			"damage": 1.25, "bonus_towers": ["venom", "plague", "miasma", "thorns", "scythe"],
 			"branches": [
 				{ "id": "blight", "name": "Pourriture", "description": "Tronc commun du Fléau.", "trunk": true, "talents": [
 					{ "id": "fl_rot", "name": "Putréfaction", "description": "+4 % de dégâts par rang (Venin, Épines).", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns"], "damage": 0.04 },
@@ -106,19 +106,19 @@
 				{ "id": "poison", "name": "Poison", "description": "Renforce tous les poisons.", "talents": [
 					{ "id": "fl_toxins", "name": "Toxines", "description": "+5 % de dégâts par rang (Venin, Peste, Miasmes).", "tier": 1, "max_rank": 3, "towers": ["venom", "plague", "miasma"], "damage": 0.05 },
 					{ "id": "fl_plague", "name": "Peste", "description": "Débloque la Peste.", "tier": 2, "unlock": "plague" },
-					{ "id": "fl_virulence", "name": "Virulence", "description": "+6 % de cadence par rang (Venin, Peste, Miasmes).", "tier": 2, "max_rank": 2, "towers": ["venom", "plague", "miasma"], "rate": 0.06 },
+					{ "id": "fl_virulence", "name": "Virulence", "description": "Tes poisons se cumulent : +1 charge par rang (Venin, Peste, Miasmes).", "tier": 2, "max_rank": 2, "towers": ["venom", "plague", "miasma"], "grant": {"poison_stacks": 1} },
 					{ "id": "fl_blight", "name": "Fièvre", "description": "+8 % de dégâts par rang (Venin, Peste, Miasmes).", "tier": 3, "max_rank": 2, "towers": ["venom", "plague", "miasma"], "damage": 0.08 },
 					{ "id": "fl_miasma", "name": "Miasmes", "description": "Débloque les Miasmes.", "tier": 4, "unlock": "miasma" },
 					{ "id": "fl_pandemic", "name": "Pandémie", "description": "+10 % de dégâts (Venin, Peste, Miasmes).", "tier": 4, "towers": ["venom", "plague", "miasma"], "damage": 0.1 },
-					{ "id": "fl_epidemic", "name": "Épidémie", "description": "Tous tes poisons deviennent contagieux (1,5 case), +20 % de dégâts (Venin, Peste, Miasmes).", "tier": 4, "ultimate": true, "towers": ["venom", "plague", "miasma"], "damage": 0.2, "grant": {"poison_spread": 1.5} }
+					{ "id": "fl_epidemic", "name": "Épidémie", "description": "Tous tes poisons deviennent contagieux (1,5 case) et gagnent une charge, +20 % de dégâts (Venin, Peste, Miasmes).", "tier": 4, "ultimate": true, "towers": ["venom", "plague", "miasma"], "damage": 0.2, "grant": {"poison_spread": 1.5, "poison_stacks": 1} }
 				] },
 				{ "id": "bleed", "name": "Saignement", "description": "Renforce tous les saignements.", "talents": [
 					{ "id": "fl_barbs", "name": "Barbelures", "description": "+5 % de dégâts par rang (Épines, Faux).", "tier": 1, "max_rank": 3, "towers": ["thorns", "scythe"], "damage": 0.05 },
 					{ "id": "fl_scythe", "name": "Faux", "description": "Débloque la Faux.", "tier": 2, "unlock": "scythe" },
-					{ "id": "fl_lacerate", "name": "Lacérations", "description": "+6 % de cadence par rang (Épines, Faux).", "tier": 2, "max_rank": 2, "towers": ["thorns", "scythe"], "rate": 0.06 },
-					{ "id": "fl_wounds", "name": "Plaies", "description": "+8 % de dégâts par rang (Épines, Faux).", "tier": 3, "max_rank": 2, "towers": ["thorns", "scythe"], "damage": 0.08 },
+					{ "id": "fl_lacerate", "name": "Lacérations", "description": "Tes saignements se cumulent : +1 charge par rang (Épines, Faux).", "tier": 2, "max_rank": 2, "towers": ["thorns", "scythe"], "grant": {"bleed_stacks": 1} },
+					{ "id": "fl_wounds", "name": "Plaies", "description": "+12 % de dégâts par rang (Épines, Faux).", "tier": 3, "max_rank": 2, "towers": ["thorns", "scythe"], "damage": 0.12 },
 					{ "id": "fl_haemorrhage", "name": "Hémorragie", "description": "+10 % de dégâts par rang (Épines, Faux).", "tier": 4, "max_rank": 2, "towers": ["thorns", "scythe"], "damage": 0.1 },
-					{ "id": "fl_bloodbath", "name": "Bain de sang", "description": "Saignement +2 % des PV max/s, +20 % de dégâts (Épines, Faux).", "tier": 4, "ultimate": true, "towers": ["thorns", "scythe"], "damage": 0.2, "grant": {"bleed": 0.02} }
+					{ "id": "fl_bloodbath", "name": "Bain de sang", "description": "Saignement +2 % des PV max/s et une charge de plus, +20 % de dégâts (Épines, Faux).", "tier": 4, "ultimate": true, "towers": ["thorns", "scythe"], "damage": 0.2, "grant": {"bleed": 0.02, "bleed_stacks": 1} }
 				] },
 				{ "id": "frostbite", "name": "Gelure", "description": "Dégâts de gel dans la durée, plus forts sur les monstres ralentis ou gelés.", "talents": [
 					{ "id": "fl_numb", "name": "Engourdissement", "description": "+5 % de dégâts par rang (Givre).", "tier": 1, "max_rank": 3, "towers": ["frost"], "damage": 0.05 },
