@@ -101,7 +101,11 @@ static func _talent(v: DataValidator, src: Variant, where: String, towers: Dicti
 	if ids == null:
 		return null
 	t["towers"] = ids
-	var effect: bool = t["unlock"] != "" or t["imbue_all"]
+	var grant = v._obj(src.get("grant", {}), DataSchema.GRANT, where + ".grant")
+	if grant == null:
+		return null
+	t["grant"] = grant
+	var effect: bool = t["unlock"] != "" or t["imbue_all"] or grant.values().any(func(x: Variant) -> bool: return x > 0)
 	for key in PlayerKit.STATS + PlayerKit.ECONOMY:
 		effect = effect or t[key] > 0
 	if not effect:

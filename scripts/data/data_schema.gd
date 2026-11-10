@@ -47,7 +47,20 @@ const TALENT := {
 	"build_cost": ["num", 0.0, 0.2, 0.0], "sell_bonus": ["num", 0.0, 0.1, 0.0], "gift_bonus": ["num", 0.0, 0.25, 0.0],
 	"team_bounty": ["num", 0.0, 0.2, 0.0], "early_bonus": ["num", 0.0, 2.0, 0.0], "clean_gold": ["int", 0, 1000, 0],
 	"imbue_all": ["bool", false], "raze_charges": ["int", 0, 20, 0], "tile_charges": ["int", 0, 10, 0],
+	"ultimate": ["bool", false],
 }
+## ultimate : talent ultime d'une spécialisation, réservé au niveau maximum (le dernier point).
+## grant (objet facultatif, voir GRANT) : effets ajoutés aux tourelles visées (après les bonus).
+const GRANT := {
+	"armor_pierce": ["num", 0.0, 1.0, 0.0], "splash": ["num", 0.0, 3.0, 0.0],
+	"stun_chance": ["num", 0.0, 1.0, 0.0], "stun_duration": ["num", 0.0, 5.0, 0.0],
+	"patch_radius": ["num", 0.0, 2.0, 0.0], "patch_duration": ["num", 0.0, 10.0, 0.0], "patch_dps": ["num", 0.0, 1000.0, 0.0],
+	"multishot": ["int", 0, 4, 0], "burn_stacks": ["int", 0, 5, 0], "chain": ["int", 0, 5, 0],
+	"vs_stunned": ["num", 0.0, 5.0, 0.0], "ground_duration": ["num", 0.0, 5.0, 0.0], "poison_spread": ["num", 0.0, 3.0, 0.0],
+	"bleed": ["num", 0.0, 0.1, 0.0], "shred": ["num", 0.0, 0.5, 0.0], "heal_block": ["num", 0.0, 1.0, 0.0],
+}
+## Plafonds des statistiques après les effets ajoutés (une part au-delà de 1 n'a pas de sens).
+const GRANT_CAPS := {"armor_pierce": 1.0, "stun_chance": 1.0, "shred": 0.9, "heal_block": 1.0}
 ## raze_charges : arbres ou rochers qu'il peut raser par partie ; tile_charges : cases spéciales
 ## (Colline, Cristal, Rune) qu'il peut poser par partie (Terrassier).
 ## team_bounty : part de prime en plus pour toute l'équipe (le joueur compris). early_bonus : or

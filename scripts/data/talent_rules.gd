@@ -100,7 +100,14 @@ static func validate(data: GameData, builder: int, raw: Variant, available: int)
 		out[key] = rank
 	if spent(out) > available or not tiers_ok(data, out, all) or specs_used(data, builder, out).size() > 1:
 		return null
+	if available < max_points(data) and out.keys().any(func(id: String) -> bool: return all[id][1]["ultimate"]):
+		return null  # talent ultime avant le niveau maximum
 	return out
+
+
+## Points de talent au niveau maximum (le talent ultime n'est permis qu'à ce niveau).
+static func max_points(data: GameData) -> int:
+	return points(int(data.progression["max_level"]))
 
 
 ## Spécialisations (index de branche hors tronc) qui ont au moins un point.
@@ -143,6 +150,8 @@ static func add_refusal(data: GameData, builder: int, talents: Dictionary, id: S
 			return "Spécialisation déjà choisie : %s (retire ses points pour en changer)" % branches[used]["name"]
 	if int(talents.get(id, 0)) >= int(def["max_rank"]):
 		return "Rang maximum atteint"
+	if def["ultimate"] and available < max_points(data):
+		return "Talent ultime : seulement au niveau %d" % int(data.progression["max_level"])
 	if spent(talents) >= available:
 		return "Plus de point disponible : gagne des niveaux avec cette classe"
 	var next := talents.duplicate()
