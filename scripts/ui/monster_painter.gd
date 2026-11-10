@@ -9,10 +9,11 @@ const STEEL := Color("#c9ced6")
 const GRIN_SIZE := 0.6  # taille à partir de laquelle un monstre au sol montre les dents
 const WARD := Color("#f2c94c")
 const JAM := Color(1.0, 0.45, 0.25)
-## Pastille de chaque résistance (feu, glace, foudre, tous les éléments).
+## Pastille de chaque résistance (feu, glace, foudre, tous les éléments, coups physiques).
 const RESIST_COLORS := {
 	"resist_fire": Color("#ff7a2f"), "resist_ice": Color("#9fdcff"),
 	"resist_lightning": Color("#ffe14a"), "resist_elements": Color("#f4f0ff"),
+	"resist_physical": Color("#b8c4d6"), "resist_pierce": Color("#c9b37a"), "resist_blunt": Color("#7d8590"),
 }
 
 
@@ -21,6 +22,11 @@ static func draw(ci: CanvasItem, def: Dictionary, m: Dictionary, pos: Vector2, f
 	var w := Ink.width(ts, 0.04)
 	var col := _tint(Color(def["color"]), m)
 	var t := Time.get_ticks_msec() / 1000.0
+	if def["resist_physical"] >= 1.0:  # intangible : corps translucide et traîne qui ondule
+		col.a = 0.6
+		var sway := sin(t * 4.0 + pos.x * 0.05) * r * 0.25
+		ci.draw_colored_polygon(PackedVector2Array([pos + Vector2(-r * 0.8, r * 0.2), pos + Vector2(r * 0.8, r * 0.2),
+			pos + Vector2(sway, r * 1.6)]), Color(col, 0.35))
 	if m.get("elite", false):  # vague spéciale : aura crépitante
 		Ink.poly(ci, Ink.burst(pos, r * 1.75, r * 1.3, 10, int(t * 8.0)), Color(UiTheme.ACCENT, 0.45), w)
 	if def["heal_radius"] > 0.0:  # aura du soigneur
