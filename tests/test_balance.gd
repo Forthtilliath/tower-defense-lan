@@ -37,19 +37,20 @@ func test_bot_teams_win_big_maps() -> void:
 		check(sim.result == "victory", "%s à %d : %s à la vague %d" % [gd.maps[entry[0]].id, entry[1], sim.result, sim.wave_index + 1])
 
 
-## Chaque classe gagne aux côtés d'un Touche-à-tout, et gagne sa part d'or : même l'Enchanteur,
-## qui fait peu de dégâts, est payé pour ses contrôles (prime partagée selon la contribution).
-func test_every_builder_wins_in_a_duo() -> void:
+## Chaque spécialisation de chaque classe gagne aux côtés d'un Artilleur, et gagne sa part d'or :
+## même le Support, qui fait peu de dégâts, est payé pour ses contrôles (prime partagée selon la contribution).
+func test_every_spec_wins_in_a_duo() -> void:
 	var gd := load_data()
 	for b in gd.builders.size():
-		var sim := play(gd, 0, 2, NORMAL, {}, [0, b])
-		check(sim.result == "victory", "%s : %s à la vague %d" % [gd.builders[b]["id"], sim.result, sim.wave_index + 1])
+		for s in spec_count(gd, b):
+			var sim := play(gd, 0, 2, NORMAL, {}, [0, [b, s]])
+			check(sim.result == "victory", "%s / %s : %s à la vague %d" % [gd.builders[b]["id"], spec_id(gd, b, s), sim.result, sim.wave_index + 1])
 
 
 func test_damage_builders_win_solo() -> void:
 	var gd := load_data()
 	for b in gd.builders.size():
-		if gd.builders[b]["id"] == "enchanter":
+		if gd.builders[b]["id"] == "support":
 			continue  # classe de soutien : faite pour jouer en équipe
 		var sim := play(gd, 0, 1, NORMAL, {}, [b])
 		check(sim.result == "victory", "%s : %s à la vague %d" % [gd.builders[b]["id"], sim.result, sim.wave_index + 1])
@@ -96,11 +97,27 @@ func test_level_one_beginners_win() -> void:
 	check(duo.result == "victory", "débutants à deux : %s à la vague %d" % [duo.result, duo.wave_index + 1])
 
 
-## Talents d'un bot : remplit les branches dans l'ordre, palier par palier.
-func auto_talents(gd: GameData, builder: int, level: int) -> Dictionary:
+## Branches de spécialisation d'une classe (hors tronc), dans l'ordre des données.
+func spec_branches(gd: GameData, builder: int) -> Array:
+	return gd.builders[builder]["branches"].filter(func(br: Dictionary) -> bool: return not br["trunk"])
+
+
+func spec_count(gd: GameData, builder: int) -> int:
+	return spec_branches(gd, builder).size()
+
+
+func spec_id(gd: GameData, builder: int, spec: int) -> String:
+	return spec_branches(gd, builder)[spec]["id"]
+
+
+## Talents d'un bot : le tronc d'abord, puis sa spécialisation (la `spec`-ième), palier par palier.
+func auto_talents(gd: GameData, builder: int, level: int, spec := 0) -> Dictionary:
 	var talents := {}
 	var points := TalentRules.points(level)
+	var chosen: Dictionary = spec_branches(gd, builder)[spec]
 	for branch in gd.builders[builder]["branches"]:
+		if not branch["trunk"] and branch != chosen:
+			continue
 		var sorted: Array = branch["talents"].duplicate()
 		sorted.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["tier"] < b["tier"])
 		for t in sorted:
@@ -109,11 +126,14 @@ func auto_talents(gd: GameData, builder: int, level: int) -> Dictionary:
 	return talents
 
 
+## builders : une classe par bot (index, ou [index, spécialisation]) ; Artilleur par défaut.
 func play(gd: GameData, map_index: int, count: int, difficulty: int, options := {}, builders := [], level := BOT_LEVEL) -> SimMatch:
 	var roster := []
 	for i in count:
-		var b: int = builders[i] if i < builders.size() else 0
-		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level)])
+		var entry: Variant = builders[i] if i < builders.size() else 0
+		var b: int = entry[0] if entry is Array else entry
+		var s: int = entry[1] if entry is Array else 0
+		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level, s)])
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster, difficulty, options)
 	var cells := ranked_cells(sim.map, false)
 	var air_cells := ranked_cells(sim.map, true)
@@ -205,13 +225,18 @@ func lane_key(m: MapDef, cell: int) -> int:
 	return _lanes[key]
 
 
-## PLAN réduit aux tourelles que le joueur sait construire (classe et talents), suivi de ses
+## PLAN réduit aux tourelles que le joueur sait construire, ses tourelles de spécialisation qui
+## frappent (hors tronc commun) placées tôt et deux fois, comme le ferait un joueur, puis ses
 ## autres tourelles (contrôles, soutien…) dans l'ordre du jeu.
 func builder_plan(sim: SimMatch, id: int) -> Array:
 	var kit: PlayerKit = sim.players[id]["kit"]
+	var data := sim.data
 	var plan := PLAN.filter(func(type: String) -> bool: return kit.allows(type))
+	var signature := data.tower_order.filter(func(type: String) -> bool:
+		return kit.allows(type) and not data.common_towers.has(type) and float(data.tower_levels(type)[0]["damage"]) > 0.0)
+	plan = plan.slice(0, 3) + signature + plan.slice(3) + signature
 	for type in sim.data.tower_order:
-		if kit.allows(type) and not PLAN.has(type):
+		if kit.allows(type) and not plan.has(type):
 			plan.append(type)
 	return plan
 
