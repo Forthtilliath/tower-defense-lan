@@ -50,8 +50,19 @@ const BUILDER := {
 	"cc": ["num", 0.5, 3.0, 1.0], "bounty": ["num", 0.5, 3.0, 1.0],
 	"interest": ["num", 0.0, 0.2, 0.0], "interest_cap": ["int", 0, 10000, 0],
 }
+## Éléments des tourelles ("" : coups physiques), auxquels certains monstres résistent.
+const ELEMENTS := ["fire", "ice", "lightning", "poison", "bleed"]
+## Bonus passifs d'un monstre, qu'une vague spéciale peut aussi donner à tous ses monstres.
+## hover : lévite, les nappes au sol ne le touchent pas. mechanical : véhicule, insensible au
+## poison, à la brûlure, au saignement, à la peur et au charme. resist_* : part des dégâts (et
+## des effets) de cet élément évitée ; resist_elements vaut pour tous les éléments.
+const PASSIVE_TRAITS := {
+	"hover": ["bool", false], "mechanical": ["bool", false],
+	"resist_fire": ["num", 0.0, 0.9, 0.0], "resist_ice": ["num", 0.0, 0.9, 0.0],
+	"resist_lightning": ["num", 0.0, 0.9, 0.0], "resist_elements": ["num", 0.0, 0.9, 0.0],
+}
 ## Vague spéciale : multiplicateurs (PV, vitesse, nombre, primes) et ajouts (armure, régénération
-## en part des PV max par seconde) appliqués à tous les monstres de la vague.
+## en part des PV max par seconde, bonus passifs) appliqués à tous les monstres de la vague.
 const WAVE_MODIFIER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"], "description": ["text", 120, ""],
 	"hp": ["num", 0.1, 20.0, 1.0], "speed": ["num", 0.2, 5.0, 1.0], "count": ["num", 0.1, 10.0, 1.0],
@@ -117,6 +128,18 @@ const MONSTER := {
 	"split_into": ["id", ""], "split_count": ["int", 0, 10, 0],
 	"cc_resist": ["num", 0.0, 1.0, 0.0],
 }
+## Capacités actives d'un monstre (en plus des PASSIVE_TRAITS), chacune décrite par un groupe
+## de champs qui vont ensemble (tous nuls ou tous positifs, voir LINKED) :
+## blink : bond en avant de blink_distance cases toutes les blink_interval secondes ;
+## ward : les autres monstres à ward_radius cases subissent `ward` (part) de dégâts en moins ;
+## jam : toutes les jam_interval s, brouille les tourelles à jam_radius cases pendant jam_duration s.
+const ABILITIES := {
+	"blink_interval": ["num", 0.0, 60.0, 0.0], "blink_distance": ["num", 0.0, 10.0, 0.0],
+	"ward_radius": ["num", 0.0, 5.0, 0.0], "ward": ["num", 0.0, 0.9, 0.0],
+	"jam_radius": ["num", 0.0, 5.0, 0.0], "jam_interval": ["num", 0.0, 60.0, 0.0],
+	"jam_duration": ["num", 0.0, 10.0, 0.0],
+}
+const LINKED := [["blink_interval", "blink_distance"], ["ward_radius", "ward"], ["jam_radius", "jam_interval", "jam_duration"]]
 const WAVE := {
 	"id": ["id"], "gold": ["int", 0, 100000, 0], "hp": ["num", 0.1, 100.0, 1.0], "modifier": ["id", ""],
 }

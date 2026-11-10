@@ -129,10 +129,19 @@ func _builder(src: Variant, where: String, towers: Dictionary, tier_count: int) 
 	return b
 
 
+## Monstre : division, et capacités dont les champs vont ensemble ; un brouillage plus long
+## que son intervalle désactiverait les tourelles pour toujours.
 func _monster(src: Variant, where: String) -> Variant:
-	var m = _obj(src, DataSchema.MONSTER, where)
-	if m != null and (m["split_into"] == "") != (m["split_count"] == 0):
+	var m = _obj(src, DataSchema.MONSTER.merged(DataSchema.PASSIVE_TRAITS).merged(DataSchema.ABILITIES), where)
+	if m == null:
+		return null
+	if (m["split_into"] == "") != (m["split_count"] == 0):
 		return _fail("%s : split_into et split_count vont ensemble" % where)
+	for group in DataSchema.LINKED:
+		if group.any(func(k: String) -> bool: return m[k] > 0.0) and not group.all(func(k: String) -> bool: return m[k] > 0.0):
+			return _fail("%s : %s vont ensemble" % [where, ", ".join(group)])
+	if m["jam_interval"] > 0.0 and m["jam_duration"] >= m["jam_interval"] * 0.5:
+		return _fail("%s : jam_duration doit rester sous la moitié de jam_interval" % where)
 	return m
 
 
