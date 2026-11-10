@@ -55,7 +55,8 @@ static func find_target(b: SimBoard, t: SimTower, def: Dictionary, skip := {}) -
 	var reach := BoardAuras.reach(t)
 	var r2 := reach * reach
 	for m in b.monsters:
-		if skip.has(m.id) or not can_hit(def["air"], def["ground"], m) or t.center.distance_squared_to(m.pos) > r2:
+		if skip.has(m.id) or not can_hit(def["air"], def["ground"], m) or t.center.distance_squared_to(m.pos) > r2 \
+				or m.taken(def["element"]) <= 0.0:  # insensible à ses coups (fantôme, squelette…)
 			continue
 		var score := m.ratio()
 		if t.target_mode == SimTower.Target.STRONGEST:

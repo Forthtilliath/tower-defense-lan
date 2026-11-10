@@ -116,9 +116,13 @@ func setup(def: Dictionary, p_hp_mult: float, reward_mult: float, mod := {}) -> 
 	split_count = def["split_count"]
 	hover = def["hover"] or mod.get("hover", false)
 	mechanical = def["mechanical"] or mod.get("mechanical", false)
-	var all := 1.0 - _trait(def, mod, "resist_elements")
+	var magic := 1.0 - _trait(def, mod, "resist_elements")
 	for e in DataSchema.ELEMENTS:
-		element_taken[e] = all * (1.0 - _trait(def, mod, "resist_" + e))
+		element_taken[e] = magic * (1.0 - _trait(def, mod, "resist_" + e))
+	var physical := 1.0 - _trait(def, mod, "resist_physical")
+	element_taken[""] = physical
+	for e in DataSchema.PHYSICAL:
+		element_taken[e] = physical * (1.0 - _trait(def, mod, "resist_" + e))
 	for key in DataSchema.ABILITIES:  # blink_*, ward*, jam_* : mêmes noms que les variables
 		set(key, float(def[key]))
 
@@ -128,7 +132,8 @@ static func _trait(def: Dictionary, mod: Dictionary, key: String) -> float:
 	return maxf(float(def.get(key, 0.0)), float(mod.get(key, 0.0)))
 
 
-## Part des dégâts d'un élément réellement subie ("" : coups physiques, toujours entiers).
+## Part des dégâts d'un élément réellement subie ("", « pierce », « blunt » : coups physiques ;
+## 0 : le monstre y est insensible, les tourelles ne le visent pas).
 func taken(element: String) -> float:
 	return float(element_taken.get(element, 1.0))
 

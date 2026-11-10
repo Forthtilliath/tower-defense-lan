@@ -70,6 +70,7 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 		var kit := PlayerKit.make(data, builder, entry[4] if entry.size() > 4 else {})
 		if mode == Mode.VERSUS or boards.is_empty():
 			boards.append(SimBoard.new(data, map, lives, difficulty["reward"]))
+			boards[-1].armor_bonus = float(difficulty["armor"])
 		var mult := gold_mult_for(i, roster.size()) if mode == Mode.COOP else 1.0
 		players[id] = {
 			"name": entry[1], "builder": builder, "kit": kit, "gold_mult": mult, "income": 0,

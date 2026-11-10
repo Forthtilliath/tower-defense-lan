@@ -89,7 +89,7 @@ func _tower(src: Variant, where: String) -> Variant:
 		return _fail("%s : la tourelle doit viser l'air, le sol ou les deux" % where)
 	if not DataSchema.ATTACKS.has(t["attack"]):
 		return _fail("%s : façon de frapper « %s » inconnue" % [where, t["attack"]])
-	if t["element"] != "" and not DataSchema.ELEMENTS.has(t["element"]):
+	if t["element"] != "" and not DataSchema.ELEMENTS.has(t["element"]) and not DataSchema.PHYSICAL.has(t["element"]):
 		return _fail("%s : élément « %s » inconnu" % [where, t["element"]])
 	var levels = _list(src.get("levels"), 1, 5, where + ".levels")
 	if levels == null:
