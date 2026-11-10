@@ -15,6 +15,8 @@ var speed := 1.0
 var stats := {}
 var credit: Array = []
 var owner := 0
+## Joueur crédité de la gelure (celui qui pose la Stèle de gelure voisine, sinon le tireur).
+var frost_owner := 0
 var kind := 0
 var element := ""
 var hits_air := true

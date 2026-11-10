@@ -1,7 +1,8 @@
 class_name MonsterEffects
 extends RefCounted
-## Effets continus sur les monstres : régénération, soins des chamans, poison, brûlure,
-## saignement (dégâts qui ignorent l'armure), et coups portés par les monstres charmés.
+## Effets continus sur les monstres : régénération et soins des chamans (réduits quand les soins
+## sont coupés), poison, brûlure, saignement, gelure (dégâts qui ignorent l'armure), et coups
+## portés par les monstres charmés.
 
 ## Les boss (cc_resist) ne subissent qu'une partie du saignement.
 const BLEED_RESIST := 0.5
@@ -17,8 +18,9 @@ static func update(b: SimBoard, dt: float, rewards: Array) -> void:
 		if not m.is_alive():
 			continue
 		if m.regen > 0.0:
-			m.hp = minf(m.max_hp, m.hp + m.regen * dt)
+			m.hp = minf(m.max_hp, m.hp + m.regen * m.marks.heal_mult() * dt)
 		m.shred_timer = maxf(0.0, m.shred_timer - dt)
+		m.marks.update(dt)
 		_damage_over_time(b, m, dt, rewards)
 	_contagion(b, dt)
 	_heal(b, dt)
@@ -51,8 +53,15 @@ static func _contagion(b: SimBoard, dt: float) -> void:
 			b.add_fx(SimBoard.Fx.SPREAD, m.pos, next.pos)
 
 
-## Poison, brûlure (feu) et saignement, réduits par la résistance du monstre à leur élément.
+## Poison, brûlure (feu) et saignement, réduits par la résistance du monstre à leur élément ;
+## gelure (déjà réduite par la résistance au gel quand elle est posée), plus forte sur un
+## monstre ralenti ou gelé.
 static func _damage_over_time(b: SimBoard, m: SimMonster, dt: float, rewards: Array) -> void:
+	var mk := m.marks
+	if mk.frost_timer > 0.0:
+		mk.frost_timer = maxf(0.0, mk.frost_timer - dt)
+		var mult := MonsterMarks.FROSTBITE_FROZEN if m.is_stunned() else (MonsterMarks.FROSTBITE_SLOWED if m.is_slowed() else 1.0)
+		BoardCombat.damage(b, m, mk.frost_dps * mult * dt, true, BoardCombat.solo(mk.frost_owner), rewards)
 	if m.poison_timer > 0.0:
 		m.poison_timer = maxf(0.0, m.poison_timer - dt)
 		BoardCombat.damage(b, m, m.poison_dps * m.taken("poison") * dt, true, BoardCombat.solo(m.poison_owner), rewards)
@@ -72,7 +81,7 @@ static func _heal(b: SimBoard, dt: float) -> void:
 		var r2 := healer.heal_radius * healer.heal_radius
 		for m in b.monsters:
 			if m != healer and m.is_alive() and m.hp < m.max_hp and m.pos.distance_squared_to(healer.pos) <= r2:
-				m.hp = minf(m.max_hp, m.hp + healer.heal_rate * dt)
+				m.hp = minf(m.max_hp, m.hp + healer.heal_rate * m.marks.heal_mult() * dt)
 
 
 ## Chaque monstre charmé frappe le monstre non charmé le plus proche (au sol, à portée).
