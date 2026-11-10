@@ -66,19 +66,20 @@ func test_corrupted_snapshots_are_ignored() -> void:
 
 func test_lobby_payloads() -> void:
 	var gd := load_data()
-	var talents := {"ar_conductive": 2, "ar_tesla": 1}
-	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}], [4, "Bob", 1, 2, 3, 5, talents]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1}
+	var talents := {"ar_conductive": 2, "ar_pylon": 1}
+	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}], [4, "Bob", 1, 1, 3, 5, talents]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1}
 	var ok = NetPayloads.parse_lobby(good, gd, 2, 4)
 	check(ok != null and ok["players"].size() == 2 and ok["rhythm"] == 1 and ok["launch"] == 1, "salon valide")
-	check(ok != null and ok["players"][4]["builder"] == 2 and ok["players"][4]["vote"] == 3, "bâtisseur et vote reçus")
+	check(ok != null and ok["players"][4]["builder"] == 1 and ok["players"][4]["vote"] == 3, "bâtisseur et vote reçus")
 	check(ok != null and ok["players"][4]["level"] == 5 and ok["players"][4]["talents"] == talents, "niveau et talents reçus")
 	var cases := {
 		"niveau hors limites": func(d): d["players"][1][5] = 99,
 		"plus de points que le niveau": func(d): d["players"][1][5] = 2,
 		"talent inconnu": func(d): d["players"][1][6] = {"triche": 1},
-		"talent d'une autre classe": func(d): d["players"][1][6] = {"va_powder": 1},
-		"palier non atteint": func(d): d["players"][1][6] = {"ar_tesla": 1},
+		"talent d'une autre classe": func(d): d["players"][1][6] = {"gu_powder": 1},
+		"palier non atteint": func(d): d["players"][1][6] = {"ar_pylon": 1},
 		"rang trop élevé": func(d): d["players"][1][6] = {"ar_conductive": 9},
+		"deux spécialisations": func(d): d["players"][1][6] = {"ar_conductive": 1, "ar_embers": 1},
 		"talents absents": func(d): d["players"][1].remove_at(6),
 		"sans hôte": func(d): d["players"].remove_at(0),
 		"id en double": func(d): d["players"][1][0] = 1,
@@ -101,7 +102,7 @@ func test_lobby_payloads() -> void:
 
 func test_match_config() -> void:
 	var gd := load_data()
-	var good := {"roster": [[1, "Hôte", 0, 1, {}], [3, "Ana", 1, 3, {"sc_steady": 1}]], "mode": 0, "map": 8, "rhythm": 0, "launch": 1, "difficulty": 2}
+	var good := {"roster": [[1, "Hôte", 0, 1, {}], [3, "Ana", 1, 3, {"su_presence": 1}]], "mode": 0, "map": 8, "rhythm": 0, "launch": 1, "difficulty": 2}
 	var ok = NetPayloads.parse_config(good, gd, 2, 4)
 	check(ok != null and ok["difficulty"] == 2 and ok["roster"][1][3] == 3, "configuration valide")
 	for change in [["difficulty", 9], ["difficulty", null], ["launch", -1], ["roster", [[1, "Hôte", 0, 1]]], ["roster", [[1, "Hôte", 0, -1, {}]]], ["roster", [[1, "Hôte", 0, 1, {"triche": 1}]]]]:

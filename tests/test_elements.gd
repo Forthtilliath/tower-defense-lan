@@ -181,6 +181,8 @@ func test_lower_burn_cap_keeps_existing_stacks() -> void:
 func test_every_tower_can_be_unlocked() -> void:
 	var gd := load_data()
 	var reachable := {}
+	for id in gd.common_towers:
+		reachable[id] = true
 	for builder in gd.builders:
 		for id in builder["towers"]:
 			reachable[id] = true

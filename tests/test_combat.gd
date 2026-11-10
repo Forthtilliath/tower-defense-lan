@@ -154,27 +154,27 @@ func test_bounty_split_by_contribution() -> void:
 func test_goblin_economy() -> void:
 	var gd := load_data()
 	var goblin := _builder(gd, "goblin")
-	check(MatchFlow.interest(gd, 500, PlayerKit.make(gd, goblin)) == 30 and MatchFlow.interest(gd, 2000, PlayerKit.make(gd, goblin)) == 50, "6 %% d'intérêts, plafond 50")
+	check(MatchFlow.interest(gd, 500, PlayerKit.make(gd, goblin, {"go_stocking": 2})) == 25, "4 + 1 %% d'intérêts (Bas de laine)")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 0], [2, "G", 1, goblin]])
 	sim._credit_bounty(1, 20)
 	sim._credit_bounty(2, 20)
-	check(sim.players[1]["gold"] == 170 and sim.players[2]["gold"] == 175, "+25 %% sur ses primes : %d / %d" % [sim.players[1]["gold"], sim.players[2]["gold"]])
+	check(sim.players[1]["gold"] == 170 and sim.players[2]["gold"] == 173, "+15 %% sur ses primes : %d / %d" % [sim.players[1]["gold"], sim.players[2]["gold"]])
 
 
-func test_enchanter_boosts_controls() -> void:
+func test_support_boosts_controls() -> void:
 	var gd := load_data()
-	var enchanter := _builder(gd, "enchanter")
+	var support := _builder(gd, "support")
 	var base := gd.tower_stats("gong", 0)
-	var boosted := gd.tower_stats("gong", 0, -1, enchanter)
-	check(is_equal_approx(boosted["stun_chance"], base["stun_chance"] * 1.3), "chance +30 %")
-	check(is_equal_approx(boosted["stun_duration"], base["stun_duration"] * 1.3), "durée +30 %")
+	var boosted := gd.tower_stats("gong", 0, -1, support)
+	check(is_equal_approx(boosted["stun_chance"], base["stun_chance"] * 1.15), "chance +15 %")
+	check(is_equal_approx(boosted["stun_duration"], base["stun_duration"] * 1.15), "durée +15 %")
 	check(is_equal_approx(boosted["damage"], base["damage"]), "dégâts inchangés")
 
 
 func test_snapshot_carries_controls_and_auras() -> void:
 	var gd := load_data()
-	# Artilleur avec le Tambour débloqué (Discipline 3, Étendard, Tambour)
-	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 1, {"gu_drill": 3, "gu_banner": 1, "gu_drum": 1}]])
+	# Support chef de guerre avec le Tambour débloqué (Ordres 2, Tambour)
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, _builder(gd, "support"), {"su_orders": 2, "su_drum": 1}]])
 	var b := sim.boards[0]
 	var w := sim.map.width
 	sim.apply_command(1, {"a": "build", "cell": 2 * w + 2, "tower": "crossbow"})

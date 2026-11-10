@@ -90,8 +90,8 @@ func test_rejects_bad_specials_and_splits() -> void:
 func test_rejects_bad_builders_waves_and_zones() -> void:
 	var text := _bundled_text()
 	var cases := {
-		"tourelle inconnue": ["\"towers\": [\"crossbow\", \"frost\", \"sentinel\"], \"rate\": 1.25", "\"towers\": [\"crossbow\", \"laser\"], \"rate\": 1.25", "inconnue"],
-		"rien contre l'air (soutien exclu)": ["\"towers\": [\"crossbow\", \"cannon\", \"sentinel\"], \"damage\": 1.15", "\"towers\": [\"cannon\", \"banner\"], \"damage\": 1.15", "air"],
+		"tourelle inconnue": ["\"bonus_towers\": [\"venom\", \"plague\"", "\"bonus_towers\": [\"laser\", \"plague\"", "inconnue"],
+		"rien contre l'air (soutien exclu)": ["\"common_towers\": [\"crossbow\", \"sentinel\", \"dart\", \"cannon\", \"frost\", \"tesla\", \"brazier\", \"salamander\", \"venom\", \"thorns\", \"gong\"]", "\"common_towers\": [\"cannon\", \"banner\"]", "air"],
 		"vague spéciale inconnue": ["\"modifier\": \"rush\"", "\"modifier\": \"tempete\"", "spéciale"],
 		"zone hors limites": ["111111111111111.222222222222222", "111111111111111.555555555555555", "zones"],
 		"ligne de zones trop courte": ["111111111111111.222222222222222", "1111.2222", "zones"],
@@ -108,13 +108,21 @@ func test_rejects_bad_builders_waves_and_zones() -> void:
 
 func test_builders_and_modifiers() -> void:
 	var gd := load_data()
+	check(gd.builders.size() == 6 and gd.common_towers.size() == 11, "6 classes, 11 tourelles communes")
 	for b in gd.builders.size():
-		check(gd.builders[b]["branches"].size() == 3, "%s : 3 branches de talents" % gd.builders[b]["id"])
-		check(gd.builders[b]["towers"].size() == 3, "%s : 3 tourelles de base" % gd.builders[b]["id"])
-	check(PlayerKit.make(gd, 1).allows("cannon") and not PlayerKit.make(gd, 2).allows("cannon"), "tourelles de base par classe")
-	check(PlayerKit.make(gd, 2, {"ar_conductive": 2, "ar_tesla": 1}).allows("tesla"), "un talent débloque une tourelle")
-	var s := gd.tower_stats("cannon", 0, -1, 1)
-	check(is_equal_approx(s["damage"], 10.0 * 1.15), "bonus de dégâts de l'artilleur : %f" % s["damage"])
+		check(gd.builders[b]["branches"].size() == 5, "%s : tronc + 4 spécialisations" % gd.builders[b]["id"])
+		check(PlayerKit.make(gd, b).allows("cannon") and not PlayerKit.make(gd, b).allows("mortar"), "%s : tronc commun seulement au départ" % gd.builders[b]["id"])
+	check(PlayerKit.make(gd, 1, {"ar_conductive": 2, "ar_pylon": 1}).allows("pylon"), "un talent débloque une tourelle")
+	var s := gd.tower_stats("cannon", 0, -1, 0)
+	check(is_equal_approx(s["damage"], 10.0 * 1.1), "bonus de dégâts de l'artilleur : %f" % s["damage"])
+	var unlocked := {}
+	for b in gd.builders:
+		for branch in b["branches"]:
+			for t in branch["talents"]:
+				if t["unlock"] != "":
+					check(not unlocked.has(t["unlock"]) and not gd.common_towers.has(t["unlock"]), "%s : une seule spécialisation la débloque" % t["unlock"])
+					unlocked[t["unlock"]] = true
+	check(unlocked.size() + gd.common_towers.size() == gd.tower_order.size(), "chaque tourelle est commune ou signature d'une spécialisation")
 	check(gd.wave_modifier("w5")["id"] == "rush" and gd.wave_modifier("w1").is_empty(), "vagues spéciales")
 
 
