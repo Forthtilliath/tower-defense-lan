@@ -60,26 +60,61 @@ func _rebuild() -> void:
 	var level := Progress.level(_builder)
 	var progress := TalentRules.level_progress(data, Progress.xp(_builder))
 	var xp_text := "niveau maximum" if progress[1] == 0 else "%d / %d XP vers le niveau %d" % [progress[0], progress[1], level + 1]
-	_header.text = "Niveau %d (%s) · %d point(s) libre(s) sur %d. Paliers : %s points dans la branche." % [
-		level, xp_text, Progress.points_left(_builder), TalentRules.points(level),
+	var kit := PlayerKit.make(data, _builder, talents)
+	var chosen := "spécialisation : %s (retire ses points pour en changer)" % kit.spec_name(data) if kit.spec >= 0 \
+			else "choisis UNE spécialisation : les trois autres se ferment"
+	_header.text = "Niveau %d (%s) · %d point(s) libre(s) sur %d · %s.\nPaliers : %s points dans la branche." % [
+		level, xp_text, Progress.points_left(_builder), TalentRules.points(level), chosen,
 		" / ".join(data.talent_tiers.slice(1).map(func(n: int) -> String: return str(n)))]
-	for branch in data.builders[_builder]["branches"]:
-		_body.add_child(_branch_column(branch, talents))
+	var box := UiTheme.vbox(14)
+	box.size_flags_horizontal = SIZE_EXPAND_FILL
+	_body.add_child(box)
+	var specs := UiTheme.hbox(14)
+	var branches: Array = data.builders[_builder]["branches"]
+	for i in branches.size():
+		var branch: Dictionary = branches[i]
+		if branch["trunk"]:
+			box.add_child(_trunk_block(branch, talents))
+		else:
+			specs.add_child(_branch_column(branch, talents, kit.spec >= 0 and kit.spec != i))
+	box.add_child(specs)
 
 
-func _branch_column(branch: Dictionary, talents: Dictionary) -> VBoxContainer:
+## Tronc commun : ses talents côte à côte, au-dessus des spécialisations.
+func _trunk_block(branch: Dictionary, talents: Dictionary) -> VBoxContainer:
+	var col := UiTheme.vbox(6)
+	col.add_child(UiTheme.label("%s (%d) — %s" % [branch["name"], _spent(branch, talents), branch["description"]], 20, UiTheme.ACCENT))
+	var row := UiTheme.hbox(10)
+	for t in _sorted(branch):
+		var r := _talent_row(t, talents)
+		r.size_flags_horizontal = SIZE_EXPAND_FILL
+		row.add_child(r)
+	col.add_child(row)
+	return col
+
+
+func _branch_column(branch: Dictionary, talents: Dictionary, closed: bool) -> VBoxContainer:
 	var col := UiTheme.vbox(8)
 	col.size_flags_horizontal = SIZE_EXPAND_FILL
+	var title := "%s (%d)%s" % [branch["name"], _spent(branch, talents), " · fermée" if closed else ""]
+	col.add_child(UiTheme.label(title, 22, UiTheme.MUTED if closed else UiTheme.ACCENT))
+	col.add_child(UiTheme.label(branch["description"], 15, UiTheme.MUTED))
+	for t in _sorted(branch):
+		col.add_child(_talent_row(t, talents))
+	return col
+
+
+static func _spent(branch: Dictionary, talents: Dictionary) -> int:
 	var spent := 0
 	for t in branch["talents"]:
 		spent += int(talents.get(t["id"], 0))
-	col.add_child(UiTheme.label("%s (%d)" % [branch["name"], spent], 22, UiTheme.ACCENT))
-	col.add_child(UiTheme.label(branch["description"], 15, UiTheme.MUTED))
+	return spent
+
+
+static func _sorted(branch: Dictionary) -> Array:
 	var sorted: Array = branch["talents"].duplicate()
 	sorted.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["tier"] < b["tier"])
-	for t in sorted:
-		col.add_child(_talent_row(t, talents))
-	return col
+	return sorted
 
 
 func _talent_row(t: Dictionary, talents: Dictionary) -> HBoxContainer:

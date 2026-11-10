@@ -30,7 +30,8 @@ func _ready() -> void:
 		return
 	add_child(HSeparator.new())
 	add_child(UiTheme.label("Alliés", 22, UiTheme.ACCENT))
-	add_child(UiTheme.label("Un don coûte cher : ton allié reçoit %d %% du montant." % roundi(float(data.player["gift_ratio"]) * 100.0), 15, UiTheme.MUTED))
+	var kit := _game.my_kit()
+	add_child(UiTheme.label("Un don coûte cher : ton allié reçoit %d %% du montant." % roundi(kit.gift_ratio(data) * 100.0), 15, UiTheme.MUTED))
 	for id in others:
 		var l := UiTheme.label("", 17, _game.colors[id])
 		add_child(l)
@@ -39,7 +40,7 @@ func _ready() -> void:
 		add_child(row)
 		var index: int = _game.order.find(id)
 		for amount in GIFTS:
-			var b := UiTheme.button("Donner %d → +%d" % [amount, MatchActions.gift_received(data, amount)], func() -> void:
+			var b := UiTheme.button("Donner %d → +%d" % [amount, MatchActions.gift_received(data, amount, kit)], func() -> void:
 				_game.send({"a": "give", "to": index, "amount": amount}), 44, false)
 			b.size_flags_horizontal = SIZE_EXPAND_FILL
 			row.add_child(b)

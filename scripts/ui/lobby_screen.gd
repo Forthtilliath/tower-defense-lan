@@ -179,9 +179,9 @@ func _refresh_players(me: int) -> void:
 		if id == me:
 			text += "  (toi)"
 		col.add_child(UiTheme.label(text, 19))
-		var builder: Dictionary = Data.db.builders[int(p.get("builder", 0))]
+		var kit := PlayerKit.make(Data.db, int(p.get("builder", 0)), p.get("talents", {}))
 		var vote: Dictionary = Data.db.difficulties[int(p.get("vote", 1))]
-		col.add_child(UiTheme.label("%s niv. %d · vote %s" % [builder["name"], int(p.get("level", 1)), vote["name"]], 14, UiTheme.MUTED))
+		col.add_child(UiTheme.label("%s niv. %d · vote %s" % [kit.title(Data.db), int(p.get("level", 1)), vote["name"]], 14, UiTheme.MUTED))
 		row.add_child(col)
 		_players.add_child(row)
 	_count.text = "Joueurs : %d / %d" % [Net.players.size(), Net.MAX_PLAYERS]

@@ -69,10 +69,12 @@ static func builder_text(index: int) -> String:
 	for id in Data.db.tower_order:
 		if kit.allows(id):
 			names.append(Data.db.towers[id]["name"])
-	var branches := []
+	var specs := []
 	for branch in b["branches"]:
-		branches.append(branch["name"])
-	return "%s : %s\nTes tourelles : %s.\nBranches de talents : %s." % [b["name"], b["description"], ", ".join(names), ", ".join(branches)]
+		if not branch["trunk"]:
+			specs.append(branch["name"])
+	var chosen := kit.spec_name(Data.db) if kit.spec >= 0 else "à choisir dans les talents (%s)" % ", ".join(specs)
+	return "%s : %s\nSpécialisation : %s.\nTes tourelles : %s." % [b["name"], b["description"], chosen, ", ".join(names)]
 
 
 static func _num(v: float) -> String:
