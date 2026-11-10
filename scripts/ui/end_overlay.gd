@@ -52,4 +52,6 @@ func show_result() -> void:
 			_title.text = "Défaite…"
 			_title.add_theme_color_override("font_color", UiTheme.DANGER)
 			_detail.text = "Les monstres sont passés à la vague %d." % s.wave
+	if _game.xp_summary != "":
+		_detail.text += "\n" + _game.xp_summary
 	visible = true
