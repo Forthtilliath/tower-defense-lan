@@ -16,6 +16,8 @@ const MAX_GIFT := 1.0
 
 var builder := 0
 var talents := {}  # id du talent -> rang
+## Classes héritées (montées au niveau maximum, autres que celle jouée) dont le bonus s'applique.
+var heritage: Array[int] = []
 var towers := {}  # id de tourelle -> true
 ## Branche de spécialisation choisie (index dans les branches de la classe), -1 : aucune encore.
 var spec := -1
@@ -41,7 +43,9 @@ var _per := {}  # id de tourelle -> bonus des talents qui la visent
 var _grants := {}  # id de tourelle ("" : toutes) -> effets ajoutés par les talents (DataSchema.GRANT)
 
 
-static func make(data: GameData, p_builder: int, p_talents := {}) -> PlayerKit:
+## heritage : classes déjà montées au niveau maximum (index), dont le bonus d'héritage s'ajoute
+## (sauf celui de la classe jouée).
+static func make(data: GameData, p_builder: int, p_talents := {}, p_heritage: Array = []) -> PlayerKit:
 	var k := PlayerKit.new()
 	k.builder = clampi(p_builder, 0, data.builders.size() - 1)
 	k.talents = p_talents
@@ -64,6 +68,10 @@ static func make(data: GameData, p_builder: int, p_talents := {}) -> PlayerKit:
 				k._apply(t, rank)
 				if not branches[i]["trunk"]:
 					k.spec = i
+	for h in p_heritage:
+		if h != k.builder and h >= 0 and h < data.builders.size() and data.builders[h].has("heritage"):
+			k.heritage.append(h)
+			k._apply(data.builders[h]["heritage"], 1)
 	return k
 
 

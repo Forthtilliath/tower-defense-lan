@@ -39,6 +39,11 @@ static func builder(src: Variant, where: String, v: DataValidator, towers: Dicti
 	if list == null:
 		return null
 	b["branches"] = list
+	if src.has("heritage"):  # bonus donné aux autres classes une fois celle-ci au niveau maximum
+		var heritage = _talent(v, src["heritage"], where + ".heritage", towers, tier_count)
+		if heritage == null:
+			return null
+		b["heritage"] = heritage
 	return b
 
 
