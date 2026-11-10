@@ -92,6 +92,8 @@ static func _tint(col: Color, m: Dictionary) -> Color:
 		col = col.lerp(Color("#8be04e"), 0.35)
 	if m.get("burning", false):
 		col = col.lerp(Color("#ff7a2f"), 0.4)
+	if m.get("frostbitten", false):
+		col = col.lerp(Color("#e8f6ff"), 0.45)
 	if m.get("charmed", false):
 		col = col.lerp(Color("#e070c0"), 0.55)
 	return col
@@ -142,7 +144,8 @@ static func _face(ci: CanvasItem, def: Dictionary, m: Dictionary, pos: Vector2, 
 
 
 ## Signes d'état au-dessus du monstre : étourdi (étoiles), peur (point d'exclamation),
-## charmé (cœur), saignement (gouttes rouges).
+## charmé (cœur), saignement (gouttes rouges), électrifié (éclair jaune), cloué au sol
+## (flèches vers le bas).
 static func _status(ci: CanvasItem, m: Dictionary, pos: Vector2, r: float, ts: float, w: float) -> void:
 	var top := pos - Vector2(0, r + ts * 0.32)
 	var k := maxf(2.0, ts * 0.07)
@@ -160,6 +163,15 @@ static func _status(ci: CanvasItem, m: Dictionary, pos: Vector2, r: float, ts: f
 	if m.get("bleeding", false):
 		ci.draw_circle(pos + Vector2(-r * 0.7, r * 0.6), maxf(1.5, k * 0.5), Color("#d0202a"))
 		ci.draw_circle(pos + Vector2(-r * 0.4, r * 0.9), maxf(1.2, k * 0.4), Color("#d0202a"))
+	if m.get("shocked", false):
+		var z := pos + Vector2(r * 0.85, -r * 0.4)
+		var bolt := PackedVector2Array([z + Vector2(0, -k * 1.2), z + Vector2(-k * 0.6, 0), z + Vector2(k * 0.3, 0), z + Vector2(-k * 0.2, k * 1.2)])
+		ci.draw_polyline(bolt, Ink.INK, maxf(3.0, k * 0.7))
+		ci.draw_polyline(bolt, Color("#ffe84a"), maxf(1.5, k * 0.4))
+	if m.get("grounded", false):
+		for side in [-1.0, 1.0]:
+			var a := pos + Vector2(side * r * 1.1, -r * 0.3)
+			Ink.poly(ci, PackedVector2Array([a + Vector2(-k * 0.5, 0), a + Vector2(k * 0.5, 0), a + Vector2(0, k * 0.9)]), Color("#9fe0d0"), w * 0.5)
 
 
 static func _hp_bar(ci: CanvasItem, hp: int, pos: Vector2, r: float, ts: float) -> void:

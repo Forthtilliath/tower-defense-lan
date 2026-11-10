@@ -7,7 +7,7 @@ const ATTACK_TEXT := {
 	"pulse": "onde autour d'elle", "line": "traverse les monstres alignés",
 	"cone": "souffle en cône", "beam": "rayon continu",
 }
-const ELEMENT_NAMES := {"fire": "feu", "ice": "glace", "lightning": "foudre", "poison": "poison", "bleed": "saignement"}
+const ELEMENT_NAMES := {"fire": "feu", "ice": "glace", "lightning": "foudre", "poison": "poison", "bleed": "saignement", "wind": "vent"}
 
 
 static func stats_text(def: Dictionary, s: Dictionary) -> String:
@@ -42,6 +42,12 @@ static func stats_text(def: Dictionary, s: Dictionary) -> String:
 		parts.append("brûlure %s/s par charge, %d charges, %s s" % [num(s["burn_dps"]), s["burn_stacks"], num(s["burn_duration"])])
 	if s["bleed"] > 0.0:
 		parts.append("saignement %s %% des PV max/s pendant %s s" % [num(s["bleed"] * 100.0), num(s["bleed_duration"])])
+	if s["multishot"] > 1:
+		parts.append("vise %d monstres à la fois" % s["multishot"])
+	if s["ground_duration"] > 0.0:
+		parts.append("cloue les volants au sol %s s" % num(s["ground_duration"]))
+	if s["heal_block"] > 0.0:
+		parts.append("coupe %d %% des soins (%s s)" % [roundi(s["heal_block"] * 100.0), num(s["heal_block_duration"])])
 	if s["patch_radius"] > 0.0:
 		var hurt := " · %s dégâts/s" % num(s["patch_dps"]) if s["patch_dps"] > 0.0 else ""
 		parts.append("nappe au sol de %s cases, %s s%s" % [num(s["patch_radius"]), num(s["patch_duration"]), hurt])
@@ -60,6 +66,16 @@ static func _aura_text(s: Dictionary) -> String:
 		parts.append("+%d %% de dégâts" % roundi(s["aura_damage"] * 100.0))
 	if s["aura_cc"] > 0.0:
 		parts.append("+%d %% de chances et durées de contrôle" % roundi(s["aura_cc"] * 100.0))
+	if s["aura_range"] > 0.0:
+		parts.append("+%d %% de portée" % roundi(s["aura_range"] * 100.0))
+	if s["aura_frostbite"] > 0.0:
+		parts.append("les tourelles de glace ajoutent une gelure de %s/s (×1,5 sur un ralenti, ×2 sur un gelé)" % num(s["aura_frostbite"]))
+	if s["aura_shock"] > 0.0:
+		parts.append("les tourelles de foudre électrifient : +%d %% de dégâts subis" % roundi(s["aura_shock"] * 100.0))
+	if s["aura_bounty"] > 0.0:
+		parts.append("+%d %% de prime pour les monstres tués à portée" % roundi(s["aura_bounty"] * 100.0))
+	if s["aura_discount"] > 0.0:
+		parts.append("−%d %% sur les constructions et améliorations à portée" % roundi(s["aura_discount"] * 100.0))
 	parts.append("la plus forte aura de chaque type s'applique")
 	return " · ".join(parts)
 
@@ -73,6 +89,12 @@ static func buffs_text(flags: int) -> String:
 		names.append("cadence")
 	if flags & 4:
 		names.append("contrôles")
+	if flags & 16:
+		names.append("portée")
+	if flags & 32:
+		names.append("gelure")
+	if flags & 64:
+		names.append("électrification")
 	var text := "" if names.is_empty() else "Renforcée par une aura : " + ", ".join(names) + "."
 	if flags & 8:
 		text += ("\n" if text != "" else "") + "Brouillée par un saboteur : elle ne fait rien quelques secondes."

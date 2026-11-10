@@ -90,7 +90,7 @@ static func draw(ci: CanvasItem, id: String, col: Color, c: Vector2, r: float) -
 				ci.draw_circle(c + Vector2(-r * 0.2, y), r * 0.1, _c(Color.WHITE))
 				ci.draw_circle(c + Vector2(r * 0.2, y), r * 0.1, _c(Color.WHITE))
 		_:
-			if not ElementGlyphs.draw(ci, id, col, c, r, _mono):
+			if not ElementGlyphs.draw(ci, id, col, c, r, _mono) and not SpecGlyphs.draw(ci, id, col, c, r, _mono):
 				ci.draw_circle(c, r, col)
 
 
