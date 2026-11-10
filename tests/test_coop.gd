@@ -3,9 +3,9 @@ extends "res://tests/test_base.gd"
 ## spéciales et cartes à plusieurs couloirs.
 
 const DT := 0.05
-const PLAINE := 7
-const FIEFS := 8
-const BASTION := 9
+const PLAINE := 6
+const FIEFS := 7
+const BASTION := 8
 
 
 func _sim(players := 1, map := 0, options := {}, builders := []) -> SimMatch:
