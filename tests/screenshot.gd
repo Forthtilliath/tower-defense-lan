@@ -25,6 +25,12 @@ func _run() -> void:
 	main.show_menu()
 	await _wait(0.5)
 	_shot("1-menu")
+	# Arbre de talents (sans réseau) : celui de l'Arcaniste, avec la progression de cet appareil
+	var tree := TalentPanel.new(2, func() -> void: pass, func() -> void: pass)
+	main.add_child(tree)
+	await _wait(0.4)
+	_shot("1b-talents")
+	tree.queue_free()
 	Net.host("Forth")
 	Net.set_option("mode", _mode)
 	Net.set_option("map", _map)

@@ -10,6 +10,8 @@ const PLAN := [
 const MAX_TOWERS := 16
 const NORMAL := 1
 const FIRST_WAVE_AFTER := 20.0
+## Niveau des bots : un joueur qui a déjà quelques parties (deux branches presque complètes).
+const BOT_LEVEL := 10
 
 var _lanes := {}  # cache de lane_key
 
@@ -85,10 +87,33 @@ func _score(sim: SimMatch) -> float:
 	return sim.wave_index + float(sim.boards[0].lives) / float(sim.difficulty["lives"])
 
 
-func play(gd: GameData, map_index: int, count: int, difficulty: int, options := {}, builders := []) -> SimMatch:
+## Débutants : niveau 1, un seul point de talent, tourelles de base presque seulement.
+func test_level_one_beginners_win() -> void:
+	var gd := load_data()
+	var solo := play(gd, 0, 1, NORMAL, {}, [], 1)
+	check(solo.result == "victory", "débutant seul : %s à la vague %d" % [solo.result, solo.wave_index + 1])
+	var duo := play(gd, 1, 2, NORMAL, {}, [], 1)
+	check(duo.result == "victory", "débutants à deux : %s à la vague %d" % [duo.result, duo.wave_index + 1])
+
+
+## Talents d'un bot : remplit les branches dans l'ordre, palier par palier.
+func auto_talents(gd: GameData, builder: int, level: int) -> Dictionary:
+	var talents := {}
+	var points := TalentRules.points(level)
+	for branch in gd.builders[builder]["branches"]:
+		var sorted: Array = branch["talents"].duplicate()
+		sorted.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["tier"] < b["tier"])
+		for t in sorted:
+			while TalentRules.add_refusal(gd, builder, talents, t["id"], points) == "":
+				talents[t["id"]] = int(talents.get(t["id"], 0)) + 1
+	return talents
+
+
+func play(gd: GameData, map_index: int, count: int, difficulty: int, options := {}, builders := [], level := BOT_LEVEL) -> SimMatch:
 	var roster := []
 	for i in count:
-		roster.append([i + 1, "Bot%d" % i, i, builders[i] if i < builders.size() else 0])
+		var b: int = builders[i] if i < builders.size() else 0
+		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level)])
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster, difficulty, options)
 	var cells := ranked_cells(sim.map, false)
 	var air_cells := ranked_cells(sim.map, true)
@@ -180,13 +205,13 @@ func lane_key(m: MapDef, cell: int) -> int:
 	return _lanes[key]
 
 
-## PLAN réduit aux tourelles que le bâtisseur du joueur sait construire, suivi de ses autres
-## tourelles (contrôles, soutien…) dans l'ordre de sa liste.
+## PLAN réduit aux tourelles que le joueur sait construire (classe et talents), suivi de ses
+## autres tourelles (contrôles, soutien…) dans l'ordre du jeu.
 func builder_plan(sim: SimMatch, id: int) -> Array:
-	var builder: int = sim.players[id]["builder"]
-	var plan := PLAN.filter(func(type: String) -> bool: return sim.data.builder_allows(builder, type))
-	for type in sim.data.builders[builder]["towers"]:
-		if not PLAN.has(type):
+	var kit: PlayerKit = sim.players[id]["kit"]
+	var plan := PLAN.filter(func(type: String) -> bool: return kit.allows(type))
+	for type in sim.data.tower_order:
+		if kit.allows(type) and not PLAN.has(type):
 			plan.append(type)
 	return plan
 
