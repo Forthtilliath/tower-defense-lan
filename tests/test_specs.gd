@@ -186,3 +186,59 @@ func test_snapshot_carries_new_marks_and_invested() -> void:
 	var vm: Dictionary = view.boards[0]["monsters"][m.id]
 	check(vm["shocked"] and vm["frostbitten"] and not vm["grounded"], "électrifié et gelure transmis")
 	check(view.boards[0]["towers"][2 * w + 2]["invested"] == 50, "or investi transmis")
+
+
+func _mason_sim(talents: Dictionary) -> SimMatch:
+	var gd := load_data()
+	var mason := _kit(gd, "mason", talents)
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "T", 0, mason.builder, talents]])
+	sim.players[1]["gold"] = 5000
+	return sim
+
+
+func test_digger_razes_decor_to_build_on_it() -> void:
+	var sim := _mason_sim({"bu_survey": 1})  # 2 charges
+	var b := sim.boards[0]
+	var tree := 2  # Prairie : « ..T... » sur la première ligne
+	var route := sim.map.width  # deuxième ligne : départ et route
+	check(b.map.is_decor(tree) and not b.can_build(tree), "un arbre ne se construit pas")
+	check(sim.apply_command(1, {"a": "raze", "cell": route}) != "", "la route ne se rase pas")
+	check(sim.apply_command(1, {"a": "raze", "cell": tree}) == "", "arbre rasé")
+	check(b.can_build(tree) and sim.apply_command(1, {"a": "build", "cell": tree, "tower": "crossbow"}) == "", "on construit dessus")
+	check(sim.data.maps[0].is_decor(tree), "la carte d'origine n'est pas touchée")
+	check(MatchActions.charges_left(sim.players[1], "raze") == 1, "une charge restante")
+	var rock := sim.map.cells.find(MapDef.Cell.ROCK)
+	check(sim.apply_command(1, {"a": "raze", "cell": rock}) == "", "rocher rasé")
+	var other := sim.map.cells.find(MapDef.Cell.TREE, tree + 1)
+	check(sim.apply_command(1, {"a": "raze", "cell": other}).contains("Plus"), "plus de charge")
+
+
+func test_digger_places_bonus_tiles() -> void:
+	var sim := _mason_sim({"bu_survey": 3, "bu_foundations": 1, "bu_terrace": 1})  # 1 case
+	var b := sim.boards[0]
+	var cell := 2 * sim.map.width + 2
+	check(sim.apply_command(1, {"a": "build", "cell": cell, "tower": "crossbow"}) == "", "tourelle posée")
+	var before: float = b.towers[cell].stats["damage"]
+	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": 3}) != "", "pas de Filon d'or")
+	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": 1}) == "", "Cristal posé sous la tourelle")
+	check(is_equal_approx(b.towers[cell].stats["damage"], before * 1.3), "la tourelle en profite : %f" % b.towers[cell].stats["damage"])
+	check(sim.apply_command(1, {"a": "tile", "cell": cell + 1, "special": 0}).contains("Plus"), "plus de case à poser")
+	check(Commands.sanitize({"a": "tile", "cell": 5, "special": 99}, sim.data, sim.map) is String, "case spéciale inconnue refusée")
+	check(Commands.sanitize({"a": "raze", "cell": 5}, sim.data, sim.map) is Dictionary, "commande « raser » reconnue")
+
+
+func test_terrain_changes_reach_the_view_and_are_checked() -> void:
+	var sim := _mason_sim({"bu_survey": 3, "bu_foundations": 1, "bu_terrace": 1})
+	var tree := 2
+	sim.apply_command(1, {"a": "raze", "cell": tree})
+	sim.apply_command(1, {"a": "build", "cell": tree, "tower": "crossbow"})
+	sim.apply_command(1, {"a": "tile", "cell": 2 * sim.map.width + 2, "special": 2})
+	var view := ViewState.new(sim.data, sim.map, 1)
+	var snap := sim.snapshot()
+	check(view.apply(snap), "instantané accepté (tourelle sur l'arbre rasé)")
+	check(view.map_version > 0 and view.maps[0].is_buildable(tree), "carte du client à jour")
+	check(view.maps[0].special_at(2 * sim.map.width + 2) == 2, "Rune transmise")
+	check(view.players[1]["raze"] == 5 and view.players[1]["tile"] == 0, "charges restantes transmises")
+	var bad: Dictionary = sim.snapshot()
+	bad["b"][0]["e"].append([sim.map.width, MapDef.Cell.BUILD, -1])  # la route « rasée »
+	check(not view.apply(bad), "changement sur la route refusé")

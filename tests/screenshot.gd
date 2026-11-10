@@ -77,6 +77,12 @@ func _run() -> void:
 ## placés directement dans la simulation (sans les règles de construction ni les talents).
 func _showcase(map: MapDef) -> void:
 	var board: SimBoard = Net.host_loop.sim.boards[0]
+	# Terrassier : le premier arbre rasé, une Rune posée sur la case voisine si elle est libre
+	var tree := board.map.cells.find(MapDef.Cell.TREE)
+	if tree >= 0:
+		BoardTerrain.raze(board, tree)
+		if board.map.is_buildable(tree + 1) and board.map.special_at(tree + 1) < 0:
+			BoardTerrain.place(board, tree + 1, 2)
 	var free: Array[int] = []
 	for i in map.cell_count():
 		if board.can_build(i):
