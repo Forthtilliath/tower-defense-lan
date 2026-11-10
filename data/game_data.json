@@ -1,7 +1,7 @@
 {
 	"player": { "start_gold": 150, "interest": 0.04, "interest_cap": 30, "gift_ratio": 0.5, "gift_min": 10 },
 	"coop_scaling": { "hp": 0.15, "count": 0.35 },
-	"progression": { "max_level": 15, "xp_base": 100, "xp_growth": 1.2, "xp_per_wave": 10, "defeat_share": 0.4 },
+	"progression": { "max_level": 15, "xp_base": 100, "xp_growth": 1.2, "xp_per_wave": 10, "win_bonus": 0.25, "defeat_steps": 4, "defeat_rate_min": 0.1, "defeat_rate_max": 0.85 },
 	"talent_tiers": [0, 2, 4, 5],
 	"builders": [
 		{
