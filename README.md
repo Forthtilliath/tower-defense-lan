@@ -18,13 +18,20 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
 
 ### Dans le salon
 
-- **Bâtisseur** (chaque joueur) : il fixe les tourelles que l'on peut construire et donne un bonus à toutes les siennes.
-  - Touche-à-tout : toutes les tourelles, sans bonus.
-  - Artilleur : armes lourdes, +15 % de dégâts.
-  - Arcaniste : givre, feu, foudre, poison ; +25 % de cadence, +15 % de dégâts.
-  - Éclaireur : tir à distance et saignement, +15 % de portée.
-  - Gobelin : +25 % sur ses parts de primes, +2 % d'intérêts (plafond +20), mais tourelles 10 % moins fortes.
-  - Enchanteur : contrôles (étourdir, effrayer, charmer), chances et durées +30 % ; classe de soutien, faite pour l'équipe.
+- **Classe** (chaque joueur) : 3 tourelles de base, un bonus de classe, et un arbre de talents à 3 branches.
+  - Touche-à-tout : sans bonus ; branches Artillerie, Éléments, Contrôle.
+  - Artilleur : +15 % de dégâts ; Siège, Précision, Commandement (auras).
+  - Arcaniste : +25 % de cadence, +15 % de dégâts ; Foudre, Alchimie (poison, feu), Hiver.
+  - Éclaireur : +15 % de portée ; Tireur d'élite, Pièges (saignement, poison), Embuscade.
+  - Gobelin : +25 % sur ses parts de primes, +2 % d'intérêts (plafond +20), tourelles 10 % moins fortes ; Usure, Bricolage, Coups bas.
+  - Enchanteur : contrôles +30 % ; Envoûtement (charme), Terreur (peur), Choc (étourdissement) ; classe de soutien, faite pour l'équipe.
+- **Talents et progression** (bouton « Talents » du salon) : chaque classe gagne de l'expérience à chaque partie
+  (victoire : 10 XP par vague × difficulté ; défaite : 40 % de cette somme au prorata des vagues passées) et monte
+  jusqu'au niveau 15, avec 1 point de talent par niveau. Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
+  déjà placés dans cette branche ; les tourelles avancées se débloquent ainsi. Une branche complète coûte 7 points :
+  au niveau 15, on en maîtrise deux sur trois, et deux joueurs de la même classe peuvent jouer très différemment.
+  La progression est enregistrée sur chaque appareil (`progression.json`) et vérifiée à la relecture ; l'hôte revalide
+  les talents de chacun (le niveau annoncé, lui, n'est pas vérifiable sans serveur).
 - **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile ou Cauchemar. La plus votée l'emporte ; en cas d'égalité, la plus facile.
 - **Rythme** (hôte, coopération) :
   - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague, même pendant une vague
