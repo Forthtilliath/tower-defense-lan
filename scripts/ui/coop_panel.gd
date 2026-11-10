@@ -58,6 +58,8 @@ func refresh() -> void:
 		_next.text = "Prochaine vague : %d / %d" % [s.wave + 1, s.total]
 		if not mod.is_empty():
 			_next.text += "\nVague spéciale « %s » : %s" % [mod["name"], mod["description"]]
+		var ids: Array = _game.map.waves
+		_next.text += "\n" + MonsterText.wave_text(data, data.waves[ids[mini(s.wave, ids.size() - 1)]])
 		_next.add_theme_color_override("font_color", Color(mod["color"]) if not mod.is_empty() else UiTheme.MUTED)
 	var gold := int(_game.me().get("gold", 0))
 	var rule := _game.my_kit().interest_rule(data)
