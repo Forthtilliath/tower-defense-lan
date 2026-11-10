@@ -46,8 +46,10 @@ const TALENT := {
 	"interest": ["num", 0.0, 0.1, 0.0], "interest_cap": ["int", 0, 1000, 0], "start_gold": ["int", 0, 10000, 0],
 	"build_cost": ["num", 0.0, 0.2, 0.0], "sell_bonus": ["num", 0.0, 0.1, 0.0], "gift_bonus": ["num", 0.0, 0.25, 0.0],
 	"team_bounty": ["num", 0.0, 0.2, 0.0], "early_bonus": ["num", 0.0, 2.0, 0.0], "clean_gold": ["int", 0, 1000, 0],
-	"imbue_all": ["bool", false],
+	"imbue_all": ["bool", false], "raze_charges": ["int", 0, 20, 0], "tile_charges": ["int", 0, 10, 0],
 }
+## raze_charges : arbres ou rochers qu'il peut raser par partie ; tile_charges : cases spéciales
+## (Colline, Cristal, Rune) qu'il peut poser par partie (Terrassier).
 ## team_bounty : part de prime en plus pour toute l'équipe (le joueur compris). early_bonus : or
 ## des vagues lancées en avance multiplié d'autant en plus. clean_gold : or par vague franchie
 ## sans perdre de vie. imbue_all : ses tourelles d'imprégnation (Stèle de gelure, Paratonnerre)

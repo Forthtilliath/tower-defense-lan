@@ -75,6 +75,45 @@ static func sell(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: i
 	return ""
 
 
+## Terrassier : raser un arbre ou un rocher (une charge, dans une zone où le joueur construit).
+static func raze(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: int) -> String:
+	if not MatchFlow.can_trade(sim):
+		return LOCKED
+	if charges_left(p, "raze") <= 0:
+		return "Plus de terrain à raser (talents du Terrassier)"
+	var refusal := BoardTerrain.raze_refusal(board, cell)
+	if refusal == "":
+		refusal = zone_refusal(sim, id, cell)
+	if refusal != "":
+		return refusal
+	BoardTerrain.raze(board, cell)
+	p["used_raze"] = int(p.get("used_raze", 0)) + 1
+	return ""
+
+
+## Terrassier : poser une case spéciale (une charge).
+static func place_tile(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: int, special: int) -> String:
+	if not MatchFlow.can_trade(sim):
+		return LOCKED
+	if charges_left(p, "tile") <= 0:
+		return "Plus de case à poser (talents du Terrassier)"
+	var refusal := BoardTerrain.place_refusal(board, cell, special)
+	if refusal == "":
+		refusal = zone_refusal(sim, id, cell)
+	if refusal != "":
+		return refusal
+	BoardTerrain.place(board, cell, special)
+	p["used_tile"] = int(p.get("used_tile", 0)) + 1
+	return ""
+
+
+## Charges restantes d'un joueur : « raze » (décor à raser) ou « tile » (cases à poser).
+static func charges_left(p: Dictionary, kind: String) -> int:
+	var kit: PlayerKit = p["kit"]
+	var total := kit.raze_charges if kind == "raze" else kit.tile_charges
+	return maxi(0, total - int(p.get("used_" + kind, 0)))
+
+
 static func cycle_target(id: int, board: SimBoard, cell: int) -> String:
 	var t := own_tower(id, board, cell)
 	if t == null:

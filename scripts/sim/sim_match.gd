@@ -114,6 +114,10 @@ func apply_command(id: int, cmd: Dictionary) -> String:
 			return MatchActions.sell(self, id, p, board, cmd["cell"])
 		"mode":
 			return MatchActions.cycle_target(id, board, cmd["cell"])
+		"raze":
+			return MatchActions.raze(self, id, p, board, cmd["cell"])
+		"tile":
+			return MatchActions.place_tile(self, id, p, board, cmd["cell"], cmd["special"])
 		"send":
 			return MatchActions.send(self, id, p, cmd["monster"])
 		"give":
@@ -164,7 +168,8 @@ func snapshot() -> Dictionary:
 	var pl := []
 	for id in order:
 		var p: Dictionary = players[id]
-		pl.append([id, p["gold"], p["income"], p["ready"], p["alive"], p["board"]])
+		pl.append([id, p["gold"], p["income"], p["ready"], p["alive"], p["board"],
+			MatchActions.charges_left(p, "raze"), MatchActions.charges_left(p, "tile")])
 	var bs := []
 	for b in boards:
 		bs.append(b.snapshot())

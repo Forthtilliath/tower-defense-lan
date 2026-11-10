@@ -6,7 +6,7 @@ extends RefCounted
 
 const STATS := ["damage", "rate", "range", "cc", "aura"]
 const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
-	"team_bounty", "early_bonus", "clean_gold"]
+	"team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"]
 ## Auras des tourelles de soutien, toutes renforcées par la statistique « aura ».
 const AURAS := ["aura_rate", "aura_damage", "aura_cc", "aura_range", "aura_frostbite", "aura_shock", "aura_bounty", "aura_discount"]
 ## Plafonds : réduction des prix, part de revente, part d'un don reçue par l'allié.
@@ -29,6 +29,9 @@ var gift_bonus := 0.0
 var team_bounty := 0.0
 var early_bonus := 0.0
 var clean_gold := 0
+## Terrassier : décor à raser et cases spéciales à poser, par partie.
+var raze_charges := 0
+var tile_charges := 0
 ## Ses tourelles d'imprégnation renforcent toutes leurs voisines (pas seulement leur élément).
 var imbue_all := false
 var _base := {}  # multiplicateurs de la classe
@@ -76,6 +79,8 @@ func _apply(t: Dictionary, rank: int) -> void:
 	team_bounty += float(t["team_bounty"]) * rank
 	early_bonus += float(t["early_bonus"]) * rank
 	clean_gold += int(t["clean_gold"]) * rank
+	raze_charges += int(t["raze_charges"]) * rank
+	tile_charges += int(t["tile_charges"]) * rank
 	imbue_all = imbue_all or t["imbue_all"]
 	for s in STATS:
 		var v := float(t[s]) * rank
