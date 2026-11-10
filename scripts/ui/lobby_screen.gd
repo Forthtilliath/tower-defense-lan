@@ -53,7 +53,7 @@ func _ready() -> void:
 	var options := UiTheme.hbox(12)
 	right.add_child(options)
 	_mode = _option(options, "Mode", Net.MODE_NAMES, "mode", true)
-	_map = _option(options, "Carte", Data.db.maps.map(func(m: MapDef) -> String: return m.name), "map", true)
+	_map = _option(options, "Carte", Data.db.maps.map(func(m: MapDef) -> String: return "%s (%s)" % [m.name, DataSchema.MAP_TIERS[m.tier]]), "map", true)
 	_rhythm = _option(options, "Rythme", SimMatch.RHYTHM_NAMES, "rhythm", true)
 	_launch = _option(options, "Lancement", SimMatch.LAUNCH_NAMES, "launch", true)
 	var mine := UiTheme.hbox(12)
