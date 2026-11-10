@@ -46,7 +46,8 @@ var tick := 0
 var notices: Array = []
 
 
-## roster : [[id, nom, couleur, bâtisseur], ...] dans l'ordre d'arrivée (bâtisseur facultatif).
+## roster : [[id, nom, couleur, bâtisseur, talents], ...] dans l'ordre d'arrivée (bâtisseur et
+## talents facultatifs ; les talents sont déjà validés par le salon).
 ## difficulty_index : index dans GameData.difficulties (1 = Normal dans les données fournies).
 ## options : {rhythm, launch} (coopération uniquement).
 func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficulty_index := 1, options := {}) -> void:
@@ -64,12 +65,13 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 		var entry: Array = roster[i]
 		var id: int = entry[0]
 		var builder: int = clampi(int(entry[3]) if entry.size() > 3 else 0, 0, data.builders.size() - 1)
+		var kit := PlayerKit.make(data, builder, entry[4] if entry.size() > 4 else {})
 		if mode == Mode.VERSUS or boards.is_empty():
 			boards.append(SimBoard.new(data, map, lives, difficulty["reward"]))
 		var mult := gold_mult_for(i, roster.size()) if mode == Mode.COOP else 1.0
 		players[id] = {
-			"name": entry[1], "builder": builder, "gold_mult": mult, "income": 0,
-			"gold": int(roundf(float(data.player["start_gold"]) * difficulty["gold"] * mult)),
+			"name": entry[1], "builder": builder, "kit": kit, "gold_mult": mult, "income": 0,
+			"gold": int(roundf(float(data.player["start_gold"]) * difficulty["gold"] * mult)) + kit.start_gold,
 			"board": boards.size() - 1, "ready": false, "alive": true, "connected": true,
 		}
 		order.append(id)
@@ -154,7 +156,7 @@ func launch_next_wave() -> void:
 		p["ready"] = false
 		if not p["alive"] or not p["connected"]:
 			continue
-		p["gold"] += MatchFlow.interest(data, p["gold"], p["builder"])
+		p["gold"] += MatchFlow.interest(data, p["gold"], p["kit"])
 		p["gold"] += roundi(int(wave["gold"]) * float(p["gold_mult"])) + bonus
 		if mode == Mode.VERSUS:
 			p["gold"] += VERSUS_BASE_INCOME + int(p["income"])
@@ -258,7 +260,7 @@ func _active_count() -> int:
 func _credit_bounty(owner: int, gold: int) -> void:
 	var p: Dictionary = players.get(owner, {})
 	if not p.is_empty():
-		_credit(owner, roundi(gold * data.builder_value(p["builder"], "bounty")))
+		_credit(owner, roundi(gold * float(p["kit"].bounty)))
 
 
 func _credit(owner: int, gold: int) -> void:

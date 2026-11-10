@@ -85,7 +85,7 @@ func can_build(cell: int) -> bool:
 	return alive and map.is_buildable(cell) and not towers.has(cell)
 
 
-func add_tower(cell: int, type: String, owner: int, cost: int, builder := -1) -> SimTower:
+func add_tower(cell: int, type: String, owner: int, cost: int, kit: PlayerKit = null) -> SimTower:
 	var t := SimTower.new()
 	t.cell = cell
 	t.type = type
@@ -93,7 +93,7 @@ func add_tower(cell: int, type: String, owner: int, cost: int, builder := -1) ->
 	t.invested = cost
 	t.center = map.cell_center(cell)
 	t.special = map.special_at(cell)
-	t.builder = builder
+	t.kit = kit
 	t.support = data.towers[type]["support"]
 	towers[cell] = t
 	refresh_stats(t)
@@ -102,7 +102,7 @@ func add_tower(cell: int, type: String, owner: int, cost: int, builder := -1) ->
 
 ## Statistiques après construction ou amélioration ; les auras du plateau sont recalculées.
 func refresh_stats(t: SimTower) -> void:
-	t.stats = data.tower_stats(t.type, t.level, t.special, t.builder)
+	t.stats = data.tower_stats(t.type, t.level, t.special, t.kit)
 	BoardAuras.refresh(self)
 
 

@@ -11,7 +11,7 @@ static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: 
 		return LOCKED
 	if not board.can_build(cell):
 		return "Impossible de construire ici"
-	if not sim.data.builder_allows(p["builder"], type):
+	if not p["kit"].allows(type):
 		return "Ton bâtisseur ne sait pas construire cette tourelle"
 	var zone := zone_refusal(sim, id, cell)
 	if zone != "":
@@ -20,7 +20,7 @@ static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: 
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost
-	board.add_tower(cell, type, id, cost, p["builder"])
+	board.add_tower(cell, type, id, cost, p["kit"])
 	return ""
 
 
