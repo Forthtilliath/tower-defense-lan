@@ -6,9 +6,11 @@ extends RefCounted
 const MAX_PEER_ID := 2147483647
 
 
-## Liste [[id, nom, couleur, bâtisseur(, vote)], ...] : ids uniques, hôte (1) présent, noms non
-## vides, bâtisseur et vote de difficulté bornés par les données du jeu.
-static func parse_roster(raw: Variant, data: GameData, max_players: int, with_vote: bool) -> Variant:
+## Liste des joueurs : ids uniques, hôte (1) présent, noms non vides, valeurs bornées par les
+## données du jeu, talents conformes à l'arbre de la classe.
+## Salon (with_lobby) : [[id, nom, couleur, bâtisseur, vote, niveau, talents], ...]
+## Partie : [[id, nom, couleur, bâtisseur, talents], ...]
+static func parse_roster(raw: Variant, data: GameData, max_players: int, with_lobby: bool) -> Variant:
 	if typeof(raw) != TYPE_ARRAY:
 		return null
 	var list: Array = raw
@@ -16,19 +18,23 @@ static func parse_roster(raw: Variant, data: GameData, max_players: int, with_vo
 		return null
 	var out := []
 	var seen := {}
-	var size := 5 if with_vote else 4
+	var max_level := int(data.progression["max_level"])
 	for e in list:
-		if typeof(e) != TYPE_ARRAY or e.size() != size:
+		if typeof(e) != TYPE_ARRAY or e.size() != (7 if with_lobby else 5):
 			return null
 		var id = Check.as_int(e[0], 1, MAX_PEER_ID)
 		var player_name := Check.sanitize_name(e[1])
 		var color = Check.as_int(e[2], 0, max_players - 1)
 		var builder = Check.as_int(e[3], 0, data.builders.size() - 1)
-		var vote = Check.as_int(e[4], 0, data.difficulties.size() - 1) if with_vote else 0
-		if id == null or player_name == "" or color == null or builder == null or vote == null or seen.has(id):
+		var vote = Check.as_int(e[4], 0, data.difficulties.size() - 1) if with_lobby else 0
+		var level = Check.as_int(e[5], 1, max_level) if with_lobby else max_level
+		if id == null or player_name == "" or color == null or builder == null or vote == null or level == null or seen.has(id):
+			return null
+		var talents = TalentRules.validate(data, builder, e[6] if with_lobby else e[4], TalentRules.points(level))
+		if talents == null:
 			return null
 		seen[id] = true
-		out.append([id, player_name, color, builder, vote] if with_vote else [id, player_name, color, builder])
+		out.append([id, player_name, color, builder, vote, level, talents] if with_lobby else [id, player_name, color, builder, talents])
 	if not seen.has(1):
 		return null
 	return out
@@ -44,7 +50,7 @@ static func parse_lobby(raw: Variant, data: GameData, mode_count: int, max_playe
 		return null
 	var players := {}
 	for e in roster:
-		players[e[0]] = {"name": e[1], "color": e[2], "builder": e[3], "vote": e[4]}
+		players[e[0]] = {"name": e[1], "color": e[2], "builder": e[3], "vote": e[4], "level": e[5], "talents": e[6]}
 	options["players"] = players
 	return options
 
