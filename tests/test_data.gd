@@ -95,7 +95,7 @@ func test_rejects_bad_builders_waves_and_zones() -> void:
 		"vague spéciale inconnue": ["\"modifier\": \"rush\"", "\"modifier\": \"tempete\"", "spéciale"],
 		"zone hors limites": ["111111111111111.222222222222222", "111111111111111.555555555555555", "zones"],
 		"ligne de zones trop courte": ["111111111111111.222222222222222", "1111.2222", "zones"],
-		"joueurs conseillés inversés": ["\"min_players\": 2, \"max_players\": 4", "\"min_players\": 4, \"max_players\": 2", "min_players"],
+		"joueurs conseillés inversés": ["\"min_players\": 1, \"max_players\": 4", "\"min_players\": 4, \"max_players\": 2", "min_players"],
 		"plus de couloirs que de départs": ["\"lanes\": 4", "\"lanes\": 6", "couloirs"],
 	}
 	for label in cases:
