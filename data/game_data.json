@@ -7,8 +7,8 @@
 	"builders": [
 		{
 			"id": "gunner", "name": "Artilleur", "color": "#d9a441",
-			"description": "Armes lourdes : +10 % de dégâts des tirs physiques (Arbalète, Fléchettes, Canon, Sentinelle, Baliste, Broyeur, Mortier, Rafale).",
-			"damage": 1.1, "bonus_towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"],
+			"description": "Armes lourdes : +20 % de dégâts des tirs physiques (Arbalète, Fléchettes, Canon, Sentinelle, Baliste, Broyeur, Mortier, Rafale).",
+			"damage": 1.2, "bonus_towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"],
 			"branches": [
 				{ "id": "armory", "name": "Armurerie", "description": "Tronc commun de l'Artilleur.", "trunk": true, "talents": [
 					{ "id": "gu_drill", "name": "Discipline", "description": "+4 % de cadence par rang pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "rate": 0.04 },
@@ -764,7 +764,7 @@
 			]
 		},
 		{
-			"id": "riviere", "name": "Rivière", "tier": 1, "max_players": 3,
+			"id": "riviere", "name": "Rivière", "tier": 2, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"....T....~~....T..",
@@ -780,7 +780,7 @@
 			]
 		},
 		{
-			"id": "trois_portes", "name": "Trois portes", "tier": 2, "max_players": 3,
+			"id": "trois_portes", "name": "Trois portes", "tier": 1, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"...T......~~~.....",
@@ -814,7 +814,7 @@
 			]
 		},
 		{
-			"id": "labyrinthe", "name": "Labyrinthe", "tier": 1, "flyer_speed": 0.55, "max_players": 3,
+			"id": "labyrinthe", "name": "Labyrinthe", "tier": 0, "flyer_speed": 0.55, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"...T.......~~~....T.",
@@ -831,7 +831,7 @@
 			]
 		},
 		{
-			"id": "grande_plaine", "name": "Grande plaine", "tier": 1, "flyer_speed": 0.5, "min_players": 2, "max_players": 4,
+			"id": "grande_plaine", "name": "Grande plaine", "tier": 0, "flyer_speed": 0.5, "min_players": 2, "max_players": 4,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"..T.........~~~~.........T....",
@@ -894,25 +894,25 @@
 			]
 		},
 		{
-			"id": "bastion", "name": "Bastion", "tier": 2, "flyer_speed": 0.5, "lanes": 4, "min_players": 2, "max_players": 4,
+			"id": "bastion", "name": "Bastion", "tier": 1, "flyer_speed": 1.0, "lanes": 4, "min_players": 2, "max_players": 4,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"....^........=====........^....",
-				".............=.=.=.............",
-				".=============.=.=============.",
-				".=......*......=......*......=.",
-				".=============.=.=============.",
-				"..T..........=.=.=..........T..",
+				".............=#=#=.............",
+				".......=======#=#=======.......",
+				".......=..*...#=#...*..=.......",
+				".......=======#=#=======.......",
+				"..T..........=#=#=..........T..",
 				"S=============.=.=============S",
-				"..$....!.......=.......!....$..",
+				"..$............=............$..",
 				"....T..........E..........T....",
-				"..$....!.......=.......!....$..",
+				"..$............=............$..",
 				"S=============.=.=============S",
-				"..T..........=.=.=..........T..",
-				".=============.=.=============.",
-				".=......*......=......*......=.",
-				".=============.=.=============.",
-				".............=.=.=.............",
+				"..T..........=#=#=..........T..",
+				".......=======#=#=======.......",
+				".......=..*...#=#...*..=.......",
+				".......=======#=#=======.......",
+				".............=#=#=.............",
 				"....^........=====........^...."
 			],
 			"zones": [
