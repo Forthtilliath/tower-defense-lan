@@ -66,7 +66,7 @@ static func vote_text(players: Dictionary) -> String:
 
 static func builder_text(index: int) -> String:
 	var b: Dictionary = Data.db.builders[index]
-	var kit := PlayerKit.make(Data.db, index, Progress.talents(index))
+	var kit := PlayerKit.make(Data.db, index, Progress.talents(index), Progress.heritage())
 	var names := []
 	for id in Data.db.tower_order:
 		if kit.allows(id):
@@ -76,7 +76,17 @@ static func builder_text(index: int) -> String:
 		if not branch["trunk"]:
 			specs.append(branch["name"])
 	var chosen := kit.spec_name(Data.db) if kit.spec >= 0 else "à choisir dans les talents (%s)" % ", ".join(specs)
-	return "%s : %s\nSpécialisation : %s.\nTes tourelles : %s." % [b["name"], b["description"], chosen, ", ".join(names)]
+	var text := "%s : %s\nSpécialisation : %s.\nTes tourelles : %s." % [b["name"], b["description"], chosen, ", ".join(names)]
+	return text + heritage_text(kit)
+
+
+## « Héritage : Artilleur (+20 % de dégâts des tirs physiques), … » (vide sans classe au niveau maximum).
+static func heritage_text(kit: PlayerKit) -> String:
+	var parts := []
+	for h in kit.heritage:
+		var hb: Dictionary = Data.db.builders[h]
+		parts.append("%s (%s)" % [hb["name"], String(hb["heritage"]["description"]).trim_suffix(".")])
+	return "" if parts.is_empty() else "\nHéritage : " + ", ".join(parts) + "."
 
 
 static func _num(v: float) -> String:
