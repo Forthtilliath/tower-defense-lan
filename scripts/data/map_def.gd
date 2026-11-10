@@ -37,6 +37,8 @@ var min_players := 1
 var max_players := 4
 ## Nombre de couloirs séparés (chacun défendu par ses propres tourelles), pour le renforcement coop.
 var lanes := 1
+## Difficulté de la carte (index dans DataSchema.MAP_TIERS : facile, moyenne, difficile).
+var tier := 1
 ## Chemins au sol, un par point de départ (points de virage uniquement).
 var ground_paths: Array[PackedVector2Array] = []
 ## Chemins des volants : ligne droite du départ à l'arrivée.
@@ -179,7 +181,7 @@ func is_decor(index: int) -> bool:
 func clone() -> MapDef:
 	var m := MapDef.new()
 	for key in ["id", "name", "width", "height", "cells", "specials", "zones", "zone_count", "waves",
-			"flyer_speed", "min_players", "max_players", "lanes", "ground_paths", "air_paths", "_ground_cum", "_air_cum"]:
+			"flyer_speed", "min_players", "max_players", "lanes", "tier", "ground_paths", "air_paths", "_ground_cum", "_air_cum"]:
 		m.set(key, get(key))
 	m.cells = cells.duplicate()
 	m.specials = specials.duplicate()
