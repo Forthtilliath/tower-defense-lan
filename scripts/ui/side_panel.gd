@@ -102,7 +102,7 @@ func _build_panel() -> void:
 		add_child(UiTheme.label("Touche une tourelle pour voir ce qu'elle fait et sa portée sur la case, puis construis-la.", 16, UiTheme.MUTED))
 	else:
 		var special := _game.map.special_at(_selected)
-		var cost: int = data.tower_levels(_previewed)[0]["cost"]
+		var cost: int = builder.cost(data.tower_levels(_previewed)[0]["cost"])
 		var index := data.tower_order.find(_previewed)
 		_tower_info(_previewed, special, builder)
 		var build := UiTheme.button("Construire — %d or" % cost, func() -> void:
@@ -121,7 +121,7 @@ func _build_panel() -> void:
 			continue
 		var def: Dictionary = data.towers[id]
 		var tower_id: String = id
-		var b := UiTheme.button("%s\n%d or" % [def["name"], def["levels"][0]["cost"]], func() -> void:
+		var b := UiTheme.button("%s\n%d or" % [def["name"], builder.cost(def["levels"][0]["cost"])], func() -> void:
 			_previewed = tower_id
 			refresh(true), 62)  # retour à la ligne : un nom long n'élargit pas le panneau
 		b.toggle_mode = true
@@ -143,7 +143,7 @@ func _tower_info(id: String, special: int, builder: PlayerKit) -> void:
 	var top := data.tower_stats(id, last, special, builder)
 	add_child(UiTheme.label("Niveau 1 : %s%s" % [TowerText.stats_text(def, first), TowerText.dps(def, first)], 15, UiTheme.MUTED))
 	add_child(UiTheme.label("Niveau %d : %s%s" % [last + 1, TowerText.stats_text(def, top), TowerText.dps(def, top)], 15, UiTheme.MUTED))
-	add_child(UiTheme.label("Coût jusqu'au niveau %d : %d or (revente à %d %%)" % [last + 1, data.tower_invested(id, last), roundi(SimMatch.SELL_RATIO * 100.0)], 15, UiTheme.GOLD))
+	add_child(UiTheme.label("Coût jusqu'au niveau %d : %d or (revente à %d %%)" % [last + 1, builder.invested(data, id, last), roundi(builder.sell_ratio() * 100.0)], 15, UiTheme.GOLD))
 
 
 func _tower_panel(t: Dictionary) -> void:
@@ -155,7 +155,7 @@ func _tower_panel(t: Dictionary) -> void:
 	add_child(UiTheme.label("%s — niveau %d / %d" % [def["name"], level + 1, levels.size()], 24, UiTheme.ACCENT))
 	var owner: int = t["owner"]
 	var builder: PlayerKit = _game.kits.get(owner)
-	var builder_name: String = data.builders[builder.builder]["name"] if builder != null else "?"
+	var builder_name: String = builder.title(data) if builder != null else "?"
 	add_child(UiTheme.label("Propriétaire : %s (%s)" % [_game.names.get(owner, "?"), builder_name], 17, _game.colors.get(owner, UiTheme.TEXT)))
 	_special_info()
 	add_child(UiTheme.label(TowerText.stats_text(def, data.tower_stats(t["type"], level, special, builder)), 16, UiTheme.MUTED))
@@ -169,7 +169,7 @@ func _tower_panel(t: Dictionary) -> void:
 	if locked:
 		add_child(UiTheme.label(MatchActions.LOCKED + ".", 16, UiTheme.DANGER))
 	if level + 1 < levels.size():
-		var next_cost: int = levels[level + 1]["cost"]
+		var next_cost: int = _game.my_kit().cost(levels[level + 1]["cost"])
 		var up := UiTheme.button("Améliorer — %d or" % next_cost, func() -> void:
 			_game.send({"a": "upgrade", "cell": _selected}))
 		add_child(up)
@@ -179,7 +179,8 @@ func _tower_panel(t: Dictionary) -> void:
 		add_child(UiTheme.label("Niveau maximum atteint.", 16, UiTheme.SUCCESS))
 	add_child(UiTheme.button("Cible : %s" % SimTower.TARGET_NAMES[t["mode"]], func() -> void:
 		_game.send({"a": "mode", "cell": _selected})))
-	var refund := int(data.tower_invested(t["type"], level) * SimMatch.SELL_RATIO)
+	var mine := _game.my_kit()
+	var refund := int(mine.invested(data, t["type"], level) * mine.sell_ratio())
 	var sell := UiTheme.button("Vendre (+%d or)" % refund, func() -> void:
 		_game.send({"a": "sell", "cell": _selected}))
 	sell.disabled = locked
