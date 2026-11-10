@@ -27,7 +27,10 @@ func fill(root: Variant, gd: GameData) -> bool:
 	if player == null or scaling == null or difficulties == null or specials == null or progression == null \
 			or tiers == null or towers == null or monsters == null or modifiers == null or not _check_splits(monsters[0]):
 		return false
-	var builders = _collection(root.get("builders"), 8, "builders", _builder.bind(towers[0], tiers.size()))
+	var common = TreeValidator.common_towers(self, root.get("common_towers"), towers[0])
+	if common == null:
+		return false
+	var builders = _collection(root.get("builders"), 8, "builders", TreeValidator.builder.bind(self, towers[0], tiers.size()))
 	var waves = _collection(root.get("waves"), 100, "waves", _wave.bind(monsters[0], modifiers[0]))
 	if builders == null or waves == null:
 		return false
@@ -38,6 +41,7 @@ func fill(root: Variant, gd: GameData) -> bool:
 	gd.coop_scaling = scaling
 	gd.progression = progression
 	gd.talent_tiers.assign(tiers)
+	gd.common_towers.assign(common)
 	gd.difficulties.assign(_ordered(difficulties))
 	gd.builders.assign(_ordered(builders))
 	gd.modifiers = modifiers[0]
@@ -100,33 +104,17 @@ func _tower(src: Variant, where: String) -> Variant:
 	return t
 
 
-## Bâtisseur : tourelles de base connues, sans doublon, de quoi tirer sur l'air et le sol
-## (hors soutien), puis ses branches de talents.
-func _builder(src: Variant, where: String, towers: Dictionary, tier_count: int) -> Variant:
-	var b = _obj(src, DataSchema.BUILDER, where)
-	if b == null:
-		return null
-	var list = _list(src.get("towers"), 1, MAX_TOWERS, where + ".towers")
+## Liste d'identifiants de tourelles connues, sans doublon (au moins `lo`).
+func tower_ids(src: Variant, lo: int, where: String, towers: Dictionary) -> Variant:
+	var list = _list(src, lo, MAX_TOWERS, where)
 	if list == null:
 		return null
 	var ids: Array[String] = []
-	var air := false
-	var ground := false
 	for id in list:
 		if typeof(id) != TYPE_STRING or not towers.has(id) or ids.has(id):
-			return _fail("%s.towers : tourelle « %s » inconnue ou en double" % [where, str(id).left(30)])
+			return _fail("%s : tourelle « %s » inconnue ou en double" % [where, str(id).left(30)])
 		ids.append(id)
-		if not towers[id]["support"]:
-			air = air or towers[id]["air"]
-			ground = ground or towers[id]["ground"]
-	if not air or not ground:
-		return _fail("%s : il faut au moins une tourelle contre l'air et une contre le sol" % where)
-	b["towers"] = ids
-	var branches = TreeValidator.branches(self, src.get("branches", []), where, towers, tier_count)
-	if branches == null:
-		return null
-	b["branches"] = branches
-	return b
+	return ids
 
 
 ## Monstre : division, et capacités dont les champs vont ensemble ; un brouillage plus long

@@ -10,6 +10,8 @@ var coop_scaling := {}
 var progression := {}
 ## Points à dépenser dans une branche pour atteindre chaque palier de talents.
 var talent_tiers: Array[int] = []
+## Tourelles ouvertes à toutes les classes (les spécialisations en débloquent d'autres).
+var common_towers: Array[String] = []
 var difficulties: Array[Dictionary] = []
 var builders: Array[Dictionary] = []
 ## Vagues spéciales, par id.
