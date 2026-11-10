@@ -26,6 +26,8 @@ var towers := {}  # index de case -> SimTower
 var projectiles: Array[SimProjectile] = []
 ## Nappes au sol (feu, nuage toxique), gérées par BoardPatches.
 var patches: Array[Dictionary] = []
+## Cases changées par un Terrassier (BoardTerrain) : index -> [type de case, case spéciale].
+var edits := {}
 var clock := 0.0
 ## Hasard des contrôles (chances) : graine fixe, pour des parties et des tests reproductibles.
 var rng := RandomNumberGenerator.new()
@@ -39,7 +41,7 @@ var _spawn_turn := 0
 
 func _init(p_data: GameData, p_map: MapDef, p_lives: int, p_reward_mult := 1.0) -> void:
 	data = p_data
-	map = p_map
+	map = p_map.clone()  # copie propre au plateau : le Terrassier peut la modifier
 	lives = p_lives
 	reward_mult = p_reward_mult
 	rng.seed = 20211109
@@ -229,7 +231,8 @@ func snapshot() -> Dictionary:
 		var a: float = f["radius"] if circle else to.x
 		var b: float = float(f["tint"]) if circle else to.y
 		fx.append([f["kind"], snappedf(pos.x, 0.01), snappedf(pos.y, 0.01), snappedf(a, 0.01), snappedf(b, 0.01), snappedf(f["ttl"] / FX_DURATION, 0.01)])
-	return {"lives": lives, "alive": alive, "m": mons, "t": tws, "p": prs, "fx": fx, "z": BoardPatches.snapshot(self)}
+	return {"lives": lives, "alive": alive, "m": mons, "t": tws, "p": prs, "fx": fx, "z": BoardPatches.snapshot(self),
+		"e": BoardTerrain.snapshot(self)}
 
 
 ## Effet rond (rayon et teinte), les autres vont d'un point à un autre.

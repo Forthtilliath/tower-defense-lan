@@ -169,6 +169,29 @@ func is_buildable(index: int) -> bool:
 	return index >= 0 and index < cells.size() and cells[index] == Cell.BUILD
 
 
+## Arbre ou rocher : décor qu'un Terrassier peut raser (jamais la route ni l'eau).
+func is_decor(index: int) -> bool:
+	return index >= 0 and index < cells.size() and (cells[index] == Cell.TREE or cells[index] == Cell.ROCK)
+
+
+## Copie modifiable (un plateau peut raser son décor ou poser des cases) ; les chemins, eux,
+## ne changent jamais et restent partagés.
+func clone() -> MapDef:
+	var m := MapDef.new()
+	for key in ["id", "name", "width", "height", "cells", "specials", "zones", "zone_count", "waves",
+			"flyer_speed", "min_players", "max_players", "lanes", "ground_paths", "air_paths", "_ground_cum", "_air_cum"]:
+		m.set(key, get(key))
+	m.cells = cells.duplicate()
+	m.specials = specials.duplicate()
+	return m
+
+
+## Change une case : décor rasé (devenu constructible) ou case spéciale posée.
+func set_cell(index: int, kind: int, special: int) -> void:
+	cells[index] = kind
+	specials[index] = special
+
+
 func start_count() -> int:
 	return ground_paths.size()
 
