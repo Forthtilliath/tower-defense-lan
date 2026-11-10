@@ -19,6 +19,9 @@ const DEFAULT_SPEC := 1
 const ADAPT_BELOW := 0.5
 ## Au-delà de ce nombre de tourelles efficaces contre la vague suivante, il améliore au lieu d'en ajouter.
 const MAX_ANSWERS := 3
+## Ses tourelles renforcées tapent peu (moins que cette part d'une Arbalète, pour l'or) : il alterne
+## avec des tourelles de dégâts.
+const WEAK_RATIO := 0.6
 
 var _lanes := {}  # cache de lane_key
 var _foes := {}  # cache : vague -> [[monstre type, poids], ...]
@@ -54,13 +57,14 @@ func auto_talents(gd: GameData, builder: int, level: int, spec := 0) -> Dictiona
 
 
 ## builders : une classe par bot (index, ou [index, spécialisation]) ; Artilleur par défaut.
-func play(gd: GameData, map_index: int, count: int, difficulty: int, options := {}, builders := [], level := BOT_LEVEL) -> SimMatch:
+## heritage : classes déjà montées au niveau maximum (les mêmes pour tous les bots).
+func play(gd: GameData, map_index: int, count: int, difficulty: int, options := {}, builders := [], level := BOT_LEVEL, heritage := []) -> SimMatch:
 	var roster := []
 	for i in count:
 		var entry: Variant = builders[i] if i < builders.size() else 0
 		var b: int = entry[0] if entry is Array else entry
 		var s: int = entry[1] if entry is Array else DEFAULT_SPEC
-		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level, s)])
+		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level, s), heritage])
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster, difficulty, options)
 	var cells := ranked_cells(sim.map, false, sim.open_paths)
 	var air_cells := ranked_cells(sim.map, true, sim.open_paths)
@@ -255,16 +259,27 @@ func builder_plan(sim: SimMatch, id: int) -> Array:
 	favored.sort_custom(func(a: String, b: String) -> bool: return early_value(data, a) > early_value(data, b))
 	var boosters := data.tower_order.filter(func(type: String) -> bool:
 		return kit.allows(type) and data.towers[type]["support"] and kit._per.has(type))
+	# Classe de soutien ou de contrôle : ses tourelles renforcées tapent peu, il alterne avec des
+	# tourelles de dégâts du tronc commun, comme le ferait un joueur
+	var mean := 0.0
+	for type in favored:
+		mean += early_value(data, type) / maxf(1.0, favored.size())
+	var weak := mean < WEAK_RATIO * early_value(data, "crossbow")
+	var damage := PLAN.filter(func(type: String) -> bool: return kit.allows(type) and type != "sentinel")
 	var plan := []
 	if favored.size() >= 2:
 		plan = ["crossbow", "crossbow"]
 		var k := 0
+		var g := 2
 		while plan.size() < MAX_TOWERS:
 			var n := plan.size()
 			if n == 4 or n == 10:
 				plan.append(air[(n / 10) % air.size()])
 			elif (n == 7 or n == 13) and not boosters.is_empty():
 				plan.append(boosters[(n / 7 - 1) % boosters.size()])
+			elif weak and n % 2 == 0:
+				plan.append(damage[g % damage.size()])
+				g += 1
 			else:
 				plan.append(favored[k % favored.size()])
 				k += 1
