@@ -5,7 +5,6 @@ Un appareil héberge la partie (PC ou téléphone), les autres la rejoignent dep
 
 Projet né en 2021 chez *Les Étudiants du Web* (Forth, Saucedechoux, Atthis) sous forme de prototype JavaScript,
 puis réécrit avec [Godot 4](https://godotengine.org). Le prototype d'origine est conservé sous le tag git `prototype-js`.
-Sa carte vit encore dans le jeu : « Héritage (prototype 2021) ».
 
 ## Modes de jeu
 
@@ -26,7 +25,8 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
   - Gobelin : +25 % sur ses parts de primes, +2 % d'intérêts (plafond +20), tourelles 10 % moins fortes ; Usure, Bricolage, Coups bas.
   - Enchanteur : contrôles +30 % ; Envoûtement (charme), Terreur (peur), Choc (étourdissement) ; classe de soutien, faite pour l'équipe.
 - **Talents et progression** (bouton « Talents » du salon) : chaque classe gagne de l'expérience à chaque partie
-  (victoire : 10 XP par vague × difficulté ; défaite : 40 % de cette somme au prorata des vagues passées) et monte
+  (victoire : 10 XP par vague × difficulté, + 25 % ; défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 %
+  de ses 10 XP selon le quart de la partie atteint, donc presque rien en perdant tôt) et monte
   jusqu'au niveau 15, avec 1 point de talent par niveau. Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
   déjà placés dans cette branche ; les tourelles avancées se débloquent ainsi. Une branche complète coûte 7 points :
   au niveau 15, on en maîtrise deux sur trois, et deux joueurs de la même classe peuvent jouer très différemment.
@@ -59,23 +59,37 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 
 ### Contenu
 
-- **10 cartes** de 12 à 20 vagues : Prairie, Carrefour, Héritage, Rivière, Trois portes (3 entrées), Spirale, Labyrinthe,
+- **9 cartes** de 15 à 20 vagues : Prairie, Carrefour, Rivière, Trois portes (3 entrées), Spirale, Labyrinthe,
   et trois grandes cartes pour 2 à 4 joueurs : Grande plaine (partagée, un très long serpentin), Quatre fiefs (4 zones, 4 couloirs),
   Bastion (4 zones autour d'un couloir central commun).
 - **4 difficultés** : Facile, Normal, Difficile, Cauchemar (PV des monstres, vies, or de départ, primes).
-- **18 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
+- **29 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
   - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
     Baliste (tireur d'élite), Canon et Mortier (zone au sol), Sentinelle (anti-aérien) ;
-  - éléments : Givre (ralentit, gèle à partir du niveau 3), Brasier (brûlure qui se cumule), Venin (poison),
-    Épines (saignement en % des PV max), Tesla (foudre qui rebondit) ;
+  - foudre : Tesla (rebondit), Pylône (onde autour de lui), Lance-foudre (traverse les monstres alignés, perce l'armure) ;
+  - feu : Brasier (brûlure qui se cumule), Salamandre (souffle en cône), Feu grégeois (nappe de feu au sol),
+    Lentille ardente (rayon continu qui chauffe sur la même cible) ;
+  - glace : Givre (ralentit, gèle à partir du niveau 3), Obélisque (ralentit tout autour, sans dégâts),
+    Brise-glace (frappe plus fort les monstres ralentis ou gelés) ;
+  - poison : Venin, Alambic (ronge l'armure), Miasmes (nuage toxique au sol), Peste (poison contagieux) ;
+  - saignement : Épines (en % des PV max), Faux (mêlée, coup critique un coup sur trois) ;
   - contrôles : Gong (étourdit en zone), Épouvantail (fait reculer), Flûte enchantée (charme : le monstre recule et frappe ses voisins) ;
   - soutien (ne tirent pas) : Tambour (cadence), Étendard (dégâts), Totem (contrôles), pour les tourelles à portée.
     La plus forte aura de chaque type s'applique.
 - **Contrôles** : après un contrôle, un monstre en est protégé 1 s. Les gros monstres résistent (Troll, Golem, Dragon, Liche) ;
   boss et volants ne se laissent pas charmer.
-- **14 monstres** : Gobelin, Rat, Loup, Orc, Squelette (armure), Chauve-souris (volante), Gelée (se divise à sa mort),
+- **23 monstres** : Gobelin, Rat, Loup (rapide), Orc, Squelette (armure), Chauve-souris (volante), Gelée (se divise à sa mort),
   Chaman (soigne ses voisins), Spectre (volant, se régénère), Troll (se régénère), Golem (armure, insensible au ralentissement),
-  Dragon (boss volant), Liche (boss final).
+  Dragon (boss volant), Liche (boss final), et des monstres à bonus :
+  - Feu follet (lévite : les nappes au sol ne le touchent pas), Chariot (véhicule : insensible au poison, à la brûlure,
+    au saignement, à la peur et au charme ; l'étourdissement et le ralentissement marchent) ;
+  - résistances aux éléments (dégâts et effets de cet élément réduits) : Diablotin (feu), Yéti (glace : ralenti bien moins),
+    Gargouille (foudre, volante), Sorcier (tous les éléments ; les tirs physiques restent entiers) ;
+  - Ombre (bondit en avant toutes les 3 s), Porte-bouclier (ses voisins subissent 35 % de dégâts en moins),
+    Saboteur (toutes les 5 s, brouille 2 s les tourelles proches, auras de soutien comprises).
+
+  Le panneau de droite liste les monstres de la prochaine vague et leurs bonus. Une vague spéciale peut aussi donner
+  lévitation, véhicule ou résistances à tous ses monstres (`wave_modifiers`).
 - **Cases spéciales** (cadre coloré) : Colline (+25 % de portée), Cristal (+30 % de dégâts), Rune (+25 % de cadence),
   Filon d'or (+15 or par vague au propriétaire de la tourelle).
 
@@ -102,9 +116,13 @@ Certains réseaux (Wi-Fi public, invité, « isolation des clients ») bloquent 
 ## Développement
 
 Prérequis : [Godot 4.7.2](https://godotengine.org/download) (version standard, pas .NET). Les scripts `tools/` cherchent
-`%LOCALAPPDATA%\Programs\Godot\Godot_v4.7.2-stable_win64_console.exe`, ou le chemin indiqué dans la variable `GODOT_BIN`.
+`%LOCALAPPDATA%\Programs\Godot\Godot_v4.7.2-stable_win64_console.exe` (`Jouer.cmd` : la version sans console,
+`Godot_v4.7.2-stable_win64.exe`), ou le chemin indiqué dans la variable `GODOT_BIN`.
 
 ```powershell
+.\Jouer.cmd                  # lance le jeu depuis les sources (double-clic possible)
+.\Jouer.cmd -Joueurs 2       # 2 à 4 fenêtres côte à côte pour tester la coop / le versus sur un seul PC
+.\Jouer.cmd -Editeur         # ouvre le projet dans l'éditeur Godot
 .\tools\verify.ps1   # import, compilation des scripts, tests, test réseau hôte + client
 .\tools\build.ps1    # build\TowerDefenseLAN-<version>.exe et .apk signé (release)
 ```
@@ -123,7 +141,7 @@ scripts/sim/          Simulation (hôte) : plateau, monstres, tourelles, règles
 scripts/net/          Réseau local : session ENet, RPC, découverte UDP, boucle de l'hôte
 scripts/ui/           Écrans et dessin du plateau
 tests/                Tests (headless) et tests automatisés réseau / captures
-tools/                Scripts PowerShell : vérification et build
+tools/                Scripts PowerShell : lancement, vérification et build
 ```
 
 Les cartes s'écrivent en texte dans `data/game_data.json` : `.` herbe constructible, `=` route, `S` départ, `E` arrivée,
