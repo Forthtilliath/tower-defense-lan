@@ -21,6 +21,7 @@ var _coop: CoopPanel
 ## Expérience gagnée à la fin de la partie (vide tant qu'elle n'est pas finie).
 var xp_summary := ""
 var _last_wave := 0
+var _map_version := 0
 var _nav: Node
 var _view: BoardView
 var _hud: HudBar
@@ -127,6 +128,9 @@ func _process(delta: float) -> void:
 func _on_snapshot(snap: Dictionary) -> void:
 	if not state.apply(snap):
 		return
+	if state.map_version != _map_version:  # décor rasé ou case posée par un Terrassier
+		_map_version = state.map_version
+		_show_board_map()
 	_hud.refresh()
 	_panel.refresh()
 	if _versus != null:
@@ -166,9 +170,17 @@ func view_board(index: int) -> void:
 	viewed_board = clampi(index, 0, state.board_count - 1)
 	_view.board_index = viewed_board
 	_view.selected = -1
+	_show_board_map()
 	_panel.set_selected(-1)
 	if _versus != null:
 		_versus.refresh()
+
+
+## Carte du plateau affiché (changements du Terrassier compris) : décor redessiné, panneau à jour.
+func _show_board_map() -> void:
+	map = state.maps[viewed_board]
+	_view.set_map(map)
+	_panel.refresh(true)
 
 
 ## Vague spéciale de la vague n° index (0 = première), dictionnaire vide si normale.

@@ -6,6 +6,8 @@ extends RefCounted
 
 const MAX_ENTITIES := 3000
 const RESULTS := ["", "victory", "defeat", "winner"]
+## Empreinte d'un plateau sans changement de terrain.
+static var NO_EDITS := str([]).hash()
 
 var data: GameData
 var map: MapDef
@@ -24,6 +26,9 @@ var can_call := false
 var can_trade := true
 var players := {}  # id -> {gold, income, ready, alive, board}
 var boards: Array[Dictionary] = []
+## Carte de chaque plateau, changements du Terrassier compris ; map_version augmente à chaque changement.
+var maps: Array[MapDef] = []
+var map_version := 0
 var _t := 0.0
 
 
@@ -31,6 +36,8 @@ func _init(p_data: GameData, p_map: MapDef, p_board_count: int) -> void:
 	data = p_data
 	map = p_map
 	board_count = p_board_count
+	for i in board_count:
+		maps.append(map)
 
 
 func advance(dt: float) -> void:
@@ -56,9 +63,11 @@ func apply(snap: Variant) -> bool:
 		return false
 	var a := alpha()
 	for i in parsed["boards"].size():
+		var nb: Dictionary = parsed["boards"][i]
+		if nb["edits"] != (boards[i]["edits"] if i < boards.size() else NO_EDITS):
+			map_version += 1
 		if i >= boards.size():
 			continue
-		var nb: Dictionary = parsed["boards"][i]
 		var ob: Dictionary = boards[i]
 		for id in nb["monsters"]:
 			if ob["monsters"].has(id):
@@ -80,6 +89,8 @@ func apply(snap: Variant) -> bool:
 	can_trade = parsed["tr"]
 	players = parsed["players"]
 	boards.assign(parsed["boards"])
+	for i in boards.size():
+		maps[i] = boards[i]["map"]
 	received = true
 	_t = 0.0
 	return true
@@ -114,17 +125,19 @@ func _parse_players(raw: Variant) -> Variant:
 		return null
 	var out := {}
 	for e in raw:
-		if not _is_tuple(e, 6):
+		if not _is_tuple(e, 8):
 			return null
 		var id = Check.as_int(e[0], 1, NetPayloads.MAX_PEER_ID)
+		var razes = Check.as_int(e[6], 0, 1000)  # charges du Terrassier restantes
+		var tiles = Check.as_int(e[7], 0, 1000)
 		var gold = Check.as_int(e[1], 0, 1000000000)
 		var income = Check.as_int(e[2], 0, 1000000000)
 		var ready = Check.as_bool(e[3])
 		var alive = Check.as_bool(e[4])
 		var board = Check.as_int(e[5], 0, board_count - 1)
-		if id == null or gold == null or income == null or ready == null or alive == null or board == null:
+		if id == null or gold == null or income == null or ready == null or alive == null or board == null or razes == null or tiles == null:
 			return null
-		out[id] = {"gold": gold, "income": income, "ready": ready, "alive": alive, "board": board}
+		out[id] = {"gold": gold, "income": income, "ready": ready, "alive": alive, "board": board, "raze": razes, "tile": tiles}
 	return out
 
 
@@ -146,17 +159,21 @@ func _parse_board(raw: Variant) -> Variant:
 	var b: Dictionary = raw
 	var lives = Check.as_int(b.get("lives"), 0, 100000)
 	var alive = Check.as_bool(b.get("alive"))
-	var towers = _parse_towers(b.get("t"))
+	var board_map = ViewTerrain.parse(b.get("e"), map, data)
+	if board_map == null:
+		return null
+	var towers = _parse_towers(b.get("t"), board_map)
 	var monsters = _parse_monsters(b.get("m"))
 	var proj = _parse_projectiles(b.get("p"))
 	var fx = _parse_fx(b.get("fx"))
 	var patches = _parse_patches(b.get("z"))
 	if lives == null or alive == null or towers == null or monsters == null or proj == null or fx == null or patches == null:
 		return null
-	return {"lives": lives, "alive": alive, "towers": towers, "monsters": monsters, "proj": proj, "fx": fx, "patches": patches}
+	return {"lives": lives, "alive": alive, "towers": towers, "monsters": monsters, "proj": proj, "fx": fx, "patches": patches,
+		"map": board_map, "edits": str(b["e"]).hash()}
 
 
-func _parse_towers(raw: Variant) -> Variant:
+func _parse_towers(raw: Variant, board_map: MapDef) -> Variant:
 	if not _is_list(raw, map.cell_count()):
 		return null
 	var out := {}
@@ -166,7 +183,7 @@ func _parse_towers(raw: Variant) -> Variant:
 		var cell = Check.as_int(e[0], 0, map.cell_count() - 1)
 		var type = Check.as_int(e[1], 0, data.tower_order.size() - 1)
 		var invested = Check.as_int(e[6], 0, 1000000)  # or payé (revente exacte, réductions comprises)
-		if cell == null or type == null or not map.is_buildable(cell):
+		if cell == null or type == null or not board_map.is_buildable(cell):
 			return null
 		var id: String = data.tower_order[type]
 		var level = Check.as_int(e[2], 0, data.tower_levels(id).size() - 1)
