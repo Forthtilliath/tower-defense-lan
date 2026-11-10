@@ -86,6 +86,8 @@ var jam_radius := 0.0
 var jam_interval := 0.0
 var jam_duration := 0.0
 var jam_clock := 0.0
+## Gelure, électrifié, soins coupés, cloué au sol (spécialisations).
+var marks := MonsterMarks.new()
 
 
 ## Remplit les caractéristiques depuis la définition du monstre (données du jeu).

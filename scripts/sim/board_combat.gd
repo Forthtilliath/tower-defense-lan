@@ -35,19 +35,27 @@ static func fire_towers(b: SimBoard, dt: float, rewards: Array) -> void:
 			t.beam_target = 0
 			continue
 		t.cooldown += BoardAuras.fire_delay(t)
-		if def["attack"] == "shot":
-			_launch(b, t, def, target)
-		else:
+		if def["attack"] != "shot":
 			BoardAttacks.fire(b, t, def, target, rewards)
+			continue
+		_launch(b, t, def, target)
+		var skip := {target.id: true}
+		for k in int(t.stats["multishot"]) - 1:  # tir multiple : les cibles suivantes
+			var next := find_target(b, t, def, skip)
+			if next == null:
+				break
+			skip[next.id] = true
+			_launch(b, t, def, next)
 
 
-static func find_target(b: SimBoard, t: SimTower, def: Dictionary) -> SimMonster:
+## Meilleure cible à portée selon le mode de visée (en dehors des monstres de `skip`).
+static func find_target(b: SimBoard, t: SimTower, def: Dictionary, skip := {}) -> SimMonster:
 	var best: SimMonster = null
 	var best_score := -INF
-	var reach: float = t.stats["range"]
+	var reach := BoardAuras.reach(t)
 	var r2 := reach * reach
 	for m in b.monsters:
-		if not can_hit(def["air"], def["ground"], m) or t.center.distance_squared_to(m.pos) > r2:
+		if skip.has(m.id) or not can_hit(def["air"], def["ground"], m) or t.center.distance_squared_to(m.pos) > r2:
 			continue
 		var score := m.ratio()
 		if t.target_mode == SimTower.Target.STRONGEST:
@@ -69,6 +77,7 @@ static func shot(b: SimBoard, t: SimTower, def: Dictionary) -> SimProjectile:
 	p.speed = p.stats["projectile_speed"]
 	p.credit = BoardAuras.credit(t)
 	p.owner = t.owner
+	p.frost_owner = int(t.buffs["frostbite"][1]) if t.buffs.has("frostbite") else t.owner
 	p.kind = b.data.tower_order.find(t.type)
 	p.element = def["element"]
 	p.hits_air = def["air"]
@@ -97,9 +106,9 @@ static func move_projectiles(b: SimBoard, dt: float, rewards: Array) -> void:
 
 
 ## Inflige des dégâts ; pierce : ignore l'armure (effets continus) ; sinon armor_pierce est la
-## part d'armure ignorée (l'armure rongée compte aussi). La protection d'un monstre voisin
-## (ward) retire ensuite sa part. Crédite les joueurs (dégâts réellement retirés), gère la mort
-## et le partage de la prime.
+## part d'armure ignorée (l'armure rongée compte aussi). Un monstre électrifié en subit une part
+## de plus, puis la protection d'un monstre voisin (ward) retire sa part. Crédite les joueurs
+## (dégâts réellement retirés), gère la mort et le partage de la prime.
 static func damage(b: SimBoard, m: SimMonster, amount: float, pierce: bool, credit: Array, rewards: Array, armor_pierce := 0.0) -> void:
 	if not m.is_alive() or amount <= 0.0:
 		return
@@ -107,7 +116,7 @@ static func damage(b: SimBoard, m: SimMonster, amount: float, pierce: bool, cred
 		var armor := m.armor_against(armor_pierce)
 		if armor > 0.0:
 			amount = maxf(amount - armor, amount * ARMOR_MIN_RATIO)
-	amount *= 1.0 - m.warded
+	amount *= (1.0 + m.marks.vulnerability()) * (1.0 - m.warded)
 	m.add_contrib(credit, minf(amount, m.hp))
 	m.hp -= amount
 	if m.hp <= 0.0:
@@ -193,6 +202,7 @@ static func afflict(b: SimBoard, m: SimMonster, p: SimProjectile) -> void:
 	m.apply_burn(p.stat("burn_dps"), p.stat("burn_duration"), int(p.stat("burn_stacks")), p.owner)
 	m.apply_bleed(p.stat("bleed"), p.stat("bleed_duration"), p.owner)
 	m.apply_shred(p.stat("shred"), p.stat("shred_duration"))
+	_mark(m, p)
 	for kind in CONTROLS:
 		var chance := p.stat(kind + "_chance")
 		if chance > 0.0 and b.rng.randf() < chance:
@@ -200,6 +210,21 @@ static func afflict(b: SimBoard, m: SimMonster, p: SimProjectile) -> void:
 			m.add_contrib(p.credit, applied * m.max_hp * SimMonster.CONTROL_POINTS)
 
 
-## Monstre vivant, non charmé, que la tourelle sait viser (air ou sol).
+## États des spécialisations : gelure et électrifié (apportés par les tourelles d'imprégnation,
+## réduits par la résistance au gel ou à la foudre ; un véhicule ne gèle pas), soins coupés,
+## volant cloué au sol (moins longtemps pour un boss).
+static func _mark(m: SimMonster, p: SimProjectile) -> void:
+	if p.stat("frostbite_dps") > 0.0 and not m.mechanical:
+		m.marks.apply_frostbite(p.stat("frostbite_dps") * m.taken("ice"), p.frost_owner)
+	m.marks.apply_shock(p.stat("shock") * m.taken("lightning"))
+	m.marks.apply_heal_block(p.stat("heal_block"), p.stat("heal_block_duration"))
+	if m.flying and p.stat("ground_duration") > 0.0:
+		m.marks.ground(p.stat("ground_duration") * (1.0 - m.cc_resist))
+
+
+## Monstre vivant, non charmé, que la tourelle sait viser : un volant par les tourelles qui visent
+## l'air (et par toutes s'il est cloué au sol), un monstre au sol par celles qui visent le sol.
 static func can_hit(air: bool, ground: bool, m: SimMonster) -> bool:
-	return m.is_alive() and not m.is_charmed() and (air if m.flying else ground)
+	if not m.is_alive() or m.is_charmed():
+		return false
+	return (air or m.marks.is_grounded()) if m.flying else ground

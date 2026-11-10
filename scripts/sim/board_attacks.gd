@@ -26,7 +26,7 @@ static func fire(b: SimBoard, t: SimTower, def: Dictionary, target: SimMonster, 
 
 static func _pulse(b: SimBoard, t: SimTower, def: Dictionary, rewards: Array) -> void:
 	var p := BoardCombat.shot(b, t, def)
-	var reach: float = t.stats["range"]
+	var reach := BoardAuras.reach(t)
 	b.add_fx(SimBoard.Fx.WAVE, t.center, Vector2.ZERO, reach, p.kind)
 	for m in BoardCombat.in_radius(b, p, t.center, reach):
 		BoardCombat.hit(b, m, p, p.stat("damage"), rewards)
@@ -35,10 +35,10 @@ static func _pulse(b: SimBoard, t: SimTower, def: Dictionary, rewards: Array) ->
 static func _line(b: SimBoard, t: SimTower, def: Dictionary, target: SimMonster, rewards: Array) -> void:
 	var p := BoardCombat.shot(b, t, def)
 	var dir := _direction(t, target)
-	var end := t.center + dir * float(t.stats["range"])
+	var end := t.center + dir * BoardAuras.reach(t)
 	b.add_fx(SimBoard.Fx.BOLT, t.center, end)
 	var hw2 := LINE_HALF_WIDTH * LINE_HALF_WIDTH
-	for m in BoardCombat.in_radius(b, p, t.center, float(t.stats["range"]) + LINE_HALF_WIDTH):
+	for m in BoardCombat.in_radius(b, p, t.center, BoardAuras.reach(t) + LINE_HALF_WIDTH):
 		var closest := Geometry2D.get_closest_point_to_segment(m.pos, t.center, end)
 		if closest.distance_squared_to(m.pos) <= hw2:
 			BoardCombat.hit(b, m, p, p.stat("damage"), rewards)
@@ -47,7 +47,7 @@ static func _line(b: SimBoard, t: SimTower, def: Dictionary, target: SimMonster,
 static func _cone(b: SimBoard, t: SimTower, def: Dictionary, target: SimMonster, rewards: Array) -> void:
 	var p := BoardCombat.shot(b, t, def)
 	var dir := _direction(t, target)
-	var reach: float = t.stats["range"]
+	var reach := BoardAuras.reach(t)
 	b.add_fx(SimBoard.Fx.CONE, t.center, t.center + dir * reach)
 	for m in BoardCombat.in_radius(b, p, t.center, reach):
 		var to := m.pos - t.center
@@ -57,7 +57,7 @@ static func _cone(b: SimBoard, t: SimTower, def: Dictionary, target: SimMonster,
 
 static func _beam(b: SimBoard, t: SimTower, def: Dictionary, target: SimMonster, rewards: Array) -> void:
 	var locked := b.monster_by_id(t.beam_target)
-	var reach: float = t.stats["range"]
+	var reach := BoardAuras.reach(t)
 	if locked != null and BoardCombat.can_hit(def["air"], def["ground"], locked) \
 			and t.center.distance_squared_to(locked.pos) <= reach * reach:
 		target = locked
