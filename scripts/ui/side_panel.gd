@@ -39,7 +39,9 @@ func _context() -> String:
 	var b := _game.viewed()
 	var t: Variant = b.get("towers", {}).get(_selected)
 	var tower_sig := "" if t == null else "%s/%d/%d/%d" % [t["type"], t["level"], t["mode"], t.get("buffs", 0)]
-	return "%d|%d|%s|%s|%s|%s" % [_game.viewed_board, _selected, tower_sig, str(_game.me().get("alive", false)), _previewed, str(_game.state.can_trade)]
+	var me := _game.me()
+	return "%d|%d|%s|%s|%s|%s|%d|%d|%d" % [_game.viewed_board, _selected, tower_sig, str(me.get("alive", false)), _previewed,
+		str(_game.state.can_trade), _game.state.map_version, int(me.get("raze", 0)), int(me.get("tile", 0))]
 
 
 func _rebuild() -> void:
@@ -66,6 +68,7 @@ func _rebuild() -> void:
 			add_child(UiTheme.label("Seul le propriétaire de la zone peut y construire. Ta zone a ta couleur.", 17, UiTheme.MUTED))
 	elif _selected >= 0:
 		add_child(UiTheme.label("On ne peut pas construire ici.", 18, UiTheme.MUTED))
+		_terrain_actions()
 	else:
 		add_child(UiTheme.label("Construire", 24, UiTheme.ACCENT))
 		add_child(UiTheme.label("Touche une case d'herbe libre pour y poser une tourelle, ou une tourelle pour l'améliorer.", 17, UiTheme.MUTED))
@@ -92,6 +95,7 @@ func _build_panel() -> void:
 	var locked := not _game.state.can_trade
 	if locked:
 		add_child(UiTheme.label(MatchActions.LOCKED + ".", 17, UiTheme.DANGER))
+	_terrain_actions()
 	var data := _game.state.data
 	var builder := _game.my_kit()
 	if not builder.allows(_previewed):
@@ -166,6 +170,7 @@ func _tower_panel(t: Dictionary) -> void:
 	if owner != _game.my_id:
 		add_child(UiTheme.label("Seul son propriétaire peut l'améliorer ou la vendre.", 16, UiTheme.MUTED))
 		return
+	_terrain_actions()
 	var locked := not _game.state.can_trade
 	if locked:
 		add_child(UiTheme.label(MatchActions.LOCKED + ".", 16, UiTheme.DANGER))
@@ -185,6 +190,33 @@ func _tower_panel(t: Dictionary) -> void:
 		_game.send({"a": "sell", "cell": _selected}))
 	sell.disabled = locked
 	add_child(sell)
+
+
+## Terrassier : raser l'arbre ou le rocher sélectionné, ou poser une case spéciale sur une case
+## constructible sans bonus (même sous sa tourelle), tant qu'il lui reste des charges.
+func _terrain_actions() -> void:
+	var me := _game.me()
+	var locked := not _game.state.can_trade
+	var map := _game.map
+	if map.is_decor(_selected) and int(me.get("raze", 0)) > 0:
+		var raze := UiTheme.button("Raser (encore %d)" % int(me["raze"]), func() -> void:
+			_game.send({"a": "raze", "cell": _selected}))
+		raze.disabled = locked
+		add_child(raze)
+	elif map.is_buildable(_selected) and map.special_at(_selected) < 0 and int(me.get("tile", 0)) > 0:
+		add_child(UiTheme.label("Poser une case bonus (encore %d) :" % int(me["tile"]), 16, UiTheme.ACCENT))
+		var row := UiTheme.hbox(6)
+		add_child(row)
+		for i in BoardTerrain.placeable(_game.state.data):
+			var s: Dictionary = _game.state.data.specials[i]
+			var special: int = i
+			var b := UiTheme.button(s["name"], func() -> void:
+				_game.send({"a": "tile", "cell": _selected, "special": special}), 48, false)
+			b.tooltip_text = s["description"]
+			b.size_flags_horizontal = SIZE_EXPAND_FILL
+			b.add_theme_color_override("font_color", Color(s["color"]))
+			b.disabled = locked
+			row.add_child(b)
 
 
 ## Réduction du Chantier le plus fort qui atteint la case (même règle que MatchActions.zone_discount,
