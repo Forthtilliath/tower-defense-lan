@@ -198,9 +198,9 @@ static func afflict(b: SimBoard, m: SimMonster, p: SimProjectile) -> void:
 	factor = 1.0 - (1.0 - factor) * m.taken(p.element)
 	var slowed := m.apply_slow(factor, p.stat("slow_duration"))
 	m.add_contrib(p.credit, slowed * (1.0 - factor) * m.max_hp * SimMonster.SLOW_POINTS)
-	m.apply_poison(p.stat("poison_dps"), p.stat("poison_duration"), p.owner, p.stat("poison_spread"))
+	m.apply_poison(p.stat("poison_dps"), p.stat("poison_duration"), p.owner, p.stat("poison_spread"), int(p.stat("poison_stacks")))
 	m.apply_burn(p.stat("burn_dps"), p.stat("burn_duration"), int(p.stat("burn_stacks")), p.owner)
-	m.apply_bleed(p.stat("bleed"), p.stat("bleed_duration"), p.owner)
+	m.apply_bleed(p.stat("bleed"), p.stat("bleed_duration"), p.owner, int(p.stat("bleed_stacks")))
 	m.apply_shred(p.stat("shred"), p.stat("shred_duration"))
 	_mark(m, p)
 	for kind in CONTROLS:

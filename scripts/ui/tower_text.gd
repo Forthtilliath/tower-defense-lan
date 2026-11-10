@@ -34,6 +34,10 @@ static func stats_text(def: Dictionary, s: Dictionary) -> String:
 		parts.append("%d rebonds" % s["chain"])
 	if s["poison_dps"] > 0.0:
 		parts.append("poison %s/s pendant %s s" % [num(s["poison_dps"]), num(s["poison_duration"])])
+	if s["poison_dps"] > 0.0 and s["poison_stacks"] > 1:
+		parts.append("le poison se cumule (%d charges)" % s["poison_stacks"])
+	if s["bleed"] > 0.0 and s["bleed_stacks"] > 1:
+		parts.append("le saignement se cumule (%d charges)" % s["bleed_stacks"])
 	if s["poison_spread"] > 0.0:
 		parts.append("contagieux à %s cases" % num(s["poison_spread"]))
 	if s["shred"] > 0.0:
