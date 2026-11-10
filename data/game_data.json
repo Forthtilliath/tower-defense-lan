@@ -234,11 +234,11 @@
 					{ "id": "bu_bulk", "name": "Achats groupés", "description": "Construire et améliorer coûte 3 % de moins par rang.", "tier": 3, "max_rank": 2, "build_cost": 0.03 },
 					{ "id": "bu_finish", "name": "Grands travaux", "description": "+15 % de réduction et de portée par rang (Chantier).", "tier": 4, "max_rank": 2, "towers": ["worksite"], "aura": 0.15, "range": 0.15 }
 				] },
-				{ "id": "digger", "name": "Terrassier", "description": "Raser le décor et poser des cases bonus (à venir).", "talents": [
-					{ "id": "bu_survey", "name": "Arpentage", "description": "+30 or de départ par rang.", "tier": 1, "max_rank": 3, "start_gold": 30 },
+				{ "id": "digger", "name": "Terrassier", "description": "Raser arbres et rochers pour y construire, poser des cases bonus.", "talents": [
+					{ "id": "bu_survey", "name": "Défrichage", "description": "Raser 2 arbres ou rochers par partie, par rang (la case devient constructible).", "tier": 1, "max_rank": 3, "raze_charges": 2 },
 					{ "id": "bu_foundations", "name": "Fondations", "description": "+3 % de dégâts par rang pour toutes tes tourelles.", "tier": 2, "max_rank": 3, "damage": 0.03 },
-					{ "id": "bu_terrace", "name": "Terrasses", "description": "+4 % de portée par rang pour toutes tes tourelles.", "tier": 3, "max_rank": 2, "range": 0.04 },
-					{ "id": "bu_bedrock", "name": "Roche mère", "description": "+4 % de cadence par rang pour toutes tes tourelles.", "tier": 4, "max_rank": 2, "rate": 0.04 }
+					{ "id": "bu_terrace", "name": "Géomancie", "description": "Poser 1 case bonus (Colline, Cristal ou Rune) par partie, par rang.", "tier": 3, "max_rank": 2, "tile_charges": 1 },
+					{ "id": "bu_bedrock", "name": "Grands terrassements", "description": "1 case bonus et 2 arbres ou rochers de plus par partie, par rang.", "tier": 4, "max_rank": 2, "tile_charges": 1, "raze_charges": 2 }
 				] }
 			]
 		}
