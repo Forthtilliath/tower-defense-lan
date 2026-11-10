@@ -27,7 +27,7 @@ static func help(settings: Dictionary, player_count: int) -> String:
 
 ## « Quatre fiefs · carte en zones · 20 vagues · conseillée de 2 à 4 joueurs ».
 static func map_text(map: MapDef, mode: int, player_count: int) -> String:
-	var parts := [map.name]
+	var parts := [map.name, "difficulté %s" % DataSchema.MAP_TIERS[map.tier]]
 	if mode == SimMatch.Mode.COOP:
 		parts.append(MapDef.LAYOUT_NAMES[map.layout()].to_lower())
 	parts.append("%d vagues" % map.waves.size())
