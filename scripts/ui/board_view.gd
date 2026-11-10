@@ -5,14 +5,10 @@ extends Control
 
 signal cell_pressed(cell: int)
 
-const TILE_COLORS := {
-	MapDef.Cell.BUILD: Color("#5f8f4e"), MapDef.Cell.ROUTE: Color("#c9a66b"),
-	MapDef.Cell.START: Color("#c9a66b"), MapDef.Cell.END: Color("#c9a66b"),
-	MapDef.Cell.ROCK: Color("#58834a"), MapDef.Cell.WATER: Color("#3d7fb8"),
-	MapDef.Cell.TREE: Color("#58834a"),
-}
-
-var data: GameData
+var data: GameData:
+	set(value):
+		data = value
+		_terrain.queue_redraw()
 var map: MapDef
 var state: ViewState
 var board_index := 0
@@ -22,18 +18,41 @@ var player_colors := {}  # id joueur -> Color
 var zone_colors: Array[Color] = []:
 	set(value):
 		zone_colors = value
-		queue_redraw()
+		_terrain.queue_redraw()
 ## Kit d'un joueur (id -> PlayerKit ou null), pour la portée affichée des tourelles.
 var kit_of := func(_id: int) -> Variant: return null
 ## Portée d'une tourelle envisagée sur la case sélectionnée vide (0 : rien à dessiner).
 var preview_range := 0.0
 var _ts := 32.0
 var _origin := Vector2.ZERO
+var _terrain: TerrainLayer
+
+
+func _init() -> void:
+	_terrain = TerrainLayer.new(self)
+	add_child(_terrain)
 
 
 func set_map(p_map: MapDef) -> void:
 	map = p_map
 	queue_redraw()
+	_terrain.queue_redraw()
+
+
+## Taille des cases et coin du plateau, centrés dans le contrôle.
+func update_layout() -> void:
+	if map == null:
+		return
+	_ts = maxf(4.0, floorf(minf(size.x / map.width, size.y / map.height)))
+	_origin = ((size - Vector2(map.width, map.height) * _ts) / 2.0).floor()
+
+
+func tile_size() -> float:
+	return _ts
+
+
+func origin() -> Vector2:
+	return _origin
 
 
 func _process(_delta: float) -> void:
@@ -64,15 +83,12 @@ func to_px(p: Vector2) -> Vector2:
 func _draw() -> void:
 	if map == null:
 		return
-	_ts = maxf(4.0, floorf(minf(size.x / map.width, size.y / map.height)))
-	_origin = ((size - Vector2(map.width, map.height) * _ts) / 2.0).floor()
-	for i in map.cell_count():
-		BoardPainter.tile(self, map, data, i, Rect2(_origin + Vector2(map.cell_coords(i)) * _ts, Vector2(_ts, _ts)))
-	BoardPainter.zones(self, map, zone_colors, _origin, _ts)
-	BoardPainter.flight_paths(self, map, _origin, _ts)
+	update_layout()
 	if state == null or not state.received or board_index >= state.boards.size():
 		return
 	var b: Dictionary = state.boards[board_index]
+	for z in b["patches"]:
+		FxPainter.patch(self, data, z, to_px(z["pos"]), _ts)
 	_draw_selection(b)
 	for cell in b["towers"]:
 		var t: Dictionary = b["towers"][cell]
@@ -80,21 +96,30 @@ func _draw() -> void:
 		UnitPainter.tower(self, data, t, to_px(map.cell_center(cell)), _ts, col)
 	for id in b["monsters"]:
 		var m: Dictionary = b["monsters"][id]
-		var pos := to_px(map.position_at(m["path"], state.monster_progress(m), m["flying"]))
-		UnitPainter.monster(self, data.monsters[m["type"]], m, pos, _ts)
+		var progress := state.monster_progress(m)
+		var pos := to_px(map.position_at(m["path"], progress, m["flying"]))
+		var ahead := to_px(map.position_at(m["path"], progress + 0.3, m["flying"]))
+		var facing := (ahead - pos).normalized() * (-1.0 if m["to"] < m["from"] else 1.0)
+		MonsterPainter.draw(self, data.monsters[m["type"]], m, pos, facing, _ts)
 	for id in b["proj"]:
-		var p := to_px(state.projectile_pos(b["proj"][id]))
-		draw_circle(p, maxf(2.5, _ts * 0.07), Color(0.1, 0.1, 0.1, 0.7))
-		draw_circle(p, maxf(1.5, _ts * 0.05), Color.WHITE)
+		var p: Dictionary = b["proj"][id]
+		UnitPainter.projectile(self, to_px(p["from"]), to_px(state.projectile_pos(p)), _ts)
 	for f in b["fx"]:
-		UnitPainter.fx(self, f, _origin, _ts)
+		UnitPainter.fx(self, data, f, _origin, _ts)
 	if not b["alive"]:
-		draw_rect(Rect2(_origin, Vector2(map.width, map.height) * _ts), Color(0, 0, 0, 0.55))
-		var font := get_theme_default_font()
-		var text := "Plateau perdu"
-		var fs := int(_ts * 0.8)
-		var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
-		draw_string(font, size / 2.0 - Vector2(w / 2.0, 0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, UiTheme.DANGER)
+		_draw_lost()
+
+
+## Plateau perdu : voile sombre et titre façon onomatopée cernée d'encre.
+func _draw_lost() -> void:
+	draw_rect(Rect2(_origin, Vector2(map.width, map.height) * _ts), Color(Ink.INK, 0.6))
+	var font := get_theme_default_font()
+	var text := "Plateau perdu"
+	var fs := int(_ts * 0.9)
+	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var at := size / 2.0 - Vector2(w / 2.0, 0)
+	draw_string_outline(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, maxi(4, int(_ts * 0.18)), Ink.INK)
+	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, UiTheme.DANGER)
 
 
 func _draw_selection(b: Dictionary) -> void:
@@ -108,5 +133,6 @@ func _draw_selection(b: Dictionary) -> void:
 		reach = data.tower_stats(t["type"], t["level"], map.special_at(selected), kit_of.call(t["owner"]))["range"]
 	if reach > 0.0:
 		var center := to_px(map.cell_center(selected))
-		draw_circle(center, reach * _ts, Color(1, 1, 1, 0.08))
-		draw_arc(center, reach * _ts, 0.0, TAU, 64, Color(1, 1, 1, 0.5), 2.0)
+		draw_circle(center, reach * _ts, Color(Ink.PAPER, 0.1))
+		draw_arc(center, reach * _ts, 0.0, TAU, 64, Color(Ink.INK, 0.55), 4.0)
+		draw_arc(center, reach * _ts, 0.0, TAU, 64, Color(Ink.PAPER, 0.8), 2.0)

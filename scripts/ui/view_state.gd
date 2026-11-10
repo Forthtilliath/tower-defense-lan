@@ -150,9 +150,10 @@ func _parse_board(raw: Variant) -> Variant:
 	var monsters = _parse_monsters(b.get("m"))
 	var proj = _parse_projectiles(b.get("p"))
 	var fx = _parse_fx(b.get("fx"))
-	if lives == null or alive == null or towers == null or monsters == null or proj == null or fx == null:
+	var patches = _parse_patches(b.get("z"))
+	if lives == null or alive == null or towers == null or monsters == null or proj == null or fx == null or patches == null:
 		return null
-	return {"lives": lives, "alive": alive, "towers": towers, "monsters": monsters, "proj": proj, "fx": fx}
+	return {"lives": lives, "alive": alive, "towers": towers, "monsters": monsters, "proj": proj, "fx": fx, "patches": patches}
 
 
 func _parse_towers(raw: Variant) -> Variant:
@@ -170,7 +171,7 @@ func _parse_towers(raw: Variant) -> Variant:
 		var level = Check.as_int(e[2], 0, data.tower_levels(id).size() - 1)
 		var owner = Check.as_int(e[3], 1, NetPayloads.MAX_PEER_ID)
 		var mode = Check.as_int(e[4], 0, SimTower.TARGET_NAMES.size() - 1)
-		var buffs = Check.as_int(e[5], 0, 7)
+		var buffs = Check.as_int(e[5], 0, 15)  # auras reçues, et 8 : brouillée
 		if level == null or owner == null or mode == null or buffs == null:
 			return null
 		out[cell] = {"type": id, "level": level, "owner": owner, "mode": mode, "buffs": buffs}
@@ -189,7 +190,7 @@ func _parse_monsters(raw: Variant) -> Variant:
 		var path = Check.as_int(e[2], 0, map.start_count() - 1)
 		var progress = Check.as_num(e[3], 0.0, 100000.0)
 		var hp = Check.as_int(e[4], 0, 255)
-		var flags = Check.as_int(e[5], 0, 255)
+		var flags = Check.as_int(e[5], 0, 511)
 		if id == null or type == null or path == null or progress == null or hp == null or flags == null:
 			return null
 		var type_id: String = data.monster_order[type]
@@ -198,7 +199,7 @@ func _parse_monsters(raw: Variant) -> Variant:
 			"from": progress, "to": progress, "hp": hp,
 			"slowed": flags & 1 != 0, "poisoned": flags & 2 != 0, "elite": flags & 4 != 0,
 			"burning": flags & 8 != 0, "bleeding": flags & 16 != 0, "stunned": flags & 32 != 0,
-			"feared": flags & 64 != 0, "charmed": flags & 128 != 0,
+			"feared": flags & 64 != 0, "charmed": flags & 128 != 0, "warded": flags & 256 != 0,
 		}
 	return out
 
@@ -226,15 +227,44 @@ func _parse_fx(raw: Variant) -> Variant:
 	for e in raw:
 		if not _is_tuple(e, 6):
 			return null
-		var kind = Check.as_int(e[0], 0, 1)
+		var kind = Check.as_int(e[0], 0, SimBoard.Fx.size() - 1)
 		var x = Check.as_num(e[1], -2.0, map.width + 2.0)
 		var y = Check.as_num(e[2], -2.0, map.height + 2.0)
-		var a = Check.as_num(e[3], -2.0, maxf(map.width, map.height) + 2.0)
-		var b = Check.as_num(e[4], -2.0, maxf(map.width, map.height) + 2.0)
 		var life = Check.as_num(e[5], 0.0, 1.0)
-		if kind == null or x == null or y == null or a == null or b == null or life == null:
+		if kind == null or x == null or y == null or life == null:
 			return null
-		out.append({"kind": kind, "pos": Vector2(x, y), "radius": a, "to": Vector2(a, b), "life": life})
+		var f := {"kind": kind, "pos": Vector2(x, y), "life": life}
+		if SimBoard.is_round_fx(kind):  # rayon et teinte (index de tourelle)
+			f["radius"] = Check.as_num(e[3], 0.0, 40.0)
+			f["tint"] = Check.as_int(e[4], 0, data.tower_order.size() - 1)
+			if f["radius"] == null or f["tint"] == null:
+				return null
+		else:  # point d'arrivée
+			var a = Check.as_num(e[3], -2.0, map.width + 2.0)
+			var b = Check.as_num(e[4], -2.0, map.height + 2.0)
+			if a == null or b == null:
+				return null
+			f["to"] = Vector2(a, b)
+		out.append(f)
+	return out
+
+
+## Nappes au sol : [x, y, rayon, vie restante, index de tourelle].
+func _parse_patches(raw: Variant) -> Variant:
+	if not _is_list(raw, MAX_ENTITIES):
+		return null
+	var out := []
+	for e in raw:
+		if not _is_tuple(e, 5):
+			return null
+		var x = Check.as_num(e[0], -2.0, map.width + 2.0)
+		var y = Check.as_num(e[1], -2.0, map.height + 2.0)
+		var radius = Check.as_num(e[2], 0.0, 5.0)
+		var life = Check.as_num(e[3], 0.0, 1.0)
+		var tint = Check.as_int(e[4], 0, data.tower_order.size() - 1)
+		if x == null or y == null or radius == null or life == null or tint == null:
+			return null
+		out.append({"pos": Vector2(x, y), "radius": radius, "life": life, "type": data.tower_order[tint]})
 	return out
 
 
