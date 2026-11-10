@@ -46,6 +46,8 @@ var tick := 0
 var notices: Array = []
 ## Vies de chaque plateau au départ de la vague précédente (vagues sans fuite du Parieur).
 var _lives_mark := {}
+## Coopération sur une carte à plusieurs couloirs : couloirs ouverts, un par joueur (MapDef.open_paths).
+var open_paths: Array[int] = []
 
 
 ## roster : [[id, nom, couleur, bâtisseur, talents], ...] dans l'ordre d'arrivée (bâtisseur et
@@ -62,7 +64,8 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 		launch = clampi(int(options.get("launch", Launch.VOTE)), 0, LAUNCH_NAMES.size() - 1)
 	var lives: int = difficulty["lives"]
 	if mode == Mode.COOP:
-		lives *= map.lanes  # chaque couloir défendu à part laisse passer ses propres monstres
+		open_paths = map.open_paths(roster.size())
+		lives *= lanes_open()  # chaque couloir défendu à part laisse passer ses propres monstres
 	for i in roster.size():
 		var entry: Array = roster[i]
 		var id: int = entry[0]
@@ -71,6 +74,7 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 		if mode == Mode.VERSUS or boards.is_empty():
 			boards.append(SimBoard.new(data, map, lives, difficulty["reward"]))
 			boards[-1].armor_bonus = float(difficulty["armor"])
+			boards[-1].open_paths = open_paths
 		var mult := gold_mult_for(i, roster.size()) if mode == Mode.COOP else 1.0
 		players[id] = {
 			"name": entry[1], "builder": builder, "kit": kit, "gold_mult": mult, "income": 0,
@@ -192,11 +196,11 @@ func has_next_wave() -> bool:
 
 
 ## Renforcement coop selon le nombre de joueurs : [PV, nombre de monstres, or des joueurs].
-## Sur une carte à plusieurs couloirs séparés (map.lanes), chaque couloir reçoit au moins une
-## vague solo. Avec moins de joueurs que de couloirs, chacun en défend plusieurs : l'or de départ
-## et des vagues est multiplié d'autant, pour monter une défense complète dans chacun.
+## Sur une carte à plusieurs couloirs, seuls les couloirs ouverts (un par joueur au départ)
+## reçoivent des monstres, chacun une vague solo complète. Si des joueurs partent, les couloirs
+## restent ouverts : ceux qui restent en défendent plusieurs, avec l'or en proportion.
 func coop_scaling(player_count: int) -> Array:
-	var lanes := float(map.lanes)
+	var lanes := float(lanes_open())
 	var per_lane := maxf(1.0, float(player_count)) / lanes
 	if per_lane < 1.0:
 		return [1.0, lanes, 1.0 / per_lane]
@@ -206,15 +210,13 @@ func coop_scaling(player_count: int) -> Array:
 	return [hp, count, 1.0]
 
 
-## Or de départ et des vagues du joueur n° index : avec moins de joueurs que de couloirs, chacun
-## reçoit de quoi défendre les siens (selon le nombre de zones qu'il tient sur une carte en zones).
-func gold_mult_for(index: int, player_count: int) -> float:
-	if map.zone_count > 0 and player_count < map.zone_count:
-		var owned := 0
-		for z in map.zone_count:
-			if map.zone_allows(z, index, player_count):
-				owned += 1
-		return float(owned * map.lanes) / float(map.zone_count)
+## Couloirs qui reçoivent des monstres (1 sur une carte à un seul couloir).
+func lanes_open() -> int:
+	return open_paths.size() if map.lanes > 1 and not open_paths.is_empty() else map.lanes
+
+
+## Or de départ et des vagues du joueur n° index (chacun défend son couloir : or normal).
+func gold_mult_for(_index: int, player_count: int) -> float:
 	return coop_scaling(player_count)[2]
 
 
