@@ -67,7 +67,7 @@ func test_corrupted_snapshots_are_ignored() -> void:
 func test_lobby_payloads() -> void:
 	var gd := load_data()
 	var talents := {"ar_conductive": 2, "ar_tesla": 1}
-	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}], [4, "Bob", 1, 2, 3, 5, talents]], "mode": 1, "map": 9, "rhythm": 1, "launch": 1}
+	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}], [4, "Bob", 1, 2, 3, 5, talents]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1}
 	var ok = NetPayloads.parse_lobby(good, gd, 2, 4)
 	check(ok != null and ok["players"].size() == 2 and ok["rhythm"] == 1 and ok["launch"] == 1, "salon valide")
 	check(ok != null and ok["players"][4]["builder"] == 2 and ok["players"][4]["vote"] == 3, "bâtisseur et vote reçus")

@@ -32,7 +32,7 @@ func test_bot_wins_duo_coop() -> void:
 ## Grandes cartes : gagnées à 2 et à 4 ; une petite carte à 4 aussi (renforcement coop).
 func test_bot_teams_win_big_maps() -> void:
 	var gd := load_data()
-	for entry in [[7, 2], [7, 4], [8, 2], [8, 4], [9, 2], [9, 4], [1, 4]]:
+	for entry in [[6, 2], [6, 4], [7, 2], [7, 4], [8, 2], [8, 4], [1, 4]]:
 		var sim := play(gd, entry[0], entry[1], NORMAL)
 		check(sim.result == "victory", "%s à %d : %s à la vague %d" % [gd.maps[entry[0]].id, entry[1], sim.result, sim.wave_index + 1])
 
