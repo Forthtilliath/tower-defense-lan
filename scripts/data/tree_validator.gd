@@ -101,7 +101,7 @@ static func _talent(v: DataValidator, src: Variant, where: String, towers: Dicti
 	if ids == null:
 		return null
 	t["towers"] = ids
-	var effect: bool = t["unlock"] != ""
+	var effect: bool = t["unlock"] != "" or t["imbue_all"]
 	for key in PlayerKit.STATS + PlayerKit.ECONOMY:
 		effect = effect or t[key] > 0
 	if not effect:

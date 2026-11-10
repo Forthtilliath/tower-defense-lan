@@ -16,7 +16,7 @@ static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: 
 	var zone := zone_refusal(sim, id, cell)
 	if zone != "":
 		return zone
-	var cost: int = p["kit"].cost(sim.data.tower_levels(type)[0]["cost"])
+	var cost: int = p["kit"].cost(sim.data.tower_levels(type)[0]["cost"], zone_discount(board, cell))
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost
@@ -54,7 +54,7 @@ static func upgrade(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell
 	var levels := sim.data.tower_levels(t.type)
 	if t.level + 1 >= levels.size():
 		return "Niveau maximum atteint"
-	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"])
+	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"], zone_discount(board, cell))
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost
@@ -131,6 +131,11 @@ static func give(sim: SimMatch, id: int, p: Dictionary, to_index: int, amount: i
 static func gift_received(data: GameData, amount: int, kit: PlayerKit = null) -> int:
 	var ratio := kit.gift_ratio(data) if kit != null else float(data.player["gift_ratio"])
 	return maxi(1, floori(amount * ratio))
+
+
+## Réduction du Chantier le plus fort qui atteint cette case (alliés compris).
+static func zone_discount(board: SimBoard, cell: int) -> float:
+	return float(BoardAuras.best_at(board, board.map.cell_center(cell), "aura_discount")[0])
 
 
 static func own_tower(id: int, board: SimBoard, cell: int) -> SimTower:
