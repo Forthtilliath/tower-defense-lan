@@ -16,7 +16,7 @@ static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: 
 	var zone := zone_refusal(sim, id, cell)
 	if zone != "":
 		return zone
-	var cost: int = sim.data.tower_levels(type)[0]["cost"]
+	var cost: int = p["kit"].cost(sim.data.tower_levels(type)[0]["cost"])
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost
@@ -54,7 +54,7 @@ static func upgrade(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell
 	var levels := sim.data.tower_levels(t.type)
 	if t.level + 1 >= levels.size():
 		return "Niveau maximum atteint"
-	var cost: int = levels[t.level + 1]["cost"]
+	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"])
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost
@@ -70,7 +70,7 @@ static func sell(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: i
 	var t := own_tower(id, board, cell)
 	if t == null:
 		return "Aucune tourelle à toi sur cette case"
-	p["gold"] += int(t.invested * SimMatch.SELL_RATIO)
+	p["gold"] += int(t.invested * p["kit"].sell_ratio())
 	board.remove_tower(cell)
 	return ""
 
@@ -102,7 +102,8 @@ static func send(sim: SimMatch, id: int, p: Dictionary, type: String) -> String:
 	return ""
 
 
-## Don d'or à un allié (coopération). Le don coûte cher : l'allié ne reçoit que gift_ratio du montant.
+## Don d'or à un allié (coopération). Le don coûte cher : l'allié ne reçoit qu'une part du montant
+## (gift_ratio, plus le bonus de dons du donneur).
 static func give(sim: SimMatch, id: int, p: Dictionary, to_index: int, amount: int) -> String:
 	if sim.mode != SimMatch.Mode.COOP:
 		return "Le don d'or est réservé à la coopération"
@@ -119,16 +120,17 @@ static func give(sim: SimMatch, id: int, p: Dictionary, to_index: int, amount: i
 		return "Don minimum : %d or" % minimum
 	if p["gold"] < amount:
 		return "Or insuffisant"
-	var received := gift_received(sim.data, amount)
+	var received := gift_received(sim.data, amount, p["kit"])
 	p["gold"] -= amount
 	target["gold"] += received
 	sim.notices.append([to, "%s t'a donné %d or" % [p["name"], received]])
 	return ""
 
 
-## Or réellement reçu pour un don de `amount`.
-static func gift_received(data: GameData, amount: int) -> int:
-	return maxi(1, floori(amount * float(data.player["gift_ratio"])))
+## Or réellement reçu pour un don de `amount` (kit du donneur : bonus de dons).
+static func gift_received(data: GameData, amount: int, kit: PlayerKit = null) -> int:
+	var ratio := kit.gift_ratio(data) if kit != null else float(data.player["gift_ratio"])
+	return maxi(1, floori(amount * ratio))
 
 
 static func own_tower(id: int, board: SimBoard, cell: int) -> SimTower:
