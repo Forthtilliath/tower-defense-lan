@@ -31,24 +31,31 @@ const DIFFICULTY := {
 	"id": ["id"], "name": ["text", 24], "hp": ["num", 0.1, 10.0], "lives": ["int", 1, 1000],
 	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0], "xp": ["num", 0.0, 10.0, 1.0],
 }
-const BRANCH := {"id": ["id"], "name": ["text", 24], "description": ["text", 120, ""]}
+## Branche de talents. trunk : tronc commun de la classe ; les autres branches sont ses
+## spécialisations, exclusives (des points dans une seule à la fois).
+const BRANCH := {"id": ["id"], "name": ["text", 24], "description": ["text", 120, ""], "trunk": ["bool", false]}
 ## Talent : bonus par rang (s'ajoutent), sur les tourelles listées dans « towers » (toutes si vide),
 ## ou déblocage d'une tourelle (« unlock »). aura : renforce les auras des tourelles de soutien.
+## build_cost : réduction du prix de construction et d'amélioration ; sell_bonus : part de revente
+## en plus ; gift_bonus : part en plus reçue par l'allié lors d'un don (plafonds : PlayerKit).
 const TALENT := {
 	"id": ["id"], "name": ["text", 32], "description": ["text", 160, ""], "tier": ["int", 1, 6],
 	"max_rank": ["int", 1, 5, 1], "unlock": ["id", ""],
 	"damage": ["num", 0.0, 1.0, 0.0], "rate": ["num", 0.0, 1.0, 0.0], "range": ["num", 0.0, 1.0, 0.0],
 	"cc": ["num", 0.0, 1.0, 0.0], "aura": ["num", 0.0, 1.0, 0.0], "bounty": ["num", 0.0, 1.0, 0.0],
 	"interest": ["num", 0.0, 0.1, 0.0], "interest_cap": ["int", 0, 1000, 0], "start_gold": ["int", 0, 10000, 0],
+	"build_cost": ["num", 0.0, 0.2, 0.0], "sell_bonus": ["num", 0.0, 0.1, 0.0], "gift_bonus": ["num", 0.0, 0.25, 0.0],
 }
-## Bâtisseur : tourelles de base (« towers »), branches de talents, et bonus appliqués à toutes ses tourelles.
+## Classe : tourelles en plus du tronc commun (« towers », souvent aucune : les spécialisations
+## débloquent les leurs), branches de talents, et bonus de classe. Les multiplicateurs (dégâts,
+## portée, cadence, contrôles, auras) valent pour les tourelles de « bonus_towers » (toutes si vide).
 ## cc : multiplie les chances et durées de contrôle. bounty : multiplie sa part des primes.
-## interest / interest_cap : s'ajoutent au taux et au plafond d'intérêts du joueur.
+## interest / interest_cap / start_gold : s'ajoutent à ceux du joueur.
 const BUILDER := {
-	"id": ["id"], "name": ["text", 24], "color": ["color"], "description": ["text", 160, ""],
+	"id": ["id"], "name": ["text", 24], "color": ["color"], "description": ["text", 200, ""],
 	"damage": ["num", 0.5, 3.0, 1.0], "range": ["num", 0.5, 3.0, 1.0], "rate": ["num", 0.5, 3.0, 1.0],
-	"cc": ["num", 0.5, 3.0, 1.0], "bounty": ["num", 0.5, 3.0, 1.0],
-	"interest": ["num", 0.0, 0.2, 0.0], "interest_cap": ["int", 0, 10000, 0],
+	"cc": ["num", 0.5, 3.0, 1.0], "aura": ["num", 0.5, 3.0, 1.0], "bounty": ["num", 0.5, 3.0, 1.0],
+	"interest": ["num", 0.0, 0.2, 0.0], "interest_cap": ["int", 0, 10000, 0], "start_gold": ["int", 0, 10000, 0],
 }
 ## Éléments des tourelles ("" : coups physiques), auxquels certains monstres résistent.
 const ELEMENTS := ["fire", "ice", "lightning", "poison", "bleed"]

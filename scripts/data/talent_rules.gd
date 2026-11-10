@@ -4,7 +4,8 @@ extends RefCounted
 ## ensemble de talents reçu (sauvegarde ou réseau), expérience gagnée en fin de partie.
 ##
 ## Un talent de palier t n'est permis que si la branche compte déjà au moins
-## talent_tiers[t - 1] points dans des talents de paliers inférieurs.
+## talent_tiers[t - 1] points dans des talents de paliers inférieurs. Hors tronc commun, une
+## seule branche (la spécialisation) peut recevoir des points ; on en change en les retirant.
 
 const MAX_ENTRIES := 64
 
@@ -97,8 +98,22 @@ static func validate(data: GameData, builder: int, raw: Variant, available: int)
 		if rank == null:
 			return null
 		out[key] = rank
-	if spent(out) > available or not tiers_ok(data, out, all):
+	if spent(out) > available or not tiers_ok(data, out, all) or specs_used(data, builder, out).size() > 1:
 		return null
+	return out
+
+
+## Spécialisations (index de branche hors tronc) qui ont au moins un point.
+static func specs_used(data: GameData, builder: int, talents: Dictionary) -> Array[int]:
+	var out: Array[int] = []
+	if builder < 0 or builder >= data.builders.size():
+		return out
+	var branches: Array = data.builders[builder]["branches"]
+	var all := defs(data, builder)
+	for id in talents:
+		var i: int = all[id][0] if all.has(id) else -1
+		if i >= 0 and not branches[i]["trunk"] and not out.has(i) and int(talents[id]) > 0:
+			out.append(i)
 	return out
 
 
@@ -121,6 +136,11 @@ static func add_refusal(data: GameData, builder: int, talents: Dictionary, id: S
 	if not all.has(id):
 		return "Talent inconnu"
 	var def: Dictionary = all[id][1]
+	var branch: int = all[id][0]
+	var branches: Array = data.builders[builder]["branches"]
+	for used in specs_used(data, builder, talents):
+		if used != branch and not branches[branch]["trunk"]:
+			return "Spécialisation déjà choisie : %s (retire ses points pour en changer)" % branches[used]["name"]
 	if int(talents.get(id, 0)) >= int(def["max_rank"]):
 		return "Rang maximum atteint"
 	if spent(talents) >= available:
