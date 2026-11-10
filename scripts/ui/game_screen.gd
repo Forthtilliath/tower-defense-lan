@@ -14,9 +14,12 @@ var viewed_board := 0
 var names := {}  # id -> pseudo
 var colors := {}  # id -> Color
 var builders := {}  # id -> index du bâtisseur
+var kits := {}  # id -> PlayerKit (bâtisseur et talents)
 var order: Array[int] = []  # ids dans l'ordre de la partie
 var is_versus := false
 var _coop: CoopPanel
+## Expérience gagnée à la fin de la partie (vide tant qu'elle n'est pas finie).
+var xp_summary := ""
 var _last_wave := 0
 var _nav: Node
 var _view: BoardView
@@ -44,6 +47,7 @@ func _ready() -> void:
 		names[e[0]] = e[1]
 		colors[e[0]] = UiTheme.player_color(e[2])
 		builders[e[0]] = e[3]
+		kits[e[0]] = PlayerKit.make(Data.db, e[3], e[4])
 	my_board = maxi(0, order.find(my_id)) if is_versus else 0
 	viewed_board = my_board
 	state = ViewState.new(Data.db, map, order.size() if is_versus else 1)
@@ -65,7 +69,7 @@ func _build_layout() -> void:
 	_view.data = Data.db
 	_view.state = state
 	_view.player_colors = colors
-	_view.builder_of = func(id: int) -> int: return int(builders.get(id, -1))
+	_view.kit_of = func(id: int) -> Variant: return kits.get(id)
 	if not is_versus:
 		var ordered: Array[Color] = []
 		for id in order:
@@ -135,6 +139,7 @@ func _on_snapshot(snap: Dictionary) -> void:
 		if not mod.is_empty():
 			show_toast("Vague spéciale : %s — %s" % [mod["name"], mod["description"]])
 	if state.ended:
+		_award_xp()
 		_end.show_result()
 
 
@@ -173,6 +178,22 @@ func wave_modifier(index: int) -> Dictionary:
 	return state.data.wave_modifier(map.waves[mini(index, map.waves.size() - 1)])
 
 
+## Expérience de fin de partie pour la classe jouée (une seule fois par partie), enregistrée
+## sur cet appareil. Victoire : expérience complète ; défaite : une part, selon les vagues passées.
+func _award_xp() -> void:
+	if xp_summary != "":
+		return
+	var won := state.result == "victory" or (state.result == "winner" and state.winner == my_id)
+	var passed := state.wave if won else maxi(0, state.wave - 1)
+	var total := map.waves.size()
+	var amount := TalentRules.match_xp(Data.db, won, mini(passed, total), total, int(config.get("difficulty", 1)))
+	var builder := my_builder()
+	var levels := Progress.award(builder, amount)
+	xp_summary = "+%d XP pour %s (niveau %d)" % [amount, Data.db.builders[builder]["name"], levels[1]]
+	if levels[1] > levels[0]:
+		xp_summary += " : +%d point(s) de talent !" % (levels[1] - levels[0])
+
+
 ## Portée de la tourelle envisagée, dessinée autour de la case sélectionnée (0 : rien).
 func preview_range(reach: float) -> void:
 	_view.preview_range = reach
@@ -180,6 +201,10 @@ func preview_range(reach: float) -> void:
 
 func my_builder() -> int:
 	return int(builders.get(my_id, 0))
+
+
+func my_kit() -> PlayerKit:
+	return kits.get(my_id, PlayerKit.make(Data.db, 0))
 
 
 ## Rythme « entre les vagues » : construire n'est possible que pendant la phase de construction.

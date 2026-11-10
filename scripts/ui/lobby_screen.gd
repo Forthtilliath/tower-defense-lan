@@ -11,6 +11,8 @@ var _map: OptionButton
 var _rhythm: OptionButton
 var _launch: OptionButton
 var _builder: OptionButton
+var _talents: Button
+var _tree: TalentPanel
 var _vote: OptionButton
 var _help: Label
 var _mine: Label
@@ -56,7 +58,14 @@ func _ready() -> void:
 	_launch = _option(options, "Lancement", SimMatch.LAUNCH_NAMES, "launch", true)
 	var mine := UiTheme.hbox(12)
 	right.add_child(mine)
-	_builder = _option(mine, "Ton bâtisseur", Data.db.builders.map(func(b: Dictionary) -> String: return b["name"]), "builder", false)
+	_builder = _option(mine, "Ta classe", Data.db.builders.map(func(b: Dictionary) -> String: return b["name"]), "builder", false)
+	var talents_col := UiTheme.vbox(4)
+	talents_col.size_flags_horizontal = SIZE_EXPAND_FILL
+	talents_col.add_child(UiTheme.label("Progression", 15, UiTheme.MUTED))
+	_talents = UiTheme.button("Talents", _open_talents, 50, false)
+	_talents.clip_text = true
+	talents_col.add_child(_talents)
+	mine.add_child(talents_col)
 	_vote = _option(mine, "Ton vote : difficulté", Data.db.difficulties.map(func(d: Dictionary) -> String: return d["name"]), "vote", false)
 	_help = UiTheme.label("", 15, UiTheme.MUTED)
 	right.add_child(_help)
@@ -74,12 +83,32 @@ func _ready() -> void:
 	_start.visible = Net.is_host()
 	right.add_child(_start)
 	Net.lobby_changed.connect(_refresh)
+	Net.choose_kit(Progress.last_builder)
 	_refresh()
 
 
 func go_back() -> void:
+	if _tree != null:
+		_close_talents()
+		return
 	Net.leave()
 	_nav.show_menu()
+
+
+func _open_talents() -> void:
+	_tree = TalentPanel.new(_my_builder(), func() -> void: Net.choose_kit(_my_builder()), _close_talents)
+	add_child(_tree)
+
+
+func _close_talents() -> void:
+	if _tree != null:
+		_tree.queue_free()
+		_tree = null
+	_refresh()
+
+
+func _my_builder() -> int:
+	return int(Net.players.get(Net.my_id(), {}).get("builder", Progress.last_builder))
 
 
 ## Liste déroulante. host_option : option de partie (réservée à l'hôte), sinon choix personnel.
@@ -97,6 +126,10 @@ func _option(parent: Control, title: String, items: Array, key: String, host_opt
 	ob.disabled = host_option and not Net.is_host()
 	if host_option:
 		ob.item_selected.connect(func(i: int) -> void: Net.set_option(key, i))
+	elif key == "builder":
+		ob.item_selected.connect(func(i: int) -> void:
+			Progress.set_last_builder(i)
+			Net.choose_kit(i))
 	else:
 		ob.item_selected.connect(func(i: int) -> void: Net.choose(key, i))
 	col.add_child(ob)
@@ -115,8 +148,11 @@ func _refresh() -> void:
 	_rhythm.get_parent().visible = coop
 	_launch.get_parent().visible = coop
 	var my: Dictionary = Net.players.get(me, {})
-	_builder.select(int(my.get("builder", 0)))
+	var builder := int(my.get("builder", Progress.last_builder))
+	_builder.select(builder)
 	_vote.select(int(my.get("vote", 1)))
+	var free := Progress.points_left(builder)
+	_talents.text = "Niv. %d · talents%s" % [Progress.level(builder), (" (%d libre%s)" % [free, "s" if free > 1 else ""]) if free > 0 else ""]
 	_help.text = LobbyTexts.help(s, Net.players.size())
 	_mine.text = "%s\n%s" % [LobbyTexts.vote_text(Net.players), LobbyTexts.builder_text(int(my.get("builder", 0)))]
 	var map: MapDef = Data.db.maps[s["map"]]
@@ -145,7 +181,7 @@ func _refresh_players(me: int) -> void:
 		col.add_child(UiTheme.label(text, 19))
 		var builder: Dictionary = Data.db.builders[int(p.get("builder", 0))]
 		var vote: Dictionary = Data.db.difficulties[int(p.get("vote", 1))]
-		col.add_child(UiTheme.label("%s · vote %s" % [builder["name"], vote["name"]], 14, UiTheme.MUTED))
+		col.add_child(UiTheme.label("%s niv. %d · vote %s" % [builder["name"], int(p.get("level", 1)), vote["name"]], 14, UiTheme.MUTED))
 		row.add_child(col)
 		_players.add_child(row)
 	_count.text = "Joueurs : %d / %d" % [Net.players.size(), Net.MAX_PLAYERS]

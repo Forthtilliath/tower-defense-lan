@@ -93,8 +93,8 @@ func _build_panel() -> void:
 	if locked:
 		add_child(UiTheme.label(MatchActions.LOCKED + ".", 17, UiTheme.DANGER))
 	var data := _game.state.data
-	var builder := _game.my_builder()
-	if not data.builder_allows(builder, _previewed):
+	var builder := _game.my_kit()
+	if not builder.allows(_previewed):
 		_previewed = ""
 	# La fiche et « Construire » passent avant la grille : avec beaucoup de tourelles,
 	# la grille dépasse l'écran et la fiche serait invisible sans défiler.
@@ -117,7 +117,7 @@ func _build_panel() -> void:
 	grid.add_theme_constant_override("v_separation", 8)
 	add_child(grid)
 	for id in data.tower_order:
-		if not data.builder_allows(builder, id):
+		if not builder.allows(id):
 			continue
 		var def: Dictionary = data.towers[id]
 		var tower_id: String = id
@@ -132,7 +132,7 @@ func _build_panel() -> void:
 
 
 ## Fiche d'une tourelle avant construction : rôle, niveau 1, niveau max, coût total.
-func _tower_info(id: String, special: int, builder: int) -> void:
+func _tower_info(id: String, special: int, builder: PlayerKit) -> void:
 	var data := _game.state.data
 	var def: Dictionary = data.towers[id]
 	var levels: Array = def["levels"]
@@ -154,8 +154,8 @@ func _tower_panel(t: Dictionary) -> void:
 	var special := _game.map.special_at(_selected)
 	add_child(UiTheme.label("%s — niveau %d / %d" % [def["name"], level + 1, levels.size()], 24, UiTheme.ACCENT))
 	var owner: int = t["owner"]
-	var builder := int(_game.builders.get(owner, -1))
-	var builder_name: String = data.builders[builder]["name"] if builder >= 0 else "?"
+	var builder: PlayerKit = _game.kits.get(owner)
+	var builder_name: String = data.builders[builder.builder]["name"] if builder != null else "?"
 	add_child(UiTheme.label("Propriétaire : %s (%s)" % [_game.names.get(owner, "?"), builder_name], 17, _game.colors.get(owner, UiTheme.TEXT)))
 	_special_info()
 	add_child(UiTheme.label(stats_text(def, data.tower_stats(t["type"], level, special, builder)), 16, UiTheme.MUTED))

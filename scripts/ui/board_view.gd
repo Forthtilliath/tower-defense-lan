@@ -23,8 +23,8 @@ var zone_colors: Array[Color] = []:
 	set(value):
 		zone_colors = value
 		queue_redraw()
-## Bâtisseur d'un joueur (id -> index), pour la portée affichée des tourelles.
-var builder_of := func(_id: int) -> int: return -1
+## Kit d'un joueur (id -> PlayerKit ou null), pour la portée affichée des tourelles.
+var kit_of := func(_id: int) -> Variant: return null
 ## Portée d'une tourelle envisagée sur la case sélectionnée vide (0 : rien à dessiner).
 var preview_range := 0.0
 var _ts := 32.0
@@ -105,7 +105,7 @@ func _draw_selection(b: Dictionary) -> void:
 	var reach := preview_range
 	if b["towers"].has(selected):
 		var t: Dictionary = b["towers"][selected]
-		reach = data.tower_stats(t["type"], t["level"], map.special_at(selected), builder_of.call(t["owner"]))["range"]
+		reach = data.tower_stats(t["type"], t["level"], map.special_at(selected), kit_of.call(t["owner"]))["range"]
 	if reach > 0.0:
 		var center := to_px(map.cell_center(selected))
 		draw_circle(center, reach * _ts, Color(1, 1, 1, 0.08))

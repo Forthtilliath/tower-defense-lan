@@ -31,6 +31,8 @@ func _ready() -> void:
 	box.add_child(UiTheme.button("Rejoindre une partie", _on_join))
 	if not OS.has_feature("mobile"):
 		box.add_child(UiTheme.button("Quitter", func() -> void: get_tree().quit()))
+	if _message == "" and Progress.load_warning != "":
+		_message = Progress.load_warning
 	_error = UiTheme.label(_message, 18, UiTheme.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
 	box.add_child(_error)
 	box.add_child(UiTheme.label("Version %s" % Net.version(), 14, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))

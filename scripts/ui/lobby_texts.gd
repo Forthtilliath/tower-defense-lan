@@ -3,7 +3,7 @@ extends RefCounted
 ## Textes d'aide du salon : mode, rythme, lancement, carte, difficulté votée, bâtisseur.
 
 const MODE_HELP := [
-	"Une seule carte, vies communes. Chacun construit avec son or ; la prime d'un monstre va au propriétaire de la tourelle.",
+	"Une seule carte, vies communes. Chacun construit avec son or ; la prime d'un monstre est partagée selon la contribution de chacun.",
 	"Chacun son plateau. Envoie des monstres chez ton voisin pour augmenter ton revenu. Le dernier en vie gagne.",
 ]
 const RHYTHM_HELP := [
@@ -64,10 +64,15 @@ static func vote_text(players: Dictionary) -> String:
 
 static func builder_text(index: int) -> String:
 	var b: Dictionary = Data.db.builders[index]
+	var kit := PlayerKit.make(Data.db, index, Progress.talents(index))
 	var names := []
-	for id in b["towers"]:
-		names.append(Data.db.towers[id]["name"])
-	return "%s : %s\nTourelles : %s." % [b["name"], b["description"], ", ".join(names)]
+	for id in Data.db.tower_order:
+		if kit.allows(id):
+			names.append(Data.db.towers[id]["name"])
+	var branches := []
+	for branch in b["branches"]:
+		branches.append(branch["name"])
+	return "%s : %s\nTes tourelles : %s.\nBranches de talents : %s." % [b["name"], b["description"], ", ".join(names), ", ".join(branches)]
 
 
 static func _num(v: float) -> String:
