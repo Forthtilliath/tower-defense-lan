@@ -32,6 +32,9 @@ var _pending := {}  # id -> instant de connexion, tant que le joueur ne s'est pa
 var end_reason := ""
 var _my_name := ""
 var _rpc: Node
+const KIT_INTERVAL_MS := 250
+var _pending_kit: Variant = null
+var _last_kit_ms := -100000
 
 
 func _ready() -> void:
@@ -121,11 +124,27 @@ func set_option(key: String, value: int) -> void:
 
 
 ## Choix personnel dans le salon : « builder » (bâtisseur) ou « vote » (difficulté).
-func choose(key: String, value: int) -> void:
+func choose(key: String, value: Variant) -> void:
 	if role == Role.HOST:
 		set_choice(1, key, value)
 	elif role == Role.CLIENT:
 		_rpc.choose.rpc_id(1, key, value)
+
+
+## Annonce la classe choisie, avec le niveau et les talents enregistrés pour elle sur cet appareil.
+## Envois espacés (KIT_INTERVAL_MS) : seul le dernier état part, rien n'est perdu.
+func choose_kit(builder: int) -> void:
+	_pending_kit = {"b": builder, "lv": Progress.level(builder), "t": Progress.talents(builder)}
+	_flush_kit()
+
+
+func _flush_kit() -> void:
+	if _pending_kit == null or role == Role.NONE or Time.get_ticks_msec() - _last_kit_ms < KIT_INTERVAL_MS:
+		return
+	_last_kit_ms = Time.get_ticks_msec()
+	var kit = _pending_kit
+	_pending_kit = null
+	choose("kit", kit)
 
 
 func set_choice(id: int, raw_key: Variant, raw_value: Variant) -> void:
@@ -173,6 +192,7 @@ func send_command(cmd: Dictionary) -> void:
 
 
 func _process(delta: float) -> void:
+	_flush_kit()
 	if role != Role.HOST:
 		return
 	_kick_silent_peers()
