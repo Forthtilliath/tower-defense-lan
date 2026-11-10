@@ -81,7 +81,7 @@ func test_fire_resistance_cuts_hits_and_burn() -> void:
 	check(is_equal_approx(imp.hp, 25.0), "coup de feu réduit à 3 : %f" % imp.hp)
 	check(is_equal_approx(goblin.hp, 2.0), "coup physique sur un gobelin : entier")
 	_effects(b, 1.0)
-	check(absf(imp.hp - 24.4) < 0.01, "brûlure réduite (2 × 0,3 par s) : %f" % imp.hp)
+	check(absf(imp.hp - 24.25) < 0.01, "brûlure réduite (2,5 × 0,3 par s) : %f" % imp.hp)
 
 
 func test_ice_resistance_weakens_slows() -> void:
@@ -105,7 +105,7 @@ func test_lightning_and_all_elements_resistance() -> void:
 	_hit(b, shot, "crossbow", 4.0)
 	check(is_equal_approx(venomed.hp, 58.0) and is_equal_approx(shot.hp, 56.0), "poison réduit, carreau entier : %f / %f" % [venomed.hp, shot.hp])
 	_effects(b, 1.0)
-	check(absf(venomed.hp - 56.0) < 0.01, "poison continu réduit de moitié : %f" % venomed.hp)
+	check(absf(venomed.hp - 55.5) < 0.01, "poison continu réduit de moitié (5 → 2,5 par s) : %f" % venomed.hp)
 
 
 func test_wave_modifier_grants_passive_traits() -> void:

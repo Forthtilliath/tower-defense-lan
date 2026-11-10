@@ -37,9 +37,9 @@ func test_prairie_path_length() -> void:
 
 
 func test_rejects_unknown_monster_in_wave() -> void:
-	var text := _bundled_text().replace("\"monster\": \"goblin\", \"count\": 8, \"interval\": 1.0", "\"monster\": \"ghost\", \"count\": 8, \"interval\": 1.0")
+	var text := _bundled_text().replace("\"monster\": \"goblin\", \"count\": 8, \"interval\": 1.0", "\"monster\": \"phantom_king\", \"count\": 8, \"interval\": 1.0")
 	var gd := GameData.from_text(text)
-	check(not gd.is_valid() and gd.error.contains("ghost"), "erreur attendue : " + gd.error)
+	check(not gd.is_valid() and gd.error.contains("phantom_king"), "erreur attendue : " + gd.error)
 	check(gd.towers.is_empty(), "rien ne doit être appliqué")
 
 
@@ -133,7 +133,7 @@ func test_special_tiles_on_maps() -> void:
 	check(prairie.special_at(hill) == 0 and prairie.is_buildable(hill), "colline constructible en (6, 3)")
 	var s := gd.tower_stats("crossbow", 0, 0)
 	check(is_equal_approx(s["range"], 2.5 * 1.25), "portée bonifiée : %f" % s["range"])
-	check(is_equal_approx(gd.tower_stats("venom", 0, 1)["poison_dps"], 4 * 1.3), "le cristal renforce le poison")
+	check(is_equal_approx(gd.tower_stats("venom", 0, 1)["poison_dps"], 5 * 1.3), "le cristal renforce le poison")
 
 
 func test_check_helpers() -> void:

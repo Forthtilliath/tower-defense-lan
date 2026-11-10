@@ -43,6 +43,7 @@ func _builder(gd: GameData, id: String) -> int:
 func test_burn_stacks_and_ignores_armor() -> void:
 	var b := _board()
 	var m := _monster(b, "skeleton")  # armure 3
+	m.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	for i in 3:
 		_hit(b, m, _shot({"burn_dps": 2.0, "burn_duration": 3.0, "burn_stacks": 2}))
 	check(m.burn_stacks == 2, "charges plafonnées à 2 : %d" % m.burn_stacks)
