@@ -242,3 +242,21 @@ func test_terrain_changes_reach_the_view_and_are_checked() -> void:
 	var bad: Dictionary = sim.snapshot()
 	bad["b"][0]["e"].append([sim.map.width, MapDef.Cell.BUILD, -1])  # la route « rasée »
 	check(not view.apply(bad), "changement sur la route refusé")
+
+
+func test_scourge_poison_and_bleed_stack() -> void:
+	var b := _board()
+	var kit := _kit(b.data, "scourge", {"fl_toxins": 3, "fl_plague": 1, "fl_virulence": 2})
+	var venom := _tower(b, "venom", AT, 7, kit)
+	check(int(venom.stats["poison_stacks"]) == 3, "Virulence 2 : 3 charges")
+	var orc := _mob(b, "orc", AT + Vector2(1, 0))
+	for i in 4:
+		_fire(b, venom)
+	check(orc.poison_stacks == 3, "le poison se cumule jusqu'au plafond : %d" % orc.poison_stacks)
+	var plain := _tower(b, "venom", AT + Vector2(0, 2))
+	_fire(b, plain)
+	check(orc.poison_stacks == 3, "un Venin ordinaire ne retire pas les charges")
+	var other := _mob(b, "orc", AT + Vector2(0, 3))
+	_fire(b, plain)
+	_fire(b, plain)
+	check(other.poison_stacks == 1, "sans talent du Fléau, le poison ne se cumule pas")
