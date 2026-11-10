@@ -3,32 +3,40 @@ extends RefCounted
 ## Thème de l'interface construit en code, et petits constructeurs de contrôles.
 ## Tailles généreuses pour rester utilisable au doigt sur téléphone.
 
-const BG := Color("#1b2333")
-const PANEL := Color("#263248")
-const PANEL_LIGHT := Color("#36456a")
-const ACCENT := Color("#f2b134")
-const TEXT := Color("#eef2f7")
-const MUTED := Color("#9aa7bd")
-const DANGER := Color("#ff6b62")
-const SUCCESS := Color("#5ad17a")
+## Palette « encre et cuir » au style manga : fonds sombres chauds, accent ocre, rouge sang.
+const BG := Color("#1a1814")
+const PANEL := Color("#28241e")
+const PANEL_LIGHT := Color("#3e372c")
+const ACCENT := Color("#e2a63e")
+const TEXT := Color("#f4eedf")
+const MUTED := Color("#aba08c")
+const DANGER := Color("#e24a3f")
+const SUCCESS := Color("#74c76a")
 const GOLD := Color("#ffd54a")
 const LIFE := Color("#ff7b8a")
-const PLAYER_COLORS: Array[Color] = [Color("#4ea1ff"), Color("#ff6b6b"), Color("#5ad17a"), Color("#c38bff")]
+const CRIMSON := Color("#a3262a")
+const PLAYER_COLORS: Array[Color] = [Color("#4f9be8"), Color("#e8524a"), Color("#62c46e"), Color("#b88cf0")]
 
 
 static func build() -> Theme:
 	var t := Theme.new()
 	t.default_font_size = 20
 	for kind in ["Button", "OptionButton"]:
-		t.set_stylebox("normal", kind, box(PANEL_LIGHT))
-		t.set_stylebox("hover", kind, box(PANEL_LIGHT.lightened(0.12)))
-		t.set_stylebox("pressed", kind, box(ACCENT.darkened(0.3)))
-		t.set_stylebox("disabled", kind, box(PANEL.darkened(0.15)))
+		t.set_stylebox("normal", kind, slanted(PANEL_LIGHT))
+		t.set_stylebox("hover", kind, slanted(PANEL_LIGHT.lightened(0.12)))
+		t.set_stylebox("pressed", kind, slanted(CRIMSON))
+		t.set_stylebox("disabled", kind, slanted(PANEL.darkened(0.15)))
 		t.set_stylebox("focus", kind, StyleBoxEmpty.new())
 		t.set_color("font_color", kind, TEXT)
 		t.set_color("font_hover_color", kind, Color.WHITE)
 		t.set_color("font_pressed_color", kind, Color.WHITE)
 		t.set_color("font_disabled_color", kind, MUTED.darkened(0.25))
+	# Marge intérieure des zones défilantes : place pour l'inclinaison et l'ombre des boutons.
+	var scroll_pad := StyleBoxEmpty.new()
+	scroll_pad.content_margin_left = 4
+	scroll_pad.content_margin_right = 10
+	scroll_pad.content_margin_bottom = 6
+	t.set_stylebox("panel", "ScrollContainer", scroll_pad)
 	t.set_stylebox("panel", "PanelContainer", box(PANEL, 12))
 	t.set_stylebox("normal", "LineEdit", box(BG.darkened(0.25)))
 	t.set_stylebox("focus", "LineEdit", box(BG.darkened(0.25), 8, ACCENT))
@@ -40,18 +48,41 @@ static func build() -> Theme:
 	return t
 
 
-static func box(color: Color, radius := 8, border := Color.TRANSPARENT) -> StyleBoxFlat:
+static func box(color: Color, radius := 3, border := Color.TRANSPARENT) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = color
-	sb.set_corner_radius_all(radius)
+	sb.set_corner_radius_all(mini(radius, 3))
 	sb.content_margin_left = 14
 	sb.content_margin_right = 14
 	sb.content_margin_top = 8
 	sb.content_margin_bottom = 8
-	if border.a > 0.0:
-		sb.set_border_width_all(2)
-		sb.border_color = border
+	sb.set_border_width_all(2)
+	sb.border_color = border if border.a > 0.0 else Ink.INK
 	return sb
+
+
+## Bouton façon case de manga : légèrement penché, contour d'encre et ombre franche.
+static func slanted(color: Color) -> StyleBoxFlat:
+	var sb := box(color, 2)
+	sb.skew = Vector2(0.08, 0.0)
+	sb.border_width_bottom = 3
+	sb.shadow_color = Color(Ink.INK, 0.85)
+	sb.shadow_size = 1
+	sb.shadow_offset = Vector2(3, 3)
+	return sb
+
+
+## Titre au style manga : grandes lettres cernées d'encre avec ombre portée rouge.
+static func title(text: String, size := 46) -> Label:
+	var l := label(text, size, ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
+	l.autowrap_mode = TextServer.AUTOWRAP_OFF
+	l.add_theme_color_override("font_outline_color", Ink.INK)
+	l.add_theme_constant_override("outline_size", maxi(6, size / 6))
+	l.add_theme_color_override("font_shadow_color", CRIMSON)
+	l.add_theme_constant_override("shadow_offset_x", 4)
+	l.add_theme_constant_override("shadow_offset_y", 4)
+	l.add_theme_constant_override("shadow_outline_size", maxi(6, size / 6))
+	return l
 
 
 static func label(text: String, size := 20, color := TEXT, align := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
