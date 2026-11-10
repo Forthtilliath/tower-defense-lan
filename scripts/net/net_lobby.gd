@@ -19,7 +19,7 @@ func _init(p_net: Node) -> void:
 
 static func new_player(player_name: String, color: int) -> Dictionary:
 	return {
-		"name": player_name, "color": color, "builder": 0, "level": 1, "talents": {},
+		"name": player_name, "color": color, "builder": 0, "level": 1, "talents": {}, "heritage": [],
 		"vote": mini(1, Data.db.difficulties.size() - 1),
 	}
 
@@ -65,30 +65,31 @@ func set_choice(id: int, raw_key: Variant, raw_value: Variant) -> void:
 	sync()
 
 
-## Kit reçu : {b, lv, t} → {builder, level, talents}, ou null au moindre défaut.
+## Kit reçu : {b, lv, t, h} → {builder, level, talents, heritage}, ou null au moindre défaut.
 static func parse_kit(raw: Variant) -> Variant:
-	if typeof(raw) != TYPE_DICTIONARY or raw.size() != 3:
+	if typeof(raw) != TYPE_DICTIONARY or raw.size() != 4:
 		return null
 	var builder = Check.as_int(raw.get("b"), 0, Data.db.builders.size() - 1)
 	var level = Check.as_int(raw.get("lv"), 1, int(Data.db.progression["max_level"]))
 	if builder == null or level == null:
 		return null
 	var talents = TalentRules.validate(Data.db, builder, raw.get("t"), TalentRules.points(level))
-	if talents == null:
+	var heritage = TalentRules.parse_heritage(Data.db, raw.get("h"))
+	if talents == null or heritage == null:
 		return null
-	return {"builder": builder, "level": level, "talents": talents}
+	return {"builder": builder, "level": level, "talents": talents, "heritage": heritage}
 
 
 func forget(id: int) -> void:
 	_last_choice.erase(id)
 
 
-## Liste des joueurs pour la partie : [[id, nom, couleur, bâtisseur, talents], ...]
+## Liste des joueurs pour la partie : [[id, nom, couleur, bâtisseur, talents, héritage], ...]
 func roster() -> Array:
 	var out := []
 	for id in net.ordered_ids():
 		var p: Dictionary = net.players[id]
-		out.append([id, p["name"], p["color"], p["builder"], p["talents"]])
+		out.append([id, p["name"], p["color"], p["builder"], p["talents"], p["heritage"]])
 	return out
 
 
@@ -96,7 +97,7 @@ func sync() -> void:
 	var list := []
 	for id in net.ordered_ids():
 		var p: Dictionary = net.players[id]
-		list.append([id, p["name"], p["color"], p["builder"], p["vote"], p["level"], p["talents"]])
+		list.append([id, p["name"], p["color"], p["builder"], p["vote"], p["level"], p["talents"], p["heritage"]])
 	var payload: Dictionary = net.settings.duplicate()
 	payload["players"] = list
 	for id in net.players:

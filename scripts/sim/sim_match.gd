@@ -70,7 +70,7 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 		var entry: Array = roster[i]
 		var id: int = entry[0]
 		var builder: int = clampi(int(entry[3]) if entry.size() > 3 else 0, 0, data.builders.size() - 1)
-		var kit := PlayerKit.make(data, builder, entry[4] if entry.size() > 4 else {})
+		var kit := PlayerKit.make(data, builder, entry[4] if entry.size() > 4 else {}, entry[5] if entry.size() > 5 else [])
 		if mode == Mode.VERSUS or boards.is_empty():
 			boards.append(SimBoard.new(data, map, lives, difficulty["reward"]))
 			boards[-1].armor_bonus = float(difficulty["armor"])
