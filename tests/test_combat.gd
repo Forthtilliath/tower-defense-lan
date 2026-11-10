@@ -154,7 +154,7 @@ func test_bounty_split_by_contribution() -> void:
 func test_goblin_economy() -> void:
 	var gd := load_data()
 	var goblin := _builder(gd, "goblin")
-	check(MatchFlow.interest(gd, 500, goblin) == 30 and MatchFlow.interest(gd, 2000, goblin) == 50, "6 %% d'intérêts, plafond 50")
+	check(MatchFlow.interest(gd, 500, PlayerKit.make(gd, goblin)) == 30 and MatchFlow.interest(gd, 2000, PlayerKit.make(gd, goblin)) == 50, "6 %% d'intérêts, plafond 50")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 0], [2, "G", 1, goblin]])
 	sim._credit_bounty(1, 20)
 	sim._credit_bounty(2, 20)
@@ -173,7 +173,8 @@ func test_enchanter_boosts_controls() -> void:
 
 func test_snapshot_carries_controls_and_auras() -> void:
 	var gd := load_data()
-	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]])
+	# Artilleur avec le Tambour débloqué (Discipline 3, Étendard, Tambour)
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 1, {"gu_drill": 3, "gu_banner": 1, "gu_drum": 1}]])
 	var b := sim.boards[0]
 	var w := sim.map.width
 	sim.apply_command(1, {"a": "build", "cell": 2 * w + 2, "tower": "crossbow"})

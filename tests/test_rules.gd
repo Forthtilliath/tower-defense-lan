@@ -76,7 +76,7 @@ func test_tower_kills_reward_owner() -> void:
 	var sim := _coop(2)
 	# Case (2, 2) : juste à côté de la route du haut
 	var cell := 2 * sim.map.width + 2
-	sim.apply_command(2, _cmd({"a": "build", "cell": cell, "tower": 3}, sim))
+	sim.apply_command(2, _cmd({"a": "build", "cell": cell, "tower": 0}, sim))
 	sim.players[2]["gold"] = 0
 	sim.launch_next_wave()
 	# 15 s : avant le lancement automatique de la vague 2

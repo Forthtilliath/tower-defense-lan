@@ -123,13 +123,18 @@ func test_builder_restricts_towers_and_boosts_them() -> void:
 	for i in gd.builders.size():
 		if gd.builders[i]["id"] == "arcanist":
 			arcanist = i
-	var sim := _sim(1, 0, {}, [arcanist])
-	var cell := 2 * sim.map.width + 2
-	check(_build(sim, 1, cell, "cannon").contains("bâtisseur"), "canon interdit à l'arcaniste")
-	check(_build(sim, 1, cell, "tesla") == "", "tesla permise")
+	var beginner := _sim(1, 0, {}, [arcanist])
+	var cell := 2 * beginner.map.width + 2
+	check(_build(beginner, 1, cell, "cannon").contains("bâtisseur"), "canon interdit à l'arcaniste")
+	check(_build(beginner, 1, cell, "tesla").contains("bâtisseur"), "tesla à débloquer par les talents")
+	var talents := {"ar_conductive": 3, "ar_tesla": 1, "ar_overload": 1}
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, arcanist, talents]])
+	check(_build(sim, 1, cell, "tesla") == "", "tesla débloquée")
 	var t: SimTower = sim.boards[0].towers[cell]
 	var base: float = gd.tower_levels("tesla")[0]["rate"]
-	check(is_equal_approx(t.stats["rate"], base * 1.25), "cadence +25 %% : %f" % t.stats["rate"])
+	check(is_equal_approx(t.stats["rate"], base * 1.25 * 1.1), "cadence : classe +25 %%, Surcharge +10 %% : %f" % t.stats["rate"])
+	var dmg: float = gd.tower_levels("tesla")[0]["damage"]
+	check(is_equal_approx(t.stats["damage"], dmg * 1.15 * 1.15), "dégâts : classe +15 %%, Conductivité 3 x 5 %% : %f" % t.stats["damage"])
 
 
 func test_interest_is_capped() -> void:

@@ -62,7 +62,7 @@ func _on_client_lobby() -> void:
 	if me.is_empty():
 		return
 	if me["builder"] != CLIENT_BUILDER:
-		Net.choose("builder", CLIENT_BUILDER)
+		Net.choose_kit(CLIENT_BUILDER)
 	elif me["vote"] != CLIENT_VOTE:
 		await get_tree().create_timer(0.3).timeout
 		Net.choose("vote", CLIENT_VOTE)

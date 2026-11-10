@@ -97,8 +97,8 @@ func test_rejects_bad_specials_and_splits() -> void:
 func test_rejects_bad_builders_waves_and_zones() -> void:
 	var text := _bundled_text()
 	var cases := {
-		"tourelle inconnue": ["\"towers\": [\"crossbow\", \"frost\", \"tesla\", \"venom\", \"sentinel\", \"brazier\", \"totem\"]", "\"towers\": [\"crossbow\", \"laser\"]", "inconnue"],
-		"rien contre l'air (soutien exclu)": ["\"towers\": [\"crossbow\", \"cannon\", \"ballista\", \"mortar\", \"sentinel\", \"dart\", \"crusher\", \"banner\"]", "\"towers\": [\"cannon\", \"mortar\", \"banner\"]", "air"],
+		"tourelle inconnue": ["\"towers\": [\"crossbow\", \"frost\", \"sentinel\"], \"rate\": 1.25", "\"towers\": [\"crossbow\", \"laser\"], \"rate\": 1.25", "inconnue"],
+		"rien contre l'air (soutien exclu)": ["\"towers\": [\"crossbow\", \"cannon\", \"sentinel\"], \"damage\": 1.15", "\"towers\": [\"cannon\", \"banner\"], \"damage\": 1.15", "air"],
 		"vague spéciale inconnue": ["\"modifier\": \"rush\"", "\"modifier\": \"tempete\"", "spéciale"],
 		"zone hors limites": ["111111111111111.222222222222222", "111111111111111.555555555555555", "zones"],
 		"ligne de zones trop courte": ["111111111111111.222222222222222", "1111.2222", "zones"],
@@ -115,9 +115,11 @@ func test_rejects_bad_builders_waves_and_zones() -> void:
 
 func test_builders_and_modifiers() -> void:
 	var gd := load_data()
-	check(gd.builders[0]["towers"].size() == gd.tower_order.size(), "le premier bâtisseur connaît toutes les tourelles")
-	check(gd.builder_allows(1, "cannon") and not gd.builder_allows(2, "cannon"), "tourelles par bâtisseur")
-	check(not gd.builder_allows(99, "cannon"), "bâtisseur inconnu refusé")
+	for b in gd.builders.size():
+		check(gd.builders[b]["branches"].size() == 3, "%s : 3 branches de talents" % gd.builders[b]["id"])
+		check(gd.builders[b]["towers"].size() == 3, "%s : 3 tourelles de base" % gd.builders[b]["id"])
+	check(PlayerKit.make(gd, 1).allows("cannon") and not PlayerKit.make(gd, 2).allows("cannon"), "tourelles de base par classe")
+	check(PlayerKit.make(gd, 2, {"ar_conductive": 2, "ar_tesla": 1}).allows("tesla"), "un talent débloque une tourelle")
 	var s := gd.tower_stats("cannon", 0, -1, 1)
 	check(is_equal_approx(s["damage"], 10.0 * 1.15), "bonus de dégâts de l'artilleur : %f" % s["damage"])
 	check(gd.wave_modifier("w5")["id"] == "rush" and gd.wave_modifier("w1").is_empty(), "vagues spéciales")
