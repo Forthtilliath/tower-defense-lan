@@ -75,9 +75,9 @@ func tower_stats(type: String, level: int, special := -1, kit: Variant = null) -
 	return stats
 
 
-## Dégâts directs et dégâts dans le temps (poison, brûlure, saignement).
+## Dégâts directs et dégâts dans le temps (poison, brûlure, saignement, nappes au sol).
 static func scale_damage(stats: Dictionary, mult: float) -> void:
-	for key in ["damage", "poison_dps", "burn_dps", "bleed"]:
+	for key in ["damage", "poison_dps", "burn_dps", "bleed", "patch_dps"]:
 		stats[key] *= mult
 
 

@@ -19,7 +19,10 @@
 					{ "id": "va_catalyst", "name": "Catalyseur", "description": "+5 % de dégâts par rang (Venin, Tesla, Brasier).", "tier": 1, "max_rank": 3, "towers": ["venom", "tesla", "brazier"], "damage": 0.05 },
 					{ "id": "va_venom", "name": "Venin", "description": "Débloque le Venin.", "tier": 2, "unlock": "venom" },
 					{ "id": "va_tesla", "name": "Tesla", "description": "Débloque la Tesla.", "tier": 3, "unlock": "tesla" },
-					{ "id": "va_brazier", "name": "Brasier", "description": "Débloque le Brasier.", "tier": 4, "unlock": "brazier" }
+					{ "id": "va_brazier", "name": "Brasier", "description": "Débloque le Brasier.", "tier": 4, "unlock": "brazier" },
+					{ "id": "va_salamander", "name": "Salamandre", "description": "Débloque la Salamandre.", "tier": 2, "unlock": "salamander" },
+					{ "id": "va_greek_fire", "name": "Feu grégeois", "description": "Débloque le Feu grégeois.", "tier": 3, "unlock": "greek_fire" },
+					{ "id": "va_lens", "name": "Lentille ardente", "description": "Débloque la Lentille ardente.", "tier": 4, "unlock": "lens" }
 				] },
 				{ "id": "control", "name": "Contrôle", "description": "Ralentir et étourdir.", "talents": [
 					{ "id": "va_cold", "name": "Froid", "description": "+8 % de chances et de durée de contrôle par rang.", "tier": 1, "max_rank": 3, "cc": 0.08 },
@@ -63,19 +66,26 @@
 					{ "id": "ar_conductive", "name": "Conductivité", "description": "+5 % de dégâts par rang (Arbalète, Tesla).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "tesla"], "damage": 0.05 },
 					{ "id": "ar_tesla", "name": "Tesla", "description": "Débloque la Tesla.", "tier": 2, "unlock": "tesla" },
 					{ "id": "ar_overload", "name": "Surcharge", "description": "+10 % de cadence (Tesla).", "tier": 3, "towers": ["tesla"], "rate": 0.1 },
-					{ "id": "ar_tempest", "name": "Tempête", "description": "+8 % de dégâts par rang (Tesla).", "tier": 4, "max_rank": 2, "towers": ["tesla"], "damage": 0.08 }
+					{ "id": "ar_tempest", "name": "Tempête", "description": "+8 % de dégâts par rang (Tesla).", "tier": 4, "max_rank": 2, "towers": ["tesla"], "damage": 0.08 },
+					{ "id": "ar_pylon", "name": "Pylône", "description": "Débloque le Pylône.", "tier": 3, "unlock": "pylon" },
+					{ "id": "ar_railgun", "name": "Lance-foudre", "description": "Débloque le Lance-foudre.", "tier": 4, "unlock": "railgun" }
 				] },
 				{ "id": "alchemy", "name": "Alchimie", "description": "Poison et feu qui rongent.", "talents": [
 					{ "id": "ar_reagents", "name": "Réactifs", "description": "+5 % de dégâts par rang (Venin, Brasier).", "tier": 1, "max_rank": 3, "towers": ["venom", "brazier"], "damage": 0.05 },
 					{ "id": "ar_venom", "name": "Venin", "description": "Débloque le Venin.", "tier": 2, "unlock": "venom" },
 					{ "id": "ar_brazier", "name": "Brasier", "description": "Débloque le Brasier.", "tier": 3, "unlock": "brazier" },
-					{ "id": "ar_furnace", "name": "Fournaise", "description": "+8 % de dégâts par rang (Venin, Brasier).", "tier": 4, "max_rank": 2, "towers": ["venom", "brazier"], "damage": 0.08 }
+					{ "id": "ar_furnace", "name": "Fournaise", "description": "+8 % de dégâts par rang (Venin, Brasier).", "tier": 4, "max_rank": 2, "towers": ["venom", "brazier"], "damage": 0.08 },
+					{ "id": "ar_alembic", "name": "Alambic", "description": "Débloque l'Alambic.", "tier": 2, "unlock": "alembic" },
+					{ "id": "ar_miasma", "name": "Miasmes", "description": "Débloque les Miasmes.", "tier": 3, "unlock": "miasma" },
+					{ "id": "ar_plague", "name": "Peste", "description": "Débloque la Peste.", "tier": 4, "unlock": "plague" }
 				] },
 				{ "id": "winter", "name": "Hiver", "description": "Geler et soutenir.", "talents": [
 					{ "id": "ar_bite", "name": "Froid mordant", "description": "+8 % de chances et de durée de contrôle par rang (Givre).", "tier": 1, "max_rank": 3, "towers": ["frost"], "cc": 0.08 },
 					{ "id": "ar_deep", "name": "Gel profond", "description": "+10 % de dégâts (Givre).", "tier": 2, "towers": ["frost"], "damage": 0.1 },
 					{ "id": "ar_totem", "name": "Totem", "description": "Débloque le Totem des esprits.", "tier": 3, "unlock": "totem" },
-					{ "id": "ar_winter", "name": "Grand hiver", "description": "+10 % de chances et de durée de contrôle par rang.", "tier": 4, "max_rank": 2, "cc": 0.1 }
+					{ "id": "ar_winter", "name": "Grand hiver", "description": "+10 % de chances et de durée de contrôle par rang.", "tier": 4, "max_rank": 2, "cc": 0.1 },
+					{ "id": "ar_obelisk", "name": "Obélisque", "description": "Débloque l'Obélisque de glace.", "tier": 2, "unlock": "obelisk" },
+					{ "id": "ar_icebreaker", "name": "Brise-glace", "description": "Débloque le Brise-glace.", "tier": 3, "unlock": "icebreaker" }
 				] }
 			]
 		},
@@ -94,7 +104,8 @@
 					{ "id": "sc_barbs", "name": "Barbelures", "description": "+5 % de dégâts par rang (Épines, Venin).", "tier": 1, "max_rank": 3, "towers": ["thorns", "venom"], "damage": 0.05 },
 					{ "id": "sc_thorns", "name": "Épines", "description": "Débloque les Épines.", "tier": 2, "unlock": "thorns" },
 					{ "id": "sc_venom", "name": "Venin", "description": "Débloque le Venin.", "tier": 3, "unlock": "venom" },
-					{ "id": "sc_wounds", "name": "Plaies", "description": "+8 % de dégâts par rang (Épines, Venin).", "tier": 4, "max_rank": 2, "towers": ["thorns", "venom"], "damage": 0.08 }
+					{ "id": "sc_wounds", "name": "Plaies", "description": "+8 % de dégâts par rang (Épines, Venin).", "tier": 4, "max_rank": 2, "towers": ["thorns", "venom"], "damage": 0.08 },
+					{ "id": "sc_scythe", "name": "Faux", "description": "Débloque la Faux.", "tier": 3, "unlock": "scythe" }
 				] },
 				{ "id": "ambush", "name": "Embuscade", "description": "Volée de traits, canon et givre.", "talents": [
 					{ "id": "sc_volley", "name": "Volée", "description": "+5 % de cadence par rang (Arbalète, Fléchettes).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "dart"], "rate": 0.05 },
@@ -198,7 +209,7 @@
 			]
 		},
 		{
-			"id": "frost", "name": "Givre", "color": "#6fc8f0", "air": true, "ground": true,
+			"id": "frost", "element": "ice", "name": "Givre", "color": "#6fc8f0", "air": true, "ground": true,
 			"description": "Ralentit les monstres touchés ; à partir du niveau 3, peut les geler un instant.",
 			"levels": [
 				{ "cost": 70, "damage": 2, "range": 2.3, "rate": 1.0, "projectile_speed": 8, "slow_factor": 0.55, "slow_duration": 1.5 },
@@ -220,7 +231,7 @@
 			]
 		},
 		{
-			"id": "tesla", "name": "Tesla", "color": "#7fb2ff", "air": true, "ground": true,
+			"id": "tesla", "element": "lightning", "name": "Tesla", "color": "#7fb2ff", "air": true, "ground": true,
 			"description": "L'arc électrique rebondit d'un monstre à l'autre.",
 			"levels": [
 				{ "cost": 110, "damage": 6, "range": 2.4, "rate": 0.9, "projectile_speed": 25, "chain": 2 },
@@ -231,7 +242,7 @@
 			]
 		},
 		{
-			"id": "venom", "name": "Venin", "color": "#7ccf3a", "air": true, "ground": true,
+			"id": "venom", "element": "poison", "name": "Venin", "color": "#7ccf3a", "air": true, "ground": true,
 			"description": "Empoisonne : dégâts continus qui ignorent l'armure.",
 			"levels": [
 				{ "cost": 80, "damage": 1, "range": 2.4, "rate": 0.8, "projectile_speed": 9, "poison_dps": 4, "poison_duration": 4 },
@@ -286,7 +297,7 @@
 			]
 		},
 		{
-			"id": "brazier", "name": "Brasier", "color": "#ff7a2f", "air": true, "ground": true,
+			"id": "brazier", "element": "fire", "name": "Brasier", "color": "#ff7a2f", "air": true, "ground": true,
 			"description": "Enflamme : la brûlure se cumule à chaque coup et ignore l'armure.",
 			"levels": [
 				{ "cost": 85, "damage": 2, "range": 2.2, "rate": 1.0, "projectile_speed": 9, "burn_dps": 2, "burn_duration": 3, "burn_stacks": 4 },
@@ -297,7 +308,7 @@
 			]
 		},
 		{
-			"id": "thorns", "name": "Épines", "color": "#c0405a", "air": true, "ground": true,
+			"id": "thorns", "element": "bleed", "name": "Épines", "color": "#c0405a", "air": true, "ground": true,
 			"description": "Fait saigner : retire une part des PV max chaque seconde, redoutable contre les gros.",
 			"levels": [
 				{ "cost": 75, "damage": 2, "range": 2.2, "rate": 1.2, "projectile_speed": 12, "bleed": 0.02, "bleed_duration": 3 },
@@ -371,6 +382,127 @@
 				{ "cost": 100, "damage": 0, "range": 2.0, "rate": 1, "aura_cc": 0.45 },
 				{ "cost": 150, "damage": 0, "range": 2.2, "rate": 1, "aura_cc": 0.55 },
 				{ "cost": 215, "damage": 0, "range": 2.4, "rate": 1, "aura_cc": 0.7 }
+			]
+		},
+		{
+			"id": "pylon", "element": "lightning", "name": "Pylône", "color": "#e8f060", "air": true, "ground": true, "attack": "pulse",
+			"description": "Décharge périodique : frappe tous les monstres autour d'elle, au sol comme en l'air.",
+			"levels": [
+				{ "cost": 100, "damage": 6, "range": 1.6, "rate": 0.55 },
+				{ "cost": 80, "damage": 10, "range": 1.7, "rate": 0.6 },
+				{ "cost": 125, "damage": 16, "range": 1.8, "rate": 0.65 },
+				{ "cost": 185, "damage": 25, "range": 1.95, "rate": 0.7 },
+				{ "cost": 270, "damage": 38, "range": 2.1, "rate": 0.75 }
+			]
+		},
+		{
+			"id": "railgun", "element": "lightning", "name": "Lance-foudre", "color": "#b39bff", "air": true, "ground": true, "attack": "line",
+			"description": "Très longue portée : l'éclair traverse tous les monstres alignés et perce l'armure.",
+			"levels": [
+				{ "cost": 130, "damage": 16, "range": 4.0, "rate": 0.35, "armor_pierce": 0.5 },
+				{ "cost": 100, "damage": 27, "range": 4.3, "rate": 0.38, "armor_pierce": 0.6 },
+				{ "cost": 160, "damage": 43, "range": 4.6, "rate": 0.41, "armor_pierce": 0.7 },
+				{ "cost": 230, "damage": 66, "range": 5.0, "rate": 0.45, "armor_pierce": 0.85 },
+				{ "cost": 330, "damage": 100, "range": 5.4, "rate": 0.5, "armor_pierce": 1.0 }
+			]
+		},
+		{
+			"id": "salamander", "element": "fire", "name": "Salamandre", "color": "#ff8f3a", "air": false, "ground": true, "attack": "cone",
+			"description": "Lance-flammes : souffle en cône qui enflamme tout le groupe, au sol, à courte portée.",
+			"levels": [
+				{ "cost": 95, "damage": 2, "range": 1.6, "rate": 1.2, "burn_dps": 1.5, "burn_duration": 2.5, "burn_stacks": 3 },
+				{ "cost": 75, "damage": 3, "range": 1.7, "rate": 1.3, "burn_dps": 2.4, "burn_duration": 2.5, "burn_stacks": 3 },
+				{ "cost": 120, "damage": 4, "range": 1.8, "rate": 1.4, "burn_dps": 3.6, "burn_duration": 2.5, "burn_stacks": 4 },
+				{ "cost": 180, "damage": 6, "range": 1.9, "rate": 1.5, "burn_dps": 5.2, "burn_duration": 2.5, "burn_stacks": 4 },
+				{ "cost": 260, "damage": 8, "range": 2.0, "rate": 1.6, "burn_dps": 7.5, "burn_duration": 2.5, "burn_stacks": 5 }
+			]
+		},
+		{
+			"id": "greek_fire", "element": "fire", "name": "Feu grégeois", "color": "#d9481f", "air": false, "ground": true,
+			"description": "Pot incendiaire lent et lointain : laisse une nappe de feu sur la route, au sol.",
+			"levels": [
+				{ "cost": 130, "damage": 8, "range": 3.6, "rate": 0.3, "projectile_speed": 5, "splash": 0.8, "patch_radius": 0.8, "patch_duration": 3, "patch_dps": 5 },
+				{ "cost": 105, "damage": 13, "range": 3.9, "rate": 0.32, "projectile_speed": 5.2, "splash": 0.85, "patch_radius": 0.85, "patch_duration": 3.5, "patch_dps": 8 },
+				{ "cost": 165, "damage": 21, "range": 4.2, "rate": 0.34, "projectile_speed": 5.4, "splash": 0.9, "patch_radius": 0.95, "patch_duration": 3.5, "patch_dps": 13 },
+				{ "cost": 235, "damage": 32, "range": 4.5, "rate": 0.37, "projectile_speed": 5.6, "splash": 1.0, "patch_radius": 1.0, "patch_duration": 4, "patch_dps": 20 },
+				{ "cost": 330, "damage": 48, "range": 4.8, "rate": 0.4, "projectile_speed": 5.8, "splash": 1.1, "patch_radius": 1.1, "patch_duration": 4.5, "patch_dps": 30 }
+			]
+		},
+		{
+			"id": "lens", "element": "fire", "name": "Lentille ardente", "color": "#ffc23d", "air": true, "ground": true, "attack": "beam",
+			"description": "Rayon continu sur une cible : plus il reste accroché, plus il brûle. Idéal contre les boss.",
+			"levels": [
+				{ "cost": 120, "damage": 1.2, "range": 2.6, "rate": 4, "ramp": 0.2, "ramp_max": 3 },
+				{ "cost": 95, "damage": 2, "range": 2.7, "rate": 4, "ramp": 0.2, "ramp_max": 3.5 },
+				{ "cost": 150, "damage": 3, "range": 2.9, "rate": 4, "ramp": 0.2, "ramp_max": 4 },
+				{ "cost": 220, "damage": 4.5, "range": 3.1, "rate": 4, "ramp": 0.2, "ramp_max": 4.5 },
+				{ "cost": 310, "damage": 6.5, "range": 3.3, "rate": 4, "ramp": 0.2, "ramp_max": 5 }
+			]
+		},
+		{
+			"id": "obelisk", "element": "ice", "name": "Obélisque de glace", "color": "#bfefff", "air": true, "ground": true, "attack": "pulse",
+			"description": "Aucun dégât : ralentit en permanence tous les monstres à portée, volants compris.",
+			"levels": [
+				{ "cost": 75, "damage": 0, "range": 1.5, "rate": 1, "slow_factor": 0.7, "slow_duration": 1.2 },
+				{ "cost": 60, "damage": 0, "range": 1.6, "rate": 1, "slow_factor": 0.64, "slow_duration": 1.2 },
+				{ "cost": 95, "damage": 0, "range": 1.7, "rate": 1, "slow_factor": 0.58, "slow_duration": 1.2 },
+				{ "cost": 140, "damage": 0, "range": 1.85, "rate": 1, "slow_factor": 0.52, "slow_duration": 1.2 },
+				{ "cost": 200, "damage": 0, "range": 2.0, "rate": 1, "slow_factor": 0.45, "slow_duration": 1.2 }
+			]
+		},
+		{
+			"id": "icebreaker", "element": "ice", "name": "Brise-glace", "color": "#3f8fd8", "air": true, "ground": true,
+			"description": "Frappe plus fort les monstres ralentis, et deux fois plus fort les monstres gelés.",
+			"levels": [
+				{ "cost": 95, "damage": 9, "range": 2.8, "rate": 0.6, "projectile_speed": 14, "vs_slowed": 0.6, "vs_stunned": 1.0 },
+				{ "cost": 75, "damage": 15, "range": 3.0, "rate": 0.65, "projectile_speed": 14, "vs_slowed": 0.65, "vs_stunned": 1.1 },
+				{ "cost": 120, "damage": 24, "range": 3.2, "rate": 0.7, "projectile_speed": 15, "vs_slowed": 0.7, "vs_stunned": 1.2 },
+				{ "cost": 180, "damage": 38, "range": 3.4, "rate": 0.75, "projectile_speed": 15, "vs_slowed": 0.75, "vs_stunned": 1.35 },
+				{ "cost": 260, "damage": 58, "range": 3.6, "rate": 0.8, "projectile_speed": 16, "vs_slowed": 0.8, "vs_stunned": 1.5 }
+			]
+		},
+		{
+			"id": "alembic", "element": "poison", "name": "Alambic", "color": "#d4e157", "air": true, "ground": true,
+			"description": "Acide : empoisonne et ronge l'armure (jusqu'à moitié), la réponse aux Golems.",
+			"levels": [
+				{ "cost": 90, "damage": 1, "range": 2.4, "rate": 0.8, "projectile_speed": 9, "poison_dps": 3, "poison_duration": 4, "shred": 0.2, "shred_duration": 4 },
+				{ "cost": 75, "damage": 1, "range": 2.5, "rate": 0.85, "projectile_speed": 9.5, "poison_dps": 5, "poison_duration": 4, "shred": 0.27, "shred_duration": 4 },
+				{ "cost": 115, "damage": 2, "range": 2.7, "rate": 0.9, "projectile_speed": 10, "poison_dps": 8, "poison_duration": 4.5, "shred": 0.34, "shred_duration": 4.5 },
+				{ "cost": 170, "damage": 2, "range": 2.9, "rate": 0.95, "projectile_speed": 10.5, "poison_dps": 11, "poison_duration": 5, "shred": 0.42, "shred_duration": 5 },
+				{ "cost": 240, "damage": 3, "range": 3.1, "rate": 1.0, "projectile_speed": 11, "poison_dps": 16, "poison_duration": 5, "shred": 0.5, "shred_duration": 5 }
+			]
+		},
+		{
+			"id": "miasma", "element": "poison", "name": "Miasmes", "color": "#9a6fc4", "air": false, "ground": true,
+			"description": "Fiole toxique : laisse un nuage au sol qui empoisonne et ralentit ceux qui le traversent.",
+			"levels": [
+				{ "cost": 100, "damage": 1, "range": 2.8, "rate": 0.35, "projectile_speed": 6, "splash": 0.6, "patch_radius": 0.9, "patch_duration": 3, "poison_dps": 3, "poison_duration": 1.5, "slow_factor": 0.8, "slow_duration": 0.8 },
+				{ "cost": 80, "damage": 1, "range": 3.0, "rate": 0.37, "projectile_speed": 6, "splash": 0.6, "patch_radius": 0.95, "patch_duration": 3.5, "poison_dps": 5, "poison_duration": 1.5, "slow_factor": 0.77, "slow_duration": 0.8 },
+				{ "cost": 125, "damage": 2, "range": 3.2, "rate": 0.4, "projectile_speed": 6.5, "splash": 0.7, "patch_radius": 1.0, "patch_duration": 4, "poison_dps": 8, "poison_duration": 1.5, "slow_factor": 0.74, "slow_duration": 0.8 },
+				{ "cost": 185, "damage": 2, "range": 3.4, "rate": 0.42, "projectile_speed": 6.5, "splash": 0.7, "patch_radius": 1.1, "patch_duration": 4.5, "poison_dps": 11, "poison_duration": 1.5, "slow_factor": 0.7, "slow_duration": 0.8 },
+				{ "cost": 260, "damage": 3, "range": 3.6, "rate": 0.45, "projectile_speed": 7, "splash": 0.8, "patch_radius": 1.2, "patch_duration": 5, "poison_dps": 15, "poison_duration": 1.5, "slow_factor": 0.65, "slow_duration": 0.8 }
+			]
+		},
+		{
+			"id": "plague", "element": "poison", "name": "Peste", "color": "#6b8e23", "air": true, "ground": true,
+			"description": "Poison contagieux : il saute de monstre en monstre, redoutable contre les essaims.",
+			"levels": [
+				{ "cost": 95, "damage": 1, "range": 2.4, "rate": 0.7, "projectile_speed": 9, "poison_dps": 3, "poison_duration": 4, "poison_spread": 1.2 },
+				{ "cost": 80, "damage": 1, "range": 2.5, "rate": 0.75, "projectile_speed": 9.5, "poison_dps": 5, "poison_duration": 4, "poison_spread": 1.3 },
+				{ "cost": 120, "damage": 2, "range": 2.7, "rate": 0.8, "projectile_speed": 10, "poison_dps": 7, "poison_duration": 4.5, "poison_spread": 1.4 },
+				{ "cost": 180, "damage": 2, "range": 2.9, "rate": 0.85, "projectile_speed": 10.5, "poison_dps": 10, "poison_duration": 5, "poison_spread": 1.6 },
+				{ "cost": 255, "damage": 3, "range": 3.1, "rate": 0.9, "projectile_speed": 11, "poison_dps": 14, "poison_duration": 5, "poison_spread": 1.8 }
+			]
+		},
+		{
+			"id": "scythe", "element": "bleed", "name": "Faux", "color": "#9c2f45", "air": false, "ground": true,
+			"description": "Mêlée, au sol : un coup sur trois est critique, et chaque coup fait saigner.",
+			"levels": [
+				{ "cost": 85, "damage": 5, "range": 1.5, "rate": 0.9, "projectile_speed": 16, "crit_every": 3, "crit_mult": 2.5, "bleed": 0.01, "bleed_duration": 3 },
+				{ "cost": 70, "damage": 8, "range": 1.6, "rate": 0.95, "projectile_speed": 16, "crit_every": 3, "crit_mult": 2.75, "bleed": 0.015, "bleed_duration": 3 },
+				{ "cost": 110, "damage": 12, "range": 1.7, "rate": 1.0, "projectile_speed": 17, "crit_every": 3, "crit_mult": 3, "bleed": 0.02, "bleed_duration": 3 },
+				{ "cost": 165, "damage": 18, "range": 1.8, "rate": 1.1, "projectile_speed": 17, "crit_every": 3, "crit_mult": 3.5, "bleed": 0.025, "bleed_duration": 3 },
+				{ "cost": 240, "damage": 27, "range": 1.9, "rate": 1.2, "projectile_speed": 18, "crit_every": 3, "crit_mult": 4, "bleed": 0.03, "bleed_duration": 3 }
 			]
 		}
 	],

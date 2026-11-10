@@ -4,6 +4,9 @@ extends RefCounted
 ## Le fichier entier est rejeté à la première anomalie (rien n'est appliqué),
 ## les clés inconnues sont ignorées et ne sont pas recopiées.
 
+## Nombre maximal de tourelles (dans les données, et par liste d'une classe ou d'un talent).
+const MAX_TOWERS := 48
+
 var error := ""
 
 
@@ -16,9 +19,9 @@ func fill(root: Variant, gd: GameData) -> bool:
 	var scaling = _obj(root.get("coop_scaling"), DataSchema.COOP_SCALING, "coop_scaling")
 	var difficulties = _collection(root.get("difficulties"), 8, "difficulties", _plain.bind(DataSchema.DIFFICULTY))
 	var specials = _specials(root.get("special_tiles"))
-	var towers = _collection(root.get("towers"), 24, "towers", _tower)
+	var towers = _collection(root.get("towers"), MAX_TOWERS, "towers", _tower)
 	var monsters = _collection(root.get("monsters"), 32, "monsters", _monster)
-	var modifiers = _collection(root.get("wave_modifiers"), 16, "wave_modifiers", _plain.bind(DataSchema.WAVE_MODIFIER), 0)
+	var modifiers = _collection(root.get("wave_modifiers"), 16, "wave_modifiers", _plain.bind(DataSchema.WAVE_MODIFIER.merged(DataSchema.PASSIVE_TRAITS)), 0)
 	var progression = _obj(root.get("progression", {}), DataSchema.PROGRESSION, "progression")
 	var tiers = TreeValidator.tiers(self, root.get("talent_tiers", [0]))
 	if player == null or scaling == null or difficulties == null or specials == null or progression == null \
@@ -80,6 +83,10 @@ func _tower(src: Variant, where: String) -> Variant:
 		return null
 	if not t["air"] and not t["ground"]:
 		return _fail("%s : la tourelle doit viser l'air, le sol ou les deux" % where)
+	if not DataSchema.ATTACKS.has(t["attack"]):
+		return _fail("%s : façon de frapper « %s » inconnue" % [where, t["attack"]])
+	if t["element"] != "" and not DataSchema.ELEMENTS.has(t["element"]):
+		return _fail("%s : élément « %s » inconnu" % [where, t["element"]])
 	var levels = _list(src.get("levels"), 1, 5, where + ".levels")
 	if levels == null:
 		return null
@@ -99,7 +106,7 @@ func _builder(src: Variant, where: String, towers: Dictionary, tier_count: int) 
 	var b = _obj(src, DataSchema.BUILDER, where)
 	if b == null:
 		return null
-	var list = _list(src.get("towers"), 1, 24, where + ".towers")
+	var list = _list(src.get("towers"), 1, MAX_TOWERS, where + ".towers")
 	if list == null:
 		return null
 	var ids: Array[String] = []
