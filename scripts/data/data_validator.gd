@@ -19,10 +19,12 @@ func fill(root: Variant, gd: GameData) -> bool:
 	var towers = _collection(root.get("towers"), 24, "towers", _tower)
 	var monsters = _collection(root.get("monsters"), 32, "monsters", _monster)
 	var modifiers = _collection(root.get("wave_modifiers"), 16, "wave_modifiers", _plain.bind(DataSchema.WAVE_MODIFIER), 0)
-	if player == null or scaling == null or difficulties == null or specials == null \
-			or towers == null or monsters == null or modifiers == null or not _check_splits(monsters[0]):
+	var progression = _obj(root.get("progression", {}), DataSchema.PROGRESSION, "progression")
+	var tiers = TreeValidator.tiers(self, root.get("talent_tiers", [0]))
+	if player == null or scaling == null or difficulties == null or specials == null or progression == null \
+			or tiers == null or towers == null or monsters == null or modifiers == null or not _check_splits(monsters[0]):
 		return false
-	var builders = _collection(root.get("builders"), 8, "builders", _builder.bind(towers[0]))
+	var builders = _collection(root.get("builders"), 8, "builders", _builder.bind(towers[0], tiers.size()))
 	var waves = _collection(root.get("waves"), 100, "waves", _wave.bind(monsters[0], modifiers[0]))
 	if builders == null or waves == null:
 		return false
@@ -31,6 +33,8 @@ func fill(root: Variant, gd: GameData) -> bool:
 		return false
 	gd.player = player
 	gd.coop_scaling = scaling
+	gd.progression = progression
+	gd.talent_tiers.assign(tiers)
 	gd.difficulties.assign(_ordered(difficulties))
 	gd.builders.assign(_ordered(builders))
 	gd.modifiers = modifiers[0]
@@ -89,8 +93,9 @@ func _tower(src: Variant, where: String) -> Variant:
 	return t
 
 
-## Bâtisseur : tourelles connues, sans doublon, de quoi tirer sur l'air et le sol (hors soutien).
-func _builder(src: Variant, where: String, towers: Dictionary) -> Variant:
+## Bâtisseur : tourelles de base connues, sans doublon, de quoi tirer sur l'air et le sol
+## (hors soutien), puis ses branches de talents.
+func _builder(src: Variant, where: String, towers: Dictionary, tier_count: int) -> Variant:
 	var b = _obj(src, DataSchema.BUILDER, where)
 	if b == null:
 		return null
@@ -110,6 +115,10 @@ func _builder(src: Variant, where: String, towers: Dictionary) -> Variant:
 	if not air or not ground:
 		return _fail("%s : il faut au moins une tourelle contre l'air et une contre le sol" % where)
 	b["towers"] = ids
+	var branches = TreeValidator.branches(self, src.get("branches", []), where, towers, tier_count)
+	if branches == null:
+		return null
+	b["branches"] = branches
 	return b
 
 

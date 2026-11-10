@@ -7,6 +7,9 @@ const MAX_FILE_SIZE := 512 * 1024
 
 var player := {}
 var coop_scaling := {}
+var progression := {}
+## Points à dépenser dans une branche pour atteindre chaque palier de talents.
+var talent_tiers: Array[int] = []
 var difficulties: Array[Dictionary] = []
 var builders: Array[Dictionary] = []
 ## Vagues spéciales, par id.
@@ -56,23 +59,20 @@ func tower_levels(type: String) -> Array:
 	return towers[type]["levels"]
 
 
-## Statistiques d'une tourelle à un niveau donné, avec les bonus de la case spéciale
-## et du bâtisseur de son propriétaire (-1 : aucun).
-func tower_stats(type: String, level: int, special := -1, builder := -1) -> Dictionary:
+## Statistiques d'une tourelle à un niveau donné, avec les bonus de la case spéciale et du
+## kit de son propriétaire (PlayerKit, ou index de bâtisseur sans talents ; null : aucun).
+func tower_stats(type: String, level: int, special := -1, kit: Variant = null) -> Dictionary:
 	var stats: Dictionary = tower_levels(type)[level].duplicate()
 	if special >= 0 and special < specials.size():
-		_boost(stats, specials[special])
-	if builder >= 0 and builder < builders.size():
-		_boost(stats, builders[builder])
+		var s: Dictionary = specials[special]
+		stats["range"] *= s["range"]
+		stats["rate"] *= s["rate"]
+		scale_damage(stats, s["damage"])
+	if typeof(kit) == TYPE_INT and kit >= 0 and kit < builders.size():
+		kit = PlayerKit.make(self, kit)
+	if kit is PlayerKit:
+		kit.boost(stats, type)
 	return stats
-
-
-## Bonus de case ou de bâtisseur. Les auras (tourelles de soutien) ne gagnent que la portée.
-static func _boost(stats: Dictionary, bonus: Dictionary) -> void:
-	stats["range"] *= bonus["range"]
-	stats["rate"] *= bonus["rate"]
-	scale_damage(stats, bonus["damage"])
-	scale_control(stats, bonus.get("cc", 1.0))
 
 
 ## Dégâts directs et dégâts dans le temps (poison, brûlure, saignement).
@@ -89,27 +89,6 @@ static func scale_control(stats: Dictionary, mult: float) -> void:
 		stats[kind + "_chance"] = minf(1.0, stats[kind + "_chance"] * mult)
 		stats[kind + "_duration"] *= mult
 	stats["slow_duration"] *= mult
-
-
-## Intérêts d'un joueur : [taux, plafond], bonus de son bâtisseur compris.
-func interest_rule(builder: int) -> Array:
-	var rate := float(player["interest"])
-	var cap := int(player["interest_cap"])
-	if builder >= 0 and builder < builders.size():
-		rate += float(builders[builder]["interest"])
-		cap += int(builders[builder]["interest_cap"])
-	return [rate, cap]
-
-
-func builder_value(builder: int, key: String, fallback := 1.0) -> float:
-	if builder < 0 or builder >= builders.size():
-		return fallback
-	return float(builders[builder].get(key, fallback))
-
-
-## Le bâtisseur n° builder peut-il construire cette tourelle ?
-func builder_allows(builder: int, type: String) -> bool:
-	return builder >= 0 and builder < builders.size() and builders[builder]["towers"].has(type)
 
 
 ## Vague spéciale d'une vague (dictionnaire vide si vague normale).

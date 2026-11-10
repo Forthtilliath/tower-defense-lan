@@ -15,11 +15,29 @@ const PLAYER := {
 	"gift_min": ["int", 1, 100000, 10],
 }
 const COOP_SCALING := {"hp": ["num", 0.0, 5.0], "count": ["num", 0.0, 5.0]}
+## Progression : expérience pour passer du niveau n au suivant = xp_base × xp_growth^(n-1) ;
+## une victoire rapporte xp_per_wave par vague (× xp de la difficulté), une défaite
+## defeat_share de cette somme, au prorata des vagues passées. 1 point de talent par niveau.
+## tiers : points à dépenser dans une branche pour atteindre chaque palier (le premier vaut 0).
+const PROGRESSION := {
+	"max_level": ["int", 1, 50, 15], "xp_base": ["int", 1, 100000, 100], "xp_growth": ["num", 1.0, 3.0, 1.2],
+	"xp_per_wave": ["int", 0, 10000, 10], "defeat_share": ["num", 0.0, 1.0, 0.4],
+}
 const DIFFICULTY := {
 	"id": ["id"], "name": ["text", 24], "hp": ["num", 0.1, 10.0], "lives": ["int", 1, 1000],
-	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0],
+	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0], "xp": ["num", 0.0, 10.0, 1.0],
 }
-## Bâtisseur : tourelles autorisées et bonus appliqués à toutes ses tourelles.
+const BRANCH := {"id": ["id"], "name": ["text", 24], "description": ["text", 120, ""]}
+## Talent : bonus par rang (s'ajoutent), sur les tourelles listées dans « towers » (toutes si vide),
+## ou déblocage d'une tourelle (« unlock »). aura : renforce les auras des tourelles de soutien.
+const TALENT := {
+	"id": ["id"], "name": ["text", 32], "description": ["text", 160, ""], "tier": ["int", 1, 6],
+	"max_rank": ["int", 1, 5, 1], "unlock": ["id", ""],
+	"damage": ["num", 0.0, 1.0, 0.0], "rate": ["num", 0.0, 1.0, 0.0], "range": ["num", 0.0, 1.0, 0.0],
+	"cc": ["num", 0.0, 1.0, 0.0], "aura": ["num", 0.0, 1.0, 0.0], "bounty": ["num", 0.0, 1.0, 0.0],
+	"interest": ["num", 0.0, 0.1, 0.0], "interest_cap": ["int", 0, 1000, 0], "start_gold": ["int", 0, 10000, 0],
+}
+## Bâtisseur : tourelles de base (« towers »), branches de talents, et bonus appliqués à toutes ses tourelles.
 ## cc : multiplie les chances et durées de contrôle. bounty : multiplie sa part des primes.
 ## interest / interest_cap : s'ajoutent au taux et au plafond d'intérêts du joueur.
 const BUILDER := {
