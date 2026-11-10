@@ -7,6 +7,7 @@
 	"builders": [
 		{
 			"id": "gunner", "name": "Artilleur", "color": "#d9a441",
+			"heritage": { "id": "he_gunner", "name": "Héritage de l'Artilleur", "description": "+20 % de dégâts des tirs physiques.", "tier": 1, "towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"], "damage": 0.2 },
 			"description": "Armes lourdes : +20 % de dégâts des tirs physiques (Arbalète, Fléchettes, Canon, Sentinelle, Baliste, Broyeur, Mortier, Rafale).",
 			"damage": 1.2, "bonus_towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"],
 			"branches": [
@@ -50,6 +51,7 @@
 		},
 		{
 			"id": "arcanist", "name": "Arcaniste", "color": "#7fb2ff",
+			"heritage": { "id": "he_arcanist", "name": "Héritage de l'Arcaniste", "description": "+20 % de dégâts des tourelles de feu, de foudre, de glace et de vent.", "tier": 1, "towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"], "damage": 0.2 },
 			"description": "Magie élémentaire : +10 % de dégâts des tourelles de feu, de foudre, de glace et de vent.",
 			"damage": 1.1, "bonus_towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"],
 			"branches": [
@@ -96,6 +98,7 @@
 		},
 		{
 			"id": "scourge", "name": "Fléau", "color": "#8fd14f",
+			"heritage": { "id": "he_scourge", "name": "Héritage du Fléau", "description": "+20 % de dégâts des tourelles d'effets continus (poison, saignement).", "tier": 1, "towers": ["venom", "plague", "miasma", "alembic", "thorns", "scythe"], "damage": 0.2 },
 			"description": "Effets continus : +25 % de dégâts du Venin, de la Peste, des Miasmes, des Épines et de la Faux.",
 			"damage": 1.25, "bonus_towers": ["venom", "plague", "miasma", "thorns", "scythe"],
 			"branches": [
@@ -142,15 +145,16 @@
 		},
 		{
 			"id": "support", "name": "Support", "color": "#e070c0",
+			"heritage": { "id": "he_support", "name": "Héritage du Support", "description": "+25 % de contrôles et de puissance d'aura.", "tier": 1, "cc": 0.25, "aura": 0.25 },
 			"description": "Renforce l'équipe : +15 % de contrôles et +15 % de puissance d'aura. Gagne sa part des primes en aidant.",
 			"cc": 1.15, "aura": 1.15,
 			"branches": [
 				{ "id": "command", "name": "Commandement", "description": "Tronc commun du Support.", "trunk": true, "talents": [
 					{ "id": "su_presence", "name": "Présence", "description": "+5 % de puissance d'aura par rang.", "tier": 1, "max_rank": 3, "aura": 0.05 },
-					{ "id": "su_will", "name": "Volonté", "description": "+6 % de chances et de durée de contrôle.", "tier": 1, "max_rank": 1, "cc": 0.06 }
+					{ "id": "su_will", "name": "Formation", "description": "+8 % de dégâts pour toutes tes tourelles.", "tier": 1, "max_rank": 1, "damage": 0.08 }
 				] },
 				{ "id": "tamer", "name": "Dompteur", "description": "Étourdir, effrayer, charmer.", "talents": [
-					{ "id": "su_ring", "name": "Résonance", "description": "+6 % de chances et de durée de contrôle par rang (Gong, Épouvantail, Flûte).", "tier": 1, "max_rank": 3, "towers": ["gong", "scarecrow", "flute"], "cc": 0.06 },
+					{ "id": "su_ring", "name": "Coup de grâce", "description": "+25 % de dégâts par rang contre les monstres étourdis, pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "grant": {"vs_stunned": 0.25} },
 					{ "id": "su_scarecrow", "name": "Épouvantail", "description": "Débloque l'Épouvantail.", "tier": 2, "unlock": "scarecrow" },
 					{ "id": "su_dread", "name": "Effroi", "description": "+8 % de chances et de durée de contrôle par rang (Gong, Épouvantail, Flûte).", "tier": 2, "max_rank": 2, "towers": ["gong", "scarecrow", "flute"], "cc": 0.08 },
 					{ "id": "su_puppets", "name": "Marionnettiste", "description": "+8 % de chances et de durée de contrôle par rang.", "tier": 3, "max_rank": 2, "cc": 0.08 },
@@ -159,7 +163,7 @@
 					{ "id": "su_beastmaster", "name": "Maître des bêtes", "description": "+30 % de chances et de durée de contrôle pour toutes tes tourelles.", "tier": 4, "ultimate": true, "cc": 0.3 }
 				] },
 				{ "id": "corruptor", "name": "Corrupteur", "description": "Ronger l'armure et couper les soins.", "talents": [
-					{ "id": "su_acid", "name": "Acide", "description": "+5 % de dégâts par rang (Venin, Alambic).", "tier": 1, "max_rank": 3, "towers": ["venom", "alembic"], "damage": 0.05 },
+					{ "id": "su_acid", "name": "Acide", "description": "+6 % de dégâts par rang pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "damage": 0.06 },
 					{ "id": "su_alembic", "name": "Alambic", "description": "Débloque l'Alambic.", "tier": 2, "unlock": "alembic" },
 					{ "id": "su_corrosion", "name": "Corrosion", "description": "+6 % de cadence par rang (Alambic).", "tier": 2, "max_rank": 2, "towers": ["alembic"], "rate": 0.06 },
 					{ "id": "su_rust", "name": "Rouille", "description": "+8 % de dégâts par rang (Alambic).", "tier": 3, "max_rank": 2, "towers": ["alembic"], "damage": 0.08 },
@@ -188,6 +192,7 @@
 		},
 		{
 			"id": "goblin", "name": "Gobelin", "color": "#9acd32",
+			"heritage": { "id": "he_goblin", "name": "Héritage du Gobelin", "description": "+100 or de départ, +15 % sur ses parts de primes.", "tier": 1, "start_gold": 100, "bounty": 0.15 },
 			"description": "Vit pour l'or : +15 % sur ses parts de primes.",
 			"bounty": 1.15,
 			"branches": [
@@ -228,6 +233,7 @@
 		},
 		{
 			"id": "mason", "name": "Bâtisseur", "color": "#c9a27a",
+			"heritage": { "id": "he_mason", "name": "Héritage du Bâtisseur", "description": "Construire et améliorer coûte 10 % de moins, la revente rend 10 % de plus.", "tier": 1, "build_cost": 0.1, "sell_bonus": 0.1 },
 			"description": "Construit mieux et moins cher : +50 or de départ. Seulement les tourelles du tronc commun.",
 			"start_gold": 50,
 			"branches": [
