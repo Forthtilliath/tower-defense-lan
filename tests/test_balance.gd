@@ -126,13 +126,18 @@ func auto_talents(gd: GameData, builder: int, level: int, spec := 0) -> Dictiona
 	return talents
 
 
-## builders : une classe par bot (index, ou [index, spécialisation]) ; Artilleur par défaut.
+## builders : une classe par bot (index, ou [index, spécialisation]) ; par défaut l'Artilleur
+## Tireur d'élite, la spécialisation la plus polyvalente (vise le sol et l'air, de loin), comme
+## l'était l'ancien Touche-à-tout. Une classe sans spécialisation précisée prend DEFAULT_SPEC.
+const DEFAULT_SPEC := 1
+
+
 func play(gd: GameData, map_index: int, count: int, difficulty: int, options := {}, builders := [], level := BOT_LEVEL) -> SimMatch:
 	var roster := []
 	for i in count:
 		var entry: Variant = builders[i] if i < builders.size() else 0
 		var b: int = entry[0] if entry is Array else entry
-		var s: int = entry[1] if entry is Array else 0
+		var s: int = entry[1] if entry is Array else DEFAULT_SPEC
 		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level, s)])
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster, difficulty, options)
 	var cells := ranked_cells(sim.map, false)
