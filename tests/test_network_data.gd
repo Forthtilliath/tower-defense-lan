@@ -67,12 +67,17 @@ func test_corrupted_snapshots_are_ignored() -> void:
 func test_lobby_payloads() -> void:
 	var gd := load_data()
 	var talents := {"ar_conductive": 2, "ar_pylon": 1}
-	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}], [4, "Bob", 1, 1, 3, 5, talents]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1}
+	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}, []], [4, "Bob", 1, 1, 3, 5, talents, [4, 0]]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1}
 	var ok = NetPayloads.parse_lobby(good, gd, 2, 4)
 	check(ok != null and ok["players"].size() == 2 and ok["rhythm"] == 1 and ok["launch"] == 1, "salon valide")
 	check(ok != null and ok["players"][4]["builder"] == 1 and ok["players"][4]["vote"] == 3, "bâtisseur et vote reçus")
 	check(ok != null and ok["players"][4]["level"] == 5 and ok["players"][4]["talents"] == talents, "niveau et talents reçus")
+	check(ok != null and ok["players"][4]["heritage"] == [0, 4], "héritage reçu (trié)")
 	var cases := {
+		"héritage d'une classe inconnue": func(d): d["players"][1][7] = [9],
+		"héritage en double": func(d): d["players"][1][7] = [0, 0],
+		"héritage qui n'est pas une liste": func(d): d["players"][1][7] = "tout",
+		"héritage absent": func(d): d["players"][1].remove_at(7),
 		"niveau hors limites": func(d): d["players"][1][5] = 99,
 		"plus de points que le niveau": func(d): d["players"][1][5] = 2,
 		"talent inconnu": func(d): d["players"][1][6] = {"triche": 1},
@@ -102,10 +107,11 @@ func test_lobby_payloads() -> void:
 
 func test_match_config() -> void:
 	var gd := load_data()
-	var good := {"roster": [[1, "Hôte", 0, 1, {}], [3, "Ana", 1, 3, {"su_presence": 1}]], "mode": 0, "map": 8, "rhythm": 0, "launch": 1, "difficulty": 2}
+	var good := {"roster": [[1, "Hôte", 0, 1, {}, []], [3, "Ana", 1, 3, {"su_presence": 1}, [0]]], "mode": 0, "map": 8, "rhythm": 0, "launch": 1, "difficulty": 2}
 	var ok = NetPayloads.parse_config(good, gd, 2, 4)
-	check(ok != null and ok["difficulty"] == 2 and ok["roster"][1][3] == 3, "configuration valide")
-	for change in [["difficulty", 9], ["difficulty", null], ["launch", -1], ["roster", [[1, "Hôte", 0, 1]]], ["roster", [[1, "Hôte", 0, -1, {}]]], ["roster", [[1, "Hôte", 0, 1, {"triche": 1}]]]]:
+	check(ok != null and ok["difficulty"] == 2 and ok["roster"][1][3] == 3 and ok["roster"][1][5] == [0], "configuration valide")
+	for change in [["difficulty", 9], ["difficulty", null], ["launch", -1], ["roster", [[1, "Hôte", 0, 1, {}]]], ["roster", [[1, "Hôte", 0, -1, {}, []]]],
+			["roster", [[1, "Hôte", 0, 1, {"triche": 1}, []]]], ["roster", [[1, "Hôte", 0, 1, {}, ["x"]]]]]:
 		var bad: Dictionary = good.duplicate(true)
 		bad[change[0]] = change[1]
 		check(NetPayloads.parse_config(bad, gd, 2, 4) == null, "configuration refusée : %s" % str(change))

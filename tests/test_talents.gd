@@ -118,6 +118,25 @@ func test_kit_bonuses_and_economy() -> void:
 	check(is_equal_approx(crossbow["damage"], 4 * 1.09), "Ordres : +3 %% de dégâts par rang : %f" % crossbow["damage"])
 
 
+## Héritage : chaque classe au niveau maximum donne son bonus aux autres (pas à elle-même).
+func test_heritage_of_maxed_classes() -> void:
+	var gd := load_data()
+	var gunner := _builder(gd, "gunner")
+	var goblin := _builder(gd, "goblin")
+	var arcanist := _builder(gd, "arcanist")
+	var heir := PlayerKit.make(gd, arcanist, {}, [gunner, goblin])
+	check(heir.heritage == [gunner, goblin], "deux héritages")
+	check(is_equal_approx(gd.tower_stats("crossbow", 0, -1, heir)["damage"], 4 * 1.2), "Artilleur hérité : +20 % sur l'Arbalète")
+	check(heir.start_gold == 100 and is_equal_approx(heir.bounty, 1.15), "Gobelin hérité : or de départ et primes")
+	var own := PlayerKit.make(gd, gunner, {}, [gunner])
+	check(own.heritage.is_empty() and is_equal_approx(gd.tower_stats("crossbow", 0, -1, own)["damage"], 4 * 1.2), "pas d'héritage de sa propre classe")
+	check(TalentRules.parse_heritage(gd, [3, 1]) == [1, 3], "héritage trié")
+	for bad in [[1, 1], [99], ["x"], "tout", [0, 1, 2, 3, 4, 5, 0]]:
+		check(TalentRules.parse_heritage(gd, bad) == null, "héritage refusé : %s" % str(bad))
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, arcanist, {}, [goblin]]])
+	check(sim.players[1]["gold"] == 150 + 100, "l'héritage passe dans la partie")
+
+
 ## Bâtisseur : tourelles du tronc commun seulement, prix réduits, revente bonifiée.
 func test_mason_costs_and_refunds() -> void:
 	var gd := load_data()
