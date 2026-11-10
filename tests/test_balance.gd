@@ -177,8 +177,8 @@ func play(gd: GameData, map_index: int, count: int, difficulty: int, options := 
 		var s: int = entry[1] if entry is Array else DEFAULT_SPEC
 		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level, s)])
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster, difficulty, options)
-	var cells := ranked_cells(sim.map, false)
-	var air_cells := ranked_cells(sim.map, true)
+	var cells := ranked_cells(sim.map, false, sim.open_paths)
+	var air_cells := ranked_cells(sim.map, true, sim.open_paths)
 	var timer := 0.0
 	for i in int(2400.0 / DT):
 		timer -= DT
@@ -226,13 +226,13 @@ func act(sim: SimMatch, id: int, cells: Array[int], air_cells: Array[int]) -> vo
 func pick_cell(sim: SimMatch, id: int, mine: Array[SimTower], ranked: Array[int]) -> int:
 	var load := {}
 	for t in mine:
-		var z := lane_key(sim.map, t.cell)
+		var z := lane_key(sim.map, t.cell, sim.open_paths)
 		load[z] = int(load.get(z, 0)) + 1
 	var best_cell := -1
 	var best_key := INF
 	var seen := {}
 	for cell in ranked:
-		var z := lane_key(sim.map, cell)
+		var z := lane_key(sim.map, cell, sim.open_paths)
 		if seen.has(z) or not MatchActions.can_build_for(sim, id, sim.boards[0], cell):
 			continue
 		seen[z] = true
@@ -243,19 +243,17 @@ func pick_cell(sim: SimMatch, id: int, mine: Array[SimTower], ranked: Array[int]
 	return best_cell
 
 
-## Secteur d'une case pour répartir les tourelles : sa zone sur une carte en zones, sinon le
-## couloir qu'elle couvre le plus sur une carte à plusieurs couloirs (-1 : aucun).
-func lane_key(m: MapDef, cell: int) -> int:
-	if m.zone_count > 0:
-		return m.zone_at(cell)
+## Secteur d'une case pour répartir les tourelles : le couloir ouvert (parmi `paths`) qu'elle
+## couvre le plus, sur une carte à plusieurs couloirs (-1 : aucun, ou carte à un seul couloir).
+func lane_key(m: MapDef, cell: int, paths: Array[int]) -> int:
 	if m.lanes <= 1:
 		return -1
-	var key := "%s/%d" % [m.id, cell]
+	var key := "%s/%d/%s" % [m.id, cell, str(paths)]
 	if not _lanes.has(key):
 		var c := m.cell_center(cell)
 		var best := -1
 		var best_hits := 0
-		for p in m.start_count():
+		for p in paths:
 			var hits := 0
 			var d := 0.0
 			while d < m.path_length(p, false):
@@ -324,21 +322,23 @@ static func early_value(data: GameData, type: String) -> float:
 	return dps / float(l["cost"])
 
 
-## Cases constructibles triées par longueur de chemin (au sol ou aérien) couverte à 2,5 cases.
-func ranked_cells(m: MapDef, air: bool) -> Array[int]:
+## Cases constructibles triées par longueur de chemin (au sol ou aérien) couverte à 2,5 cases,
+## sur les seuls chemins ouverts (`paths`, tous si vide) ; les cases qui n'en couvrent aucun sont écartées.
+func ranked_cells(m: MapDef, air: bool, paths: Array[int] = []) -> Array[int]:
 	var scores := {}
 	for cell in m.cell_count():
 		if not m.is_buildable(cell):
 			continue
 		var c := m.cell_center(cell)
 		var score := 0
-		for p in m.start_count():
+		for p in (paths if not paths.is_empty() else range(m.start_count())):
 			var d := 0.0
 			while d < m.path_length(p, air):
 				if c.distance_to(m.position_at(p, d, air)) <= 2.5:
 					score += 1
 				d += 0.25
-		scores[cell] = score
+		if score > 0:
+			scores[cell] = score
 	var cells: Array[int] = []
 	cells.assign(scores.keys())
 	cells.sort_custom(func(a: int, b: int) -> bool: return scores[a] > scores[b])
