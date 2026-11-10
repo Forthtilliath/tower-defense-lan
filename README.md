@@ -34,7 +34,8 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
   et Paratonnerre (imprègnent les tourelles voisines : gelure, monstres électrifiés qui subissent plus de dégâts),
   Phare (portée), Comptoir (prime des monstres tués à portée), Chantier (constructions moins chères autour, alliés
   compris), Alambic qui coupe les soins, primes d'équipe du Mécène, or des vagues lancées en avance ou sans fuite
-  du Parieur. Le Terrassier (raser le décor, poser des cases bonus) n'a encore que des bonus en pourcentage.
+  du Parieur, Terrassier qui rase arbres et rochers pour construire dessus et pose des cases bonus (Colline, Cristal,
+  Rune ; jamais de Filon d'or), avec un nombre de charges par partie selon ses talents.
 - **Talents et progression** (bouton « Talents » du salon) : chaque classe gagne de l'expérience à chaque partie
   (victoire : 10 XP par vague × difficulté, + 25 % ; défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 %
   de ses 10 XP selon le quart de la partie atteint, donc presque rien en perdant tôt) et monte
