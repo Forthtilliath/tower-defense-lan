@@ -184,15 +184,26 @@ func test_special_waves_strengthen_monsters() -> void:
 	check(view.apply(snap) and view.boards[0]["monsters"][bat.id]["elite"], "halo de vague spéciale transmis")
 
 
-func test_lanes_scale_lives_gold_and_count() -> void:
+## Carte à 4 couloirs : un couloir ouvert par joueur, celui de sa zone, avec une vague solo complète.
+func test_lanes_open_one_per_player() -> void:
 	var solo := _sim(1, FIEFS)
-	check(solo.boards[0].lives == 80, "4 couloirs : 4 fois plus de vies (%d)" % solo.boards[0].lives)
-	check(solo.players[1]["gold"] == 600, "seul pour 4 couloirs : 4 fois plus d'or (%d)" % solo.players[1]["gold"])
-	check(solo.coop_scaling(1) == [1.0, 4.0, 4.0], "une vague solo par couloir : %s" % str(solo.coop_scaling(1)))
+	check(solo.open_paths.size() == 1 and solo.boards[0].lives == 20, "seul : un couloir, vies normales (%d)" % solo.boards[0].lives)
+	check(solo.players[1]["gold"] == 150 and solo.coop_scaling(1) == [1.0, 1.0, 1.0], "seul : or et vague solo")
+	solo.apply_command(1, {"a": "ready"})
+	for i in 200:
+		solo.step(0.05)
+	var paths := {}
+	for m in solo.boards[0].monsters:
+		paths[m.path] = true
+	check(paths.keys() == solo.open_paths, "les monstres n'arrivent que par le couloir ouvert : %s" % str(paths.keys()))
 	var trio := _sim(3, FIEFS)
-	check(trio.players[1]["gold"] == 300 and trio.players[2]["gold"] == 150, "or selon les zones tenues : %d / %d" % [trio.players[1]["gold"], trio.players[2]["gold"]])
+	check(trio.open_paths.size() == 3 and trio.boards[0].lives == 60, "à trois : 3 couloirs, 3 fois plus de vies")
+	check(trio.players[1]["gold"] == 150 and trio.players[3]["gold"] == 150, "chacun son couloir : or normal")
+	for p in trio.open_paths.size():
+		check(trio.map._start_zone(trio.open_paths[p]) == p, "le joueur %d défend le couloir de sa zone" % (p + 1))
 	var full := _sim(4, FIEFS)
 	check(full.coop_scaling(4) == [1.0, 4.0, 1.0] and full.players[4]["gold"] == 150, "un joueur par couloir : règles solo")
+	check(full.coop_scaling(2) == [1.0, 4.0, 2.0], "deux joueurs partis : les couloirs restent, l'or double")
 	var prairie := _sim(3)
 	var s := prairie.coop_scaling(3)
 	check(is_equal_approx(s[0], 1.3) and is_equal_approx(s[1], 1.7) and prairie.boards[0].lives == 20, "carte à un couloir : renforcement habituel %s" % str(s))
