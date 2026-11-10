@@ -61,10 +61,15 @@ func test_railgun_line_pierces_monsters_and_armor() -> void:
 	var b := _board()
 	var t := _tower(b, "railgun")  # 16 dégâts, la moitié de l'armure ignorée, portée 4
 	var first := _mob(b, "skeleton", AT + Vector2(1, 0))  # armure 3, 30 PV
+	first.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	var second := _mob(b, "skeleton", AT + Vector2(2, 0))
+	second.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	var third := _mob(b, "skeleton", AT + Vector2(3.5, 0.2))
+	third.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	var aside := _mob(b, "skeleton", AT + Vector2(2, 1.5))
+	aside.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	var beyond := _mob(b, "skeleton", AT + Vector2(4.5, 0))
+	beyond.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	_fire(b, t)
 	for m in [first, second, third]:
 		check(is_equal_approx(m.hp, 30.0 - (16.0 - 1.5)), "aligné : 16 - 1,5 d'armure (%f)" % m.hp)
@@ -137,6 +142,7 @@ func test_icebreaker_hits_harder_slowed_and_frozen() -> void:
 func test_acid_shreds_armor_for_a_while() -> void:
 	var b := _board()
 	var m := _mob(b, "skeleton", AT)  # armure 3
+	m.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	m.apply_shred(0.5, 2.0)
 	BoardCombat.damage(b, m, 4.0, false, BoardCombat.solo(7), [])
 	check(is_equal_approx(m.hp, 27.5), "armure rongée de moitié : 4 - 1,5 (%f)" % m.hp)

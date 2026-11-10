@@ -28,6 +28,7 @@ func _projectile(dmg: float) -> SimProjectile:
 func test_armor_reduces_but_never_cancels() -> void:
 	var b := _board()
 	var m := _monster(b, "skeleton")  # armure 3
+	m.armor = 3.0  # le squelette en a 1 aujourd’hui ; ce test vise une armure de 3
 	var rewards := []
 	BoardCombat.damage(b, m, 4.0, false, BoardCombat.solo(7), rewards)
 	check(is_equal_approx(m.hp, 29.0), "4 - 3 = 1 dégât : %f" % m.hp)
