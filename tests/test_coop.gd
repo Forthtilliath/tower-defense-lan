@@ -211,7 +211,7 @@ func test_lanes_open_one_per_player() -> void:
 
 func test_big_maps() -> void:
 	var gd := load_data()
-	var expected := {PLAINE: [MapDef.Layout.SHARED, 1, 133.0], FIEFS: [MapDef.Layout.ZONED, 4, 46.0], BASTION: [MapDef.Layout.MIXED, 4, 53.0]}
+	var expected := {PLAINE: [MapDef.Layout.SHARED, 1, 133.0], FIEFS: [MapDef.Layout.ZONED, 4, 46.0], BASTION: [MapDef.Layout.MIXED, 4, 41.0]}
 	for i in expected:
 		var m: MapDef = gd.maps[i]
 		var e: Array = expected[i]

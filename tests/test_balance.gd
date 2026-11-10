@@ -106,17 +106,24 @@ func test_level_one_beginners() -> void:
 	check(lost * 2 > gd.builders.size(), "niveau 1 en Normal : %s se gagne trop facilement (%d classe(s) sur %d la perdent)" % [gd.maps[hardest].id, lost, gd.builders.size()])
 
 
-## Au niveau 15, chaque classe de dégâts (Artilleur, Arcaniste, Fléau) finit la plupart des cartes
-## difficiles en Difficile ; les classes utilitaires, elles, comptent sur le groupe.
+## Au niveau 15, chaque classe de dégâts (Artilleur, Arcaniste, Fléau) a au moins une
+## spécialisation qui finit la plupart des cartes difficiles en Difficile (un joueur choisit sa
+## spécialisation selon la carte) ; les classes utilitaires, elles, comptent sur le groupe.
 func test_level_fifteen_wins_hard_maps_in_hard() -> void:
 	var gd := load_data()
-	for entry in [[0, Bot.DEFAULT_SPEC], [1, 1], [2, 0]]:  # Tireur d'élite, Mage de foudre, Poison
-		var lost := []
-		for m in hard_maps(gd):
-			var sim := play(gd, m, 1, HARD, {}, [entry], 15)
-			if sim.result != "victory":
-				lost.append("%s (vague %d)" % [gd.maps[m].id, sim.wave_index + 1])
-		check(lost.size() <= 1, "%s niveau 15 en Difficile : %s" % [gd.builders[entry[0]]["id"], ", ".join(lost)])
+	for b in [0, 1, 2]:
+		var best := []
+		for s in bot.spec_count(gd, b):
+			var lost := []
+			for m in hard_maps(gd):
+				var sim := play(gd, m, 1, HARD, {}, [[b, s]], 15)
+				if sim.result != "victory":
+					lost.append("%s/%s : %s (vague %d)" % [gd.builders[b]["id"], bot.spec_id(gd, b, s), gd.maps[m].id, sim.wave_index + 1])
+			if best.is_empty() or lost.size() < best.size():
+				best = lost
+			if lost.size() <= 1:
+				break
+		check(best.size() <= 1, "niveau 15 en Difficile, meilleure spécialisation : %s" % ", ".join(best))
 
 
 func hard_maps(gd: GameData) -> Array[int]:

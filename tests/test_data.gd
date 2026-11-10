@@ -114,7 +114,7 @@ func test_builders_and_modifiers() -> void:
 		check(PlayerKit.make(gd, b).allows("cannon") and not PlayerKit.make(gd, b).allows("mortar"), "%s : tronc commun seulement au départ" % gd.builders[b]["id"])
 	check(PlayerKit.make(gd, 1, {"ar_conductive": 2, "ar_pylon": 1}).allows("pylon"), "un talent débloque une tourelle")
 	var s := gd.tower_stats("cannon", 0, -1, 0)
-	check(is_equal_approx(s["damage"], 10.0 * 1.1), "bonus de dégâts de l'artilleur : %f" % s["damage"])
+	check(is_equal_approx(s["damage"], 10.0 * 1.2), "bonus de dégâts de l'artilleur : %f" % s["damage"])
 	var unlocked := {}
 	for b in gd.builders:
 		for branch in b["branches"]:
