@@ -11,6 +11,8 @@ const ARMOR_MIN_RATIO := 0.25
 const CHAIN_RANGE := 1.8
 const CHAIN_FALLOFF := 0.8
 const CONTROLS := {"stun": SimMonster.Crowd.STUN, "fear": SimMonster.Crowd.FEAR, "charm": SimMonster.Crowd.CHARM}
+## Malus de visée d'un monstre qui a déjà l'effet (non cumulable) de la tourelle : passe après tous les autres.
+const AFFLICTED_PENALTY := 1.0e9
 
 
 static func solo(owner: int) -> Array:
@@ -60,6 +62,9 @@ static func find_target(b: SimBoard, t: SimTower, def: Dictionary, skip := {}) -
 	var all := int(t.stats.get("all_targets", 0)) > 0
 	var air := all or t.buff("air") > 0.0
 	var light := t.buff("light") > 0.0  # Lumière du Support : touche aussi les insensibles
+	# Effet qui ne se cumule pas (poison, saignement à une charge) : viser d'abord un monstre qui ne l'a pas
+	var poisons := float(t.stats.get("poison_dps", 0.0)) > 0.0 and int(t.stats.get("poison_stacks", 1)) <= 1
+	var bleeds := float(t.stats.get("bleed", 0.0)) > 0.0 and int(t.stats.get("bleed_stacks", 1)) <= 1
 	for m in b.monsters:
 		if skip.has(m.id) or not can_hit(def["air"] or air, def["ground"] or all, m) or t.center.distance_squared_to(m.pos) > r2 \
 				or (m.taken(def["element"]) <= 0.0 and not light):  # insensible à ses coups (fantôme, squelette…)
@@ -69,6 +74,8 @@ static func find_target(b: SimBoard, t: SimTower, def: Dictionary, skip := {}) -
 			score = m.hp
 		elif t.target_mode == SimTower.Target.CLOSEST:
 			score = -t.center.distance_squared_to(m.pos)
+		if (poisons and m.is_poisoned()) or (bleeds and m.is_bleeding()):
+			score -= AFFLICTED_PENALTY
 		if score > best_score:
 			best_score = score
 			best = m
