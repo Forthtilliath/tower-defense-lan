@@ -32,5 +32,4 @@ func _draw() -> void:
 	BoardPainter.zones(self, map, view.zone_colors, origin, ts)
 	for i in map.cell_count():
 		TerrainPainter.props(self, map, view.data, i, rects[i])
-	BoardPainter.flight_paths(self, map, origin, ts)
 	draw_rect(board, Ink.INK, false, Ink.width(ts, 0.08))
