@@ -200,7 +200,8 @@ func _tower_panel(t: Dictionary) -> void:
 	if locked:
 		add_child(UiTheme.label(MatchActions.LOCKED + ".", 16, UiTheme.DANGER))
 	if level + 1 < levels.size():
-		var next_cost: int = _game.my_kit().cost(levels[level + 1]["cost"], _zone_discount(_selected))
+		var cut := _zone_discount(_selected) + TileBonus.discount(data, _game.map, _selected, t["type"])  # Forge
+		var next_cost: int = _game.my_kit().cost(levels[level + 1]["cost"], cut)
 		var up := UiTheme.button("Améliorer — %d or" % next_cost, func() -> void:
 			_game.send({"a": "upgrade", "cell": _selected}))
 		add_child(up)

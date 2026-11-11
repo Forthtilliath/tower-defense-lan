@@ -20,7 +20,7 @@ func fill(root: Variant, gd: GameData) -> bool:
 	var difficulties = _collection(root.get("difficulties"), 8, "difficulties", _plain.bind(DataSchema.DIFFICULTY))
 	var specials = _specials(root.get("special_tiles"))
 	var towers = _collection(root.get("towers"), MAX_TOWERS, "towers", _tower)
-	var monsters = _collection(root.get("monsters"), 32, "monsters", _monster)
+	var monsters = _collection(root.get("monsters"), 64, "monsters", _monster)
 	var modifiers = _collection(root.get("wave_modifiers"), 16, "wave_modifiers", _plain.bind(DataSchema.WAVE_MODIFIER.merged(DataSchema.PASSIVE_TRAITS)), 0)
 	var progression = _obj(root.get("progression", {}), DataSchema.PROGRESSION, "progression")
 	var tiers = TreeValidator.tiers(self, root.get("talent_tiers", [0]))
@@ -31,10 +31,10 @@ func fill(root: Variant, gd: GameData) -> bool:
 	if common == null:
 		return false
 	var builders = _collection(root.get("builders"), 8, "builders", TreeValidator.builder.bind(self, towers[0], tiers.size()))
-	var waves = _collection(root.get("waves"), 100, "waves", _wave.bind(monsters[0], modifiers[0]))
+	var waves = _collection(root.get("waves"), 400, "waves", _wave.bind(monsters[0], modifiers[0]))
 	if builders == null or waves == null:
 		return false
-	var maps = _maps(root.get("maps"), waves[0], specials)
+	var maps = MapValidator.maps(self, root.get("maps"), waves[0], specials)
 	if maps == null:
 		return false
 	gd.player = player
@@ -150,7 +150,7 @@ func _check_splits(monsters: Dictionary) -> bool:
 
 ## Cases spéciales : symbole d'un caractère, unique, distinct des cases de base.
 func _specials(src: Variant) -> Variant:
-	var list = _list(src, 0, 8, "special_tiles")
+	var list = _list(src, 0, 32, "special_tiles")
 	if list == null:
 		return null
 	var out := []
@@ -160,8 +160,12 @@ func _specials(src: Variant) -> Variant:
 		var s = _obj(list[i], DataSchema.SPECIAL, where)
 		if s == null:
 			return null
+		if not TileBonus.valid_only(s["only"]):
+			return _fail("%s : famille de tourelles « %s » inconnue" % [where, s["only"]])
+		if (s["veteran"] > 0.0) != (s["veteran_cap"] > 0.0):
+			return _fail("%s : veteran et veteran_cap vont ensemble" % where)
 		var ch: String = s["char"]
-		if MapDef.CHARS.has(ch) or seen.has(ch) or ch == " ":
+		if MapDef.CHARS.has(ch) or MapDef.ENTRY_CHARS.contains(ch) or seen.has(ch) or ch == " ":
 			return _fail("%s : symbole « %s » déjà utilisé" % [where, ch])
 		seen[ch] = true
 		out.append(s)
@@ -187,49 +191,6 @@ func _wave(src: Variant, where: String, monsters: Dictionary, modifiers: Diction
 		out_groups.append(g)
 	w["groups"] = out_groups
 	return w
-
-
-func _maps(src: Variant, waves: Dictionary, specials: Array) -> Variant:
-	var list = _list(src, 1, 20, "maps")
-	if list == null:
-		return null
-	var out: Array[MapDef] = []
-	for i in list.size():
-		var where := "maps[%d]" % i
-		var head = _obj(list[i], DataSchema.MAP, where)
-		if head == null:
-			return null
-		if head["min_players"] > head["max_players"]:
-			return _fail("%s : min_players dépasse max_players" % where)
-		var rows = _list(list[i].get("rows"), MapDef.MIN_SIZE, MapDef.MAX_SIZE, where + ".rows")
-		var wave_ids = _list(list[i].get("waves"), 1, 100, where + ".waves")
-		if rows == null or wave_ids == null:
-			return null
-		var typed_waves: Array[String] = []
-		for w in wave_ids:
-			if typeof(w) != TYPE_STRING or not waves.has(w):
-				return _fail("%s.waves : vague « %s » inconnue" % [where, str(w).left(30)])
-			typed_waves.append(w)
-		var parsed = MapDef.parse(head["id"], head["name"], rows, typed_waves, specials)
-		if typeof(parsed) == TYPE_STRING:
-			return _fail("%s : %s" % [where, parsed])
-		if list[i].has("zones"):
-			var zone_rows = _list(list[i]["zones"], MapDef.MIN_SIZE, MapDef.MAX_SIZE, where + ".zones")
-			if zone_rows == null:
-				return null
-			var zone_err: String = parsed.set_zones(zone_rows)
-			if zone_err != "":
-				return _fail("%s : %s" % [where, zone_err])
-		parsed.flyer_speed = head["flyer_speed"]
-		parsed.min_players = head["min_players"]
-		parsed.max_players = head["max_players"]
-		parsed.lanes = head["lanes"]
-		parsed.tier = head["tier"]
-		parsed.monster_hp = head["hp"]
-		if parsed.lanes > parsed.start_count():
-			return _fail("%s : %d couloirs pour %d départs" % [where, parsed.lanes, parsed.start_count()])
-		out.append(parsed)
-	return out
 
 
 func _obj(src: Variant, schema: Dictionary, where: String) -> Variant:

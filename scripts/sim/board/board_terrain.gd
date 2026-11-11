@@ -1,24 +1,25 @@
 class_name BoardTerrain
 extends RefCounted
 ## Terrassier : raser un arbre ou un rocher (la case devient constructible) et poser une case
-## spéciale (Colline, Cristal, Rune ; Filon, Butte et Fossé avec leurs propres charges) sur une
-## case constructible qui n'en a pas, même sous une tourelle. La route et l'eau ne changent jamais. Chaque changement est noté
-## dans SimBoard.edits et transmis aux joueurs avec l'instantané du plateau.
+## spéciale (Colline, Cristal, Rune ; Tableau de chasse, Butte et Fossé avec leurs propres
+## charges) sur une case constructible qui n'en a pas, même sous une tourelle. La route et l'eau
+## ne changent jamais. Chaque changement est noté dans SimBoard.edits et transmis aux joueurs
+## avec l'instantané du plateau.
 
 
 ## Fossé : rayon autour de la case où les monstres au sol sont ralentis (durée du ralentissement).
 const DITCH_REACH := 1.0
 const DITCH_SLOW_TIME := 0.5
-## Charges propres à une case : « vein » (Filon), « mound » (Butte), « ditch » (Fossé) ; les
-## autres cases spéciales (Colline, Cristal, Rune) prennent les charges « tile » (Géomancie).
-const OWN_CHARGES := {"gold": "vein", "mound": "mound", "ditch": "ditch"}
+## Charges propres à une case : « vein » (talent Filon : Tableau de chasse), « mound » (Butte),
+## « ditch » (Fossé) ; les cases « geomancy » (Colline, Cristal, Rune) prennent les charges « tile ».
+const OWN_CHARGES := {"hunt": "vein", "mound": "mound", "ditch": "ditch"}
 
 
 ## Cases spéciales que l'on peut poser avec la Géomancie (index dans GameData.specials).
 static func placeable(data: GameData) -> Array[int]:
 	var out: Array[int] = []
 	for i in data.specials.size():
-		if int(data.specials[i]["gold_per_wave"]) == 0 and not data.specials[i]["rare"]:
+		if data.specials[i]["geomancy"]:
 			out.append(i)
 	return out
 

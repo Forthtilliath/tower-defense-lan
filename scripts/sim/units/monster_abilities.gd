@@ -76,7 +76,8 @@ static func _jam(b: SimBoard, m: SimMonster, dt: float) -> bool:
 	var r2 := m.jam_radius * m.jam_radius
 	for cell in b.towers:
 		var t: SimTower = b.towers[cell]
-		if t.jam_guard > 0.0 or t.buff("nojam") > 0.0 or t.center.distance_squared_to(m.pos) > r2:  # Fanfare
+		if t.jam_guard > 0.0 or t.buff("nojam") > 0.0 or int(t.stats.get("nojam", 0)) > 0 \
+				or t.center.distance_squared_to(m.pos) > r2:  # Fanfare, Îlot
 			continue
 		support_off = support_off or t.support
 		t.jammed = m.jam_duration

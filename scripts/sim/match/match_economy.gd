@@ -35,9 +35,9 @@ static func setup(sim: SimMatch) -> void:
 ## de vie (Parieur), filons d'or, puis les talents d'économie. `clean` : plateaux qui n'ont perdu
 ## aucune vie depuis la vague précédente (index -> true).
 static func pay_wave(sim: SimMatch, wave: Dictionary, early: int, clean: Dictionary) -> void:
-	_pay_gold_tiles(sim)
 	for b in sim.boards:
 		b.set_meta("wave_at", b.clock)  # départ de la vague (Charge, Heures sup)
+		BoardTiles.on_wave(b)  # Filon instable
 	var shared := {}  # id -> intérêts partagés avec les alliés (Mécénat)
 	for id in sim.order:
 		var p: Dictionary = sim.players[id]
@@ -150,13 +150,3 @@ static func credit(sim: SimMatch, owner: int, gold: int) -> void:
 	if not p.is_empty() and p["connected"]:
 		p["gold"] += gold
 
-
-## Filons d'or : chaque tourelle posée dessus rapporte de l'or à son propriétaire à chaque vague.
-static func _pay_gold_tiles(sim: SimMatch) -> void:
-	for b in sim.boards:
-		if not b.alive:
-			continue
-		for cell in b.towers:
-			var t: SimTower = b.towers[cell]
-			if t.special >= 0:
-				credit(sim, t.owner, int(sim.data.specials[t.special]["gold_per_wave"]))
