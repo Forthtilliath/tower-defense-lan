@@ -178,15 +178,31 @@ ainsi que `version/name` **et** `version/code` dans `export_presets.cfg`.
 ### Organisation
 
 ```
-data/game_data.json   Tourelles, monstres, vagues et cartes (modifiable sans toucher au code)
-scripts/core/         Validation partagée (Check) et réglages du joueur
-scripts/data/         Chargement et validation des données, cartes et chemins
-scripts/sim/          Simulation (hôte) : plateau, monstres, tourelles, règles, commandes
-scripts/net/          Réseau local : session ENet, RPC, découverte UDP, boucle de l'hôte
-scripts/ui/           Écrans et dessin du plateau
-tests/                Tests (headless) et tests automatisés réseau / captures
-tools/                Scripts PowerShell : lancement, vérification et build
+data/game_data.json      Tourelles, monstres, vagues et cartes (modifiable sans toucher au code)
+scenes/main.tscn         Scène de départ
+scripts/core/            Validation partagée (Check), réglages, comptes et progression
+scripts/data/            Chargement et validation des données, cartes et chemins
+scripts/data/talents/    Talents : schéma, règles, validation des arbres, bonus d'un joueur
+scripts/sim/match/       Simulation (hôte) : déroulé de la partie, commandes, or, pouvoirs
+scripts/sim/board/       Plateau d'un joueur : combat, attaques, auras, talents, terrain
+scripts/sim/units/       Monstres (capacités, effets, marques), tourelles, projectiles
+scripts/net/             Réseau local : session ENet, RPC, découverte UDP, boucle de l'hôte
+scripts/net/transfer/    Transfert d'un compte entre deux appareils
+scripts/ui/main.gd       Racine de l'application : un écran à la fois
+scripts/ui/screens/      Accueil, comptes, menu, rejoindre, envoyer / recevoir un compte
+scripts/ui/lobby/        Salon d'attente et arbre de talents
+scripts/ui/game/         Écran de partie : barre du haut, panneaux, fin de partie, textes
+scripts/ui/state/        État affiché, reconstruit à partir des instantanés de l'hôte
+scripts/ui/board/        Dessin du plateau (décor, unités, effets) ; glyphs/ : silhouettes
+scripts/ui/theme/        Thème, encre style manga, fond des menus
+tests/                   run_tests.gd (tous les tests) et check_scripts (compilation)
+tests/unit/              Tests headless, un fichier par thème
+tests/bot/               Joueur automatique des tests d'équilibrage
+tests/auto/              Test réseau de bout en bout et captures d'écran
+tools/                   Scripts PowerShell : lancement, vérification et build
 ```
+
+Les notes de conception (classes et talents, fiches des tourelles) sont dans `docs/`, non suivies par git.
 
 Les cartes s'écrivent en texte dans `data/game_data.json` : `.` herbe constructible, `=` route, `S` départ, `E` arrivée,
 `#` rocher, `~` eau, `T` arbre, et les symboles des cases spéciales (`^` colline, `*` cristal, `!` rune, `$` filon d'or).
@@ -198,7 +214,7 @@ Facultatifs aussi : `zones` (mêmes dimensions que la carte, `1` à `4` pour une
 (nombre de joueurs conseillé, affiché dans le salon). Les bâtisseurs (`builders`) et les vagues spéciales
 (`wave_modifiers`, appliquées par le champ `modifier` d'une vague) se règlent dans le même fichier.
 
-Équilibrage : `tests/test_balance.gd` fait jouer un bot simple, qui doit gagner chaque carte en Normal ; après
+Équilibrage : `tests/unit/test_balance.gd` fait jouer un bot simple (`tests/bot/balance_bot.gd`), qui doit gagner chaque carte en Normal ; après
 une modification des données, relancer `tools/verify.ps1`.
 
 ### Architecture réseau
