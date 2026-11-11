@@ -18,14 +18,41 @@ func _ready() -> void:
 	Net.session_ended.connect(show_menu)
 	Net.back_to_lobby.connect(show_lobby)
 	if not Data.db.is_valid():
-		show_menu("Données du jeu invalides : " + Data.db.error)
+		show_start("Données du jeu invalides : " + Data.db.error)
 		return
 	if _start_autotest():
 		return
-	show_menu()
+	show_start()
 
 
+## Accueil : continuer un compte ou en créer un.
+func show_start(message := "") -> void:
+	_switch(StartScreen.new(self, message))
+
+
+func show_new_account() -> void:
+	_switch(NewAccountScreen.new(self))
+
+
+func show_accounts() -> void:
+	_switch(AccountsScreen.new(self))
+
+
+## Attendre un compte envoyé par un autre appareil du Wi-Fi.
+func show_receive() -> void:
+	_switch(ReceiveScreen.new(self))
+
+
+## Envoyer un compte de cet appareil vers un autre.
+func show_send(account_id: String) -> void:
+	_switch(SendScreen.new(self, account_id))
+
+
+## Menu du compte ouvert (l'accueil si aucun compte n'est ouvert).
 func show_menu(message := "") -> void:
+	if not Progress.has_account():
+		show_start(message)
+		return
 	_switch(MenuScreen.new(self, message))
 
 

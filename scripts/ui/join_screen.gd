@@ -86,7 +86,7 @@ func _join(ip: String) -> void:
 		_status.text = "Adresse IP invalide (exemple : 192.168.1.20)."
 		return
 	Settings.set_last_ip(ip)
-	var err := Net.join(ip, Settings.player_name)
+	var err := Net.join(ip, Progress.account_name)
 	if err != "":
 		_status.text = err
 		return
