@@ -9,6 +9,8 @@ var account_id := ""
 var account_name := ""
 var classes := {}  # id du bâtisseur -> {"xp": int, "talents": {id: rang}}
 var last_builder := 0
+## Parties jouées et étoiles des cartes (MatchHistory).
+var history := MatchHistory.empty()
 ## Message affichable une fois sur l'écran d'accueil (vide sinon).
 var load_warning := ""
 
@@ -32,6 +34,7 @@ func open_account(id: String) -> String:
 	account_name = account["name"]
 	classes = account["classes"]
 	last_builder = account["last"]
+	history = account["history"]
 	Settings.set_last_account(id)
 	return ""
 
@@ -61,7 +64,7 @@ func import_account(account: Dictionary) -> String:
 		if existing.size() >= AccountStore.MAX_ACCOUNTS:
 			return "%d comptes au plus sur un appareil : supprimes-en un d'abord." % AccountStore.MAX_ACCOUNTS
 		id = AccountStore.new_id()
-	if not AccountStore.write(Data.db, id, account["name"], account["classes"], account["last"]):
+	if not AccountStore.write(Data.db, id, account["name"], account["classes"], account["last"], AccountStore.DIR, account.get("history", {})):
 		return "Impossible d'enregistrer le compte sur cet appareil."
 	return open_account(id)
 
@@ -71,6 +74,7 @@ func close_account() -> void:
 	account_name = ""
 	classes = {}
 	last_builder = 0
+	history = MatchHistory.empty()
 
 
 ## Compte invité, jamais enregistré (captures d'écran automatiques).
@@ -129,6 +133,21 @@ func award(builder: int, amount: int) -> Array:
 	return [before, level(builder)]
 
 
+## Ajoute une partie terminée à l'historique (format : MatchHistory). Renvoie true si elle
+## bat le record d'étoiles de la carte à cette difficulté.
+func record_game(game: Dictionary) -> bool:
+	var record := MatchHistory.add(history, game)
+	_save()
+	return record
+
+
+## Étoiles gagnées au mieux sur une carte (index) à une difficulté (index), 0 si jamais gagnée.
+func best_stars(map_index: int, difficulty: int) -> int:
+	if map_index < 0 or map_index >= Data.db.maps.size() or difficulty < 0 or difficulty >= Data.db.difficulties.size():
+		return 0
+	return MatchHistory.best(history, Data.db.maps[map_index].id, Data.db.difficulties[difficulty]["id"])
+
+
 func _entry(builder: int) -> Dictionary:
 	if builder < 0 or builder >= Data.db.builders.size():
 		return {}
@@ -153,5 +172,5 @@ func _migrate() -> void:
 
 
 func _save() -> void:
-	if account_id != "" and not AccountStore.write(Data.db, account_id, account_name, classes, last_builder):
+	if account_id != "" and not AccountStore.write(Data.db, account_id, account_name, classes, last_builder, AccountStore.DIR, history):
 		push_warning("Progression non enregistrée (compte %s)" % account_id)
