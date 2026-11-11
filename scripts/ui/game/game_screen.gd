@@ -20,8 +20,9 @@ var kits := {}  # id -> PlayerKit (bâtisseur et talents)
 var order: Array[int] = []  # ids dans l'ordre de la partie
 var is_versus := false
 var _coop: CoopPanel
-## Expérience gagnée à la fin de la partie (vide tant qu'elle n'est pas finie).
-var xp_summary := ""
+## Fin de partie pour ce compte (MatchRecap.close : expérience, étoiles), vide tant qu'elle dure.
+var recap := {}
+var _start_lives := 0
 var _last_wave := 0
 var _map_version := 0
 var _nav: Node
@@ -144,8 +145,11 @@ func _on_snapshot(snap: Dictionary) -> void:
 		var mod := wave_modifier(state.wave - 1)
 		if not mod.is_empty():
 			show_toast("Vague spéciale : %s — %s" % [mod["name"], mod["description"]])
+	if my_board < state.boards.size():  # vies de départ : le plus haut vu (étoiles de fin de partie)
+		_start_lives = maxi(_start_lives, int(state.boards[my_board]["lives"]))
 	if state.ended:
-		_award_xp()
+		if recap.is_empty():
+			recap = MatchRecap.close(self, _start_lives)
 		_end.show_result()
 
 
@@ -203,25 +207,6 @@ func wave_modifier(index: int) -> Dictionary:
 	if index < 0:
 		return {}
 	return state.data.wave_modifier(map.waves[mini(index, map.waves.size() - 1)])
-
-
-## Expérience de fin de partie pour la classe jouée (une seule fois par partie), enregistrée
-## sur cet appareil. Victoire : expérience complète ; défaite : une part, selon les vagues passées.
-func _award_xp() -> void:
-	if xp_summary != "":
-		return
-	var won := state.result == "victory" or (state.result == "winner" and state.winner == my_id)
-	var passed := state.wave if won else maxi(0, state.wave - 1)
-	var total := map.waves.size()
-	var amount := TalentRules.match_xp(Data.db, won, mini(passed, total), total, int(config.get("difficulty", 1)))
-	var kit := my_kit()
-	if won and kit != null and kit.m("saver") > 0.0:  # Épargnant : l'or gardé rapporte de l'expérience
-		amount = roundi(amount * (1.0 + kit.m("saver") * int(state.players.get(my_id, {}).get("gold", 0)) / 100.0))
-	var builder := my_builder()
-	var levels := Progress.award(builder, amount)
-	xp_summary = "+%d XP pour %s (niveau %d)" % [amount, Data.db.builders[builder]["name"], levels[1]]
-	if levels[1] > levels[0]:
-		xp_summary += " : +%d point(s) de talent !" % (levels[1] - levels[0])
 
 
 ## Portée de la tourelle envisagée, dessinée autour de la case sélectionnée (0 : rien).
