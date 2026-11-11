@@ -106,6 +106,42 @@ static func button(text: String, on_pressed := Callable(), min_height := 52, wra
 	return b
 
 
+## Bloc encadré avec un titre (et une note discrète à droite) : ajouté à `parent`, renvoie la
+## colonne où placer le contenu (son parent est le cadre, pour régler son étirement).
+static func section(parent: Control, heading: String, note := "") -> VBoxContainer:
+	var panel := PanelContainer.new()
+	parent.add_child(panel)
+	var body := vbox(8)
+	panel.add_child(body)
+	var top := hbox(10)
+	body.add_child(top)
+	var t := label(heading.to_upper(), 16, ACCENT)
+	t.autowrap_mode = TextServer.AUTOWRAP_OFF
+	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(t)
+	if note != "":
+		var n := label(note, 14, MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
+		n.autowrap_mode = TextServer.AUTOWRAP_OFF
+		top.add_child(n)
+	return body
+
+
+## Liste déroulante sous un petit intitulé, étirée en largeur. Renvoie la liste.
+static func option(parent: Control, heading: String, items: Array) -> OptionButton:
+	var col := vbox(4)
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(col)
+	col.add_child(label(heading, 14, MUTED))
+	var ob := OptionButton.new()
+	ob.custom_minimum_size.y = 48
+	ob.clip_text = true
+	ob.fit_to_longest_item = false  # sinon la largeur suit le plus long élément et déborde
+	for item in items:
+		ob.add_item(item)
+	col.add_child(ob)
+	return ob
+
+
 static func vbox(separation := 12) -> VBoxContainer:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", separation)
