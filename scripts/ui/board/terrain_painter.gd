@@ -1,15 +1,9 @@
 class_name TerrainPainter
 extends RefCounted
-## Décor du plateau au style manga : herbe olive, route poussiéreuse cernée d'encre, forêt de
-## conifères, rochers, vagues, brèche fumante (départ) et pan de rempart (arrivée).
+## Décor du plateau au style manga : sol et route cernée d'encre aux couleurs du thème de la carte
+## (MapTheme), arbres et rochers du thème (DecorPainter ; conifères et rochers gris en Prairie),
+## vagues ou lave, brèche fumante (départ) et pan de rempart (arrivée).
 ## Dessiné une seule fois par TerrainLayer (pas à chaque image).
-
-const COLORS := {
-	MapDef.Cell.BUILD: Color("#7a8a52"), MapDef.Cell.ROUTE: Color("#c4a978"),
-	MapDef.Cell.START: Color("#c4a978"), MapDef.Cell.END: Color("#c4a978"),
-	MapDef.Cell.ROCK: Color("#6d7c48"), MapDef.Cell.WATER: Color("#46708c"),
-	MapDef.Cell.TREE: Color("#6d7c48"),
-}
 
 
 static func is_road(kind: int) -> bool:
@@ -20,7 +14,7 @@ static func is_road(kind: int) -> bool:
 static func ground(ci: CanvasItem, map: MapDef, index: int, r: Rect2) -> void:
 	var kind := map.cells[index]
 	var c := map.cell_coords(index)
-	var col: Color = COLORS[kind]
+	var col := MapTheme.color(map.theme, kind)
 	if not is_road(kind) and kind != MapDef.Cell.WATER and (c.x + c.y) % 2 == 0:
 		col = col.lightened(0.04)
 	ci.draw_rect(r, col)
@@ -30,18 +24,17 @@ static func ground(ci: CanvasItem, map: MapDef, index: int, r: Rect2) -> void:
 		for k in 3:
 			var p := r.position + Vector2(0.15 + 0.7 * Ink.noise(index, k), 0.15 + 0.7 * Ink.noise(index, k + 9)) * s
 			ci.draw_circle(p, maxf(1.0, s * 0.035), col.darkened(0.22))
+	elif kind == MapDef.Cell.WATER and MapTheme.LAVA.has(map.theme):  # lave : bulles incandescentes
+		for k in 2:
+			var p := r.position + Vector2(0.25 + 0.5 * Ink.noise(index, k), 0.25 + 0.5 * Ink.noise(index, k + 4)) * s
+			ci.draw_circle(p, s * (0.06 + 0.04 * k), Color("#ffd04a", 0.8))
 	elif kind == MapDef.Cell.WATER:  # vagues stylisées
 		for k in 2:
 			var p := r.position + Vector2(0.3 + 0.4 * k, 0.35 + 0.3 * k) * s
 			ci.draw_arc(p, s * 0.13, PI, TAU, 8, Color(Ink.PAPER, 0.65), w)
 			ci.draw_arc(p + Vector2(s * 0.26, 0), s * 0.13, PI, TAU, 8, Color(Ink.PAPER, 0.65), w)
-	elif kind == MapDef.Cell.BUILD and Ink.noise(index, 1) < 0.5:  # touffe d'herbe à l'encre
-		var p := r.position + Vector2(0.2 + 0.6 * Ink.noise(index, 2), 0.3 + 0.5 * Ink.noise(index, 3)) * s
-		var k := s * 0.07
-		var tuft := Color(Ink.INK, 0.28)
-		ci.draw_line(p, p + Vector2(-k, -k * 1.4), tuft, w)
-		ci.draw_line(p, p + Vector2(0, -k * 1.8), tuft, w)
-		ci.draw_line(p, p + Vector2(k, -k * 1.4), tuft, w)
+	elif kind == MapDef.Cell.BUILD and Ink.noise(index, 1) < 0.5:  # détail du sol (herbe, neige…)
+		DecorPainter.ground_detail(ci, map.theme, index, r, w)
 
 
 ## Liserés d'encre là où la route (ou l'eau) touche un autre terrain.
@@ -74,9 +67,11 @@ static func props(ci: CanvasItem, map: MapDef, data: GameData, index: int, r: Re
 			if special >= 0 and data != null:
 				SpecialPainter.draw(ci, data.specials[special], center, s)
 		MapDef.Cell.ROCK:
-			_rock(ci, index, center, s, w)
+			if not DecorPainter.rock(ci, map.theme, index, center, s, w):
+				_rock(ci, index, center, s, w)
 		MapDef.Cell.TREE:
-			_tree(ci, center, s, w)
+			if not DecorPainter.tree(ci, map.theme, index, center, s, w):
+				_tree(ci, center, s, w)
 		MapDef.Cell.START:
 			_breach(ci, index, center, s, w)
 		MapDef.Cell.END:
