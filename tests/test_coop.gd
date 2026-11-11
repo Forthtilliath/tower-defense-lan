@@ -107,7 +107,7 @@ func test_solo_lanes_close_other_zones() -> void:
 	check(rock >= 0 and sim.map.zone_closed(1, 1), "le décor garde sa zone")
 	var colors := BoardPainter.zone_colors(sim.map, [Color.RED] as Array[Color])
 	check(str(colors) == str([Color.RED, BoardPainter.CLOSED, BoardPainter.CLOSED, BoardPainter.CLOSED]), "zones fermées assombries : %s" % str(colors))
-	check(is_equal_approx(sim.monster_hp_mult(), sim.map.monster_hp) and sim.map.monster_hp > 1.0, "route longue : monstres renforcés (x%f)" % sim.monster_hp_mult())
+	check(is_equal_approx(sim.monster_hp_mult(), sim.map.monster_hp * float(sim.difficulty["hp"])) and sim.map.monster_hp > 1.0, "route longue : monstres renforcés (x%f)" % sim.monster_hp_mult())
 	var plaine := _sim(1, PLAINE)
 	check(_build(plaine, 1, _cell_in_zone(plaine.map, -1)) == "", "carte sans zones : rien de fermé")
 

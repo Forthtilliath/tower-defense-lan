@@ -145,7 +145,7 @@ func test_coop_scales_with_player_count() -> void:
 	var trio_count := trio.boards[0].monsters.size()
 	check(solo_count == 8 and trio_count == 14, "8 gobelins seul, 14 à trois : %d / %d" % [solo_count, trio_count])
 	var hp: float = trio.boards[0].monsters[0].max_hp
-	check(is_equal_approx(hp, 12.0 * 1.3), "PV à trois : x1,3 (%f)" % hp)
+	check(is_equal_approx(hp, 12.0 * 1.3 * float(trio.difficulty["hp"])), "PV à trois : x1,3 (%f)" % hp)
 
 
 func test_snapshot_carries_new_effects() -> void:
