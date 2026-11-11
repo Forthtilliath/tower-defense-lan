@@ -54,7 +54,8 @@ func test_maps_pick_a_few_special_kinds() -> void:
 				kinds[m.special_at(i)] = true
 				count += 1
 		check(kinds.size() >= 2 and kinds.size() <= 3, "%s : %d types de cases spéciales (2 ou 3)" % [m.id, kinds.size()])
-		check(count >= 4 and count <= 2 * maxi(m.lanes, 4), "%s : %d cases spéciales" % [m.id, count])
+		var most := 3 * m.lanes if m.lanes > 1 else 7  # 4 à 7, ou 3 par couloir sur une carte à couloirs
+		check(count >= 4 and count <= most, "%s : %d cases spéciales (%d au plus)" % [m.id, count, most])
 
 
 func test_entries_open_by_wave() -> void:
