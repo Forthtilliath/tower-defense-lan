@@ -25,8 +25,7 @@ func _ready() -> void:
 	var line1 := UiTheme.hbox(10)
 	left.add_child(line1)
 	_mode = _host_option(line1, "Mode", Net.MODE_NAMES, "mode")
-	_map = _host_option(line1, "Carte", Data.db.maps.map(func(m: MapDef) -> String:
-		return "%s (%s)" % [m.name, DataSchema.MAP_TIERS[m.tier]]), "map")
+	_map = _map_option(line1)
 	var line2 := UiTheme.hbox(10)
 	left.add_child(line2)
 	_rhythm = _host_option(line2, "Rythme", SimMatch.RHYTHM_NAMES, "rhythm")
@@ -53,11 +52,23 @@ func _host_option(parent: Control, heading: String, items: Array, key: String) -
 	return ob
 
 
+## Cartes de la plus facile à la plus difficile (ordre des données à difficulté égale) ;
+## l'identifiant de chaque élément reste l'index de la carte dans les données.
+func _map_option(parent: Control) -> OptionButton:
+	var ob := UiTheme.option(parent, "Carte", [])
+	ob.disabled = not Net.is_host()
+	for i in MapDef.by_tier(Data.db.maps):
+		var m: MapDef = Data.db.maps[i]
+		ob.add_item("%s (%s)" % [m.name, DataSchema.MAP_TIERS[m.tier]], i)
+	ob.item_selected.connect(func(i: int) -> void: Net.set_option("map", ob.get_item_id(i)))
+	return ob
+
+
 func refresh(colors: Array[Color]) -> void:
 	var s := Net.settings
 	var coop: bool = s["mode"] == SimMatch.Mode.COOP
 	_mode.select(s["mode"])
-	_map.select(s["map"])
+	_map.select(_map.get_item_index(s["map"]))
 	_rhythm.select(s["rhythm"])
 	_launch.select(s["launch"])
 	# En versus, rythme et lancement ne s'appliquent pas : désactivés plutôt que cachés (rien ne bouge).
