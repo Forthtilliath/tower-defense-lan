@@ -56,7 +56,8 @@ static func map_text(map: MapDef, mode: int, player_count: int) -> String:
 	text = text.left(1).to_upper() + text.substr(1)
 	if mode == SimMatch.Mode.COOP and map.lanes > 1:
 		var open := clampi(player_count, 1, map.lanes)
-		text += "\n%d couloirs séparés, %d ouvert%s (un par joueur)." % [map.lanes, open, "s" if open > 1 else ""]
+		text += "\n%d couloirs séparés, %d ouvert%s (un par joueur)%s." % [map.lanes, open, "s" if open > 1 else "",
+			" : les zones des autres sont fermées" if open < map.lanes else ""]
 	if mode == SimMatch.Mode.COOP and map.layout() != MapDef.Layout.SHARED:
 		text += "\nChacun construit dans sa zone (sa couleur)%s." % (", cases neutres communes" if map.layout() == MapDef.Layout.MIXED else "")
 	return text

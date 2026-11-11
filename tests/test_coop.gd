@@ -86,10 +86,38 @@ func test_zones_restrict_building() -> void:
 	var z2 := _cell_in_zone(sim.map, 2)
 	check(_build(sim, 2, z0) == "Cette zone appartient à un autre joueur", "zone d'un autre refusée")
 	check(_build(sim, 1, z0) == "", "sa propre zone acceptée")
-	check(_build(sim, 1, z2) == "", "à deux, chacun a deux zones")
+	check(_build(sim, 1, z2) == MatchActions.CLOSED, "à deux, la zone d'un couloir fermé est refusée")
 	check(_build(sim, 1, z1) != "", "zone de l'allié refusée")
 	sim.player_left(2)
 	check(_build(sim, 1, z1) == "", "zone d'un joueur parti : devenue commune")
+	check(_build(sim, 1, _cell_in_zone(sim.map, 3)) == MatchActions.CLOSED, "une zone fermée le reste")
+
+
+## Seul sur une carte à couloirs : seule la zone de son couloir est ouverte (pas de pillage des
+## filons des autres zones), même pour raser du décor ou poser une case.
+func test_solo_lanes_close_other_zones() -> void:
+	var sim := _sim(1, FIEFS)
+	check(_build(sim, 1, _cell_in_zone(sim.map, 0)) == "", "sa zone acceptée")
+	for z in [1, 2, 3]:
+		check(_build(sim, 1, _cell_in_zone(sim.map, z)) == MatchActions.CLOSED, "zone %d fermée" % z)
+	var rock := -1
+	for i in sim.map.cell_count():
+		if sim.map.is_decor(i) and sim.map.zone_at(i) == 1:
+			rock = i
+	check(rock >= 0 and sim.map.zone_closed(1, 1), "le décor garde sa zone")
+	var colors := BoardPainter.zone_colors(sim.map, [Color.RED] as Array[Color])
+	check(str(colors) == str([Color.RED, BoardPainter.CLOSED, BoardPainter.CLOSED, BoardPainter.CLOSED]), "zones fermées assombries : %s" % str(colors))
+	check(is_equal_approx(sim.monster_hp_mult(), sim.map.monster_hp) and sim.map.monster_hp > 1.0, "route longue : monstres renforcés (x%f)" % sim.monster_hp_mult())
+	var plaine := _sim(1, PLAINE)
+	check(_build(plaine, 1, _cell_in_zone(plaine.map, -1)) == "", "carte sans zones : rien de fermé")
+
+
+func test_lobby_sorts_maps_from_easy_to_hard() -> void:
+	var maps := load_data().maps
+	var order := MapDef.by_tier(maps)
+	check(order.size() == maps.size() and order[0] == 0, "toutes les cartes, Prairie en tête : %s" % str(order))
+	for k in range(1, order.size()):
+		check(maps[order[k - 1]].tier <= maps[order[k]].tier, "%s avant %s" % [maps[order[k - 1]].id, maps[order[k]].id])
 
 
 func test_zone_distribution() -> void:
@@ -100,14 +128,14 @@ func test_zone_distribution() -> void:
 			for i in n:
 				if m.zone_allows(z, i, n):
 					owners += 1
-			check(owners == 1, "%d joueurs : zone %d a un seul propriétaire (%d)" % [n, z, owners])
+			var expected := 0 if z >= n else 1
+			check(owners == expected, "%d joueurs : zone %d a %d propriétaire(s) (%d)" % [n, z, expected, owners])
 		for i in n:
 			var owned := 0
 			for z in m.zone_count:
 				if m.zone_allows(z, i, n):
 					owned += 1
-			check(owned >= 1, "%d joueurs : le joueur %d a au moins une zone" % [n, i])
-	check(m.zone_allows(0, 0, 3) and m.zone_allows(3, 0, 3), "à trois, le premier joueur tient deux zones")
+			check(owned == 1, "%d joueurs : le joueur %d tient sa zone, une seule" % [n, i])
 
 
 func test_mixed_map_has_common_cells() -> void:
