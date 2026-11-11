@@ -10,6 +10,7 @@ var _on_close: Callable
 var _header: Label
 var _message: Label
 var _body: HBoxContainer
+var _tab := -1  # branche de spécialisation affichée (index dans les branches de la classe)
 
 
 func _init(builder: int, on_change: Callable, on_close: Callable) -> void:
@@ -69,38 +70,59 @@ func _rebuild() -> void:
 	var box := UiTheme.vbox(14)
 	box.size_flags_horizontal = SIZE_EXPAND_FILL
 	_body.add_child(box)
-	var specs := UiTheme.hbox(14)
 	var branches: Array = data.builders[_builder]["branches"]
+	if _tab < 0 or branches[_tab]["trunk"]:
+		_tab = kit.spec if kit.spec >= 0 else _first_spec(branches)
+	var tabs := UiTheme.hbox(8)
 	for i in branches.size():
 		var branch: Dictionary = branches[i]
 		if branch["trunk"]:
-			box.add_child(_trunk_block(branch, talents))
+			box.add_child(_branch_block(branch, talents, false))
 		else:
-			specs.add_child(_branch_column(branch, talents, kit.spec >= 0 and kit.spec != i))
-	box.add_child(specs)
+			tabs.add_child(_tab_button(i, branch, talents, kit.spec >= 0 and kit.spec != i))
+	box.add_child(tabs)
+	box.add_child(_branch_block(branches[_tab], talents, kit.spec >= 0 and kit.spec != _tab))
 
 
-## Tronc commun : ses talents côte à côte, au-dessus des spécialisations.
-func _trunk_block(branch: Dictionary, talents: Dictionary) -> VBoxContainer:
-	var col := UiTheme.vbox(6)
-	col.add_child(UiTheme.label("%s (%d) — %s" % [branch["name"], _spent(branch, talents), branch["description"]], 20, UiTheme.ACCENT))
-	var row := UiTheme.hbox(10)
-	for t in _sorted(branch):
-		var r := _talent_row(t, talents)
-		r.size_flags_horizontal = SIZE_EXPAND_FILL
-		row.add_child(r)
-	col.add_child(row)
-	return col
+static func _first_spec(branches: Array) -> int:
+	for i in branches.size():
+		if not branches[i]["trunk"]:
+			return i
+	return 0
 
 
-func _branch_column(branch: Dictionary, talents: Dictionary, closed: bool) -> VBoxContainer:
+## Onglet d'une spécialisation : son nom, ses points, fermée si une autre est choisie.
+func _tab_button(i: int, branch: Dictionary, talents: Dictionary, closed: bool) -> Button:
+	var b := UiTheme.button("%s (%d)%s" % [branch["name"], _spent(branch, talents), " · fermée" if closed else ""],
+		func() -> void:
+			_tab = i
+			_rebuild(), 52, false)
+	b.size_flags_horizontal = SIZE_EXPAND_FILL
+	if i == _tab:
+		b.add_theme_color_override("font_color", UiTheme.ACCENT)
+		b.add_theme_color_override("font_hover_color", UiTheme.ACCENT)
+	elif closed:
+		b.add_theme_color_override("font_color", UiTheme.MUTED.darkened(0.3))
+	return b
+
+
+## Une branche (tronc ou spécialisation) : titre, description, talents deux par ligne.
+func _branch_block(branch: Dictionary, talents: Dictionary, closed: bool) -> VBoxContainer:
 	var col := UiTheme.vbox(8)
 	col.size_flags_horizontal = SIZE_EXPAND_FILL
 	var title := "%s (%d)%s" % [branch["name"], _spent(branch, talents), " · fermée" if closed else ""]
 	col.add_child(UiTheme.label(title, 22, UiTheme.MUTED if closed else UiTheme.ACCENT))
 	col.add_child(UiTheme.label(branch["description"], 15, UiTheme.MUTED))
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 8)
+	grid.size_flags_horizontal = SIZE_EXPAND_FILL
 	for t in _sorted(branch):
-		col.add_child(_talent_row(t, talents))
+		var r := _talent_row(t, talents)
+		r.size_flags_horizontal = SIZE_EXPAND_FILL
+		grid.add_child(r)
+	col.add_child(grid)
 	return col
 
 
