@@ -55,15 +55,16 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   Phare (portée), Comptoir (prime des monstres tués à portée), Chantier (constructions moins chères autour, alliés
   compris), Alambic qui coupe les soins, primes d'équipe du Mécène, or des vagues lancées en avance ou sans fuite
   du Parieur, Terrassier qui rase arbres et rochers pour construire dessus et pose des cases bonus (Colline, Cristal,
-  Rune ; jamais de Filon d'or), avec un nombre de charges par partie selon ses talents.
-- **Talents et progression** (bouton « Talents » du salon) : chaque classe gagne de l'expérience à chaque partie
-  (victoire : 10 XP par vague × difficulté, + 25 % ; défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 %
-  de ses 10 XP selon le quart de la partie atteint, donc presque rien en perdant tôt) et monte
-  jusqu'au niveau 15, avec 1 point de talent par niveau. Le tronc coûte 4 points, une spécialisation 10, et chaque
-  spécialisation a un **talent ultime** (1 point) réservé au niveau 15 : au niveau max, on a tout son tronc, toute sa
-  spécialisation et son ultime (ex. Tir perçant : la Baliste ignore la moitié de l'armure ; Épidémie : tous ses
-  poisons deviennent contagieux).
-- **Héritage** : chaque classe montée au niveau 15 donne un bonus à toutes les autres, cumulable — Artilleur
+  Rune, et avec ses talents Filon d'or, Butte et Fossé), avec un nombre de charges par partie selon ses talents.
+- **Talents et progression** (bouton « Talents » du salon, un onglet par spécialisation) : chaque classe gagne de
+  l'expérience à chaque partie (victoire : 10 XP par vague × difficulté — Difficile ×1,5, Cauchemar ×2 —, + 25 % ;
+  défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 % de ses 10 XP selon le quart de la partie atteint)
+  et monte jusqu'au **niveau 30**, avec 1 point de talent par niveau. Le tronc (12 rangs) ne renforce que les
+  tourelles de la classe ; une spécialisation compte 16 à 18 rangs (paliers à 3, 7, 11 et 15 points) : talents de
+  mécanique (critiques, exécution, perforation, réactions entre éléments, contagion, auras, économie, étages…).
+  Chaque spécialisation a un **talent ultime** (1 point, niveau 30) qui donne un **pouvoir actif** : un bouton en
+  partie, rechargé en quelques vagues (ex. Météore à viser, Zéro absolu, Héroïsme, Ruée vers l'or, Coup de génie).
+- **Héritage** : chaque classe montée au niveau 30 donne un bonus à toutes les autres, cumulable — Artilleur
   +20 % de dégâts des tirs physiques, Arcaniste +20 % des tourelles élémentaires, Fléau +20 % des effets continus,
   Support +25 % de contrôles et d'auras, Gobelin +100 or de départ et +15 % de primes, Bâtisseur −10 % sur les
   constructions et +10 % à la revente. Plus on a monté de classes, plus les suivantes sont faciles à monter. Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
