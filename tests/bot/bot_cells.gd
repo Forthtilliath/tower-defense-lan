@@ -53,7 +53,9 @@ func lane_key(m: MapDef, cell: int, paths: Array[int]) -> int:
 ## Cases constructibles triées par longueur de chemin (au sol ou aérien) couverte à 2,5 cases,
 ## sur les seuls chemins ouverts (`paths`, tous si vide) ; les cases qui n'en couvrent aucun sont écartées.
 ## Comme un joueur, il vise les cases spéciales (`specials` : GameData.specials) : la Colline
-## allonge la portée, le Cristal et la Rune multiplient la puissance, le Filon d'or passe en tête.
+## allonge la portée, le Cristal et la Rune multiplient la puissance, le Tableau de chasse rapporte.
+## Une case réservée à une famille de tourelles (« only ») compte comme une case normale : le bot
+## ne choisit pas sa tourelle d'après la case.
 static func ranked_cells(m: MapDef, air: bool, paths: Array[int] = [], specials: Array = []) -> Array[int]:
 	var scores := {}
 	for cell in m.cell_count():
@@ -61,6 +63,8 @@ static func ranked_cells(m: MapDef, air: bool, paths: Array[int] = [], specials:
 			continue
 		var c := m.cell_center(cell)
 		var tile: Dictionary = specials[m.special_at(cell)] if m.special_at(cell) >= 0 and m.special_at(cell) < specials.size() else {}
+		if String(tile.get("only", "")) != "":
+			tile = {}
 		var reach := 2.5 * float(tile.get("range", 1.0))
 		var score := 0.0
 		for p in (paths if not paths.is_empty() else range(m.start_count())):
@@ -70,8 +74,7 @@ static func ranked_cells(m: MapDef, air: bool, paths: Array[int] = [], specials:
 					score += 1.0
 				d += 0.25
 		score *= float(tile.get("damage", 1.0)) * float(tile.get("rate", 1.0))
-		if score > 0.0 and int(tile.get("gold_per_wave", 0)) > 0:
-			score += 1000.0
+		score *= 1.0 + 0.15 * int(tile.get("kill_gold", 0)) + float(tile.get("crit", 0.0)) + 0.3 * float(tile.get("vs_big", 0.0))
 		if score > 0.0:
 			scores[cell] = score
 	var cells: Array[int] = []
