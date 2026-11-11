@@ -166,7 +166,7 @@ func test_last_stand_growth_and_harmony() -> void:
 	b.add_tower(2 * w + 3, "brazier", 7, 50, kit)
 	b.add_tower(3 * w + 2, "frost", 7, 50, kit)
 	b.add_tower(3 * w + 3, "tesla", 8, 50)
-	check(BoardFeats.elements_around(b, t) == 2, "harmonie : feu et glace voisins, pas la Tesla d'un allié")
+	check(BoardLayout.elements_around(b, t) == 2, "harmonie : feu et glace voisins, pas la Tesla d'un allié")
 	t.stats["growth"] = 0.1
 	t.stats["harmony"] = 0.1
 	kit.clean_waves = 5

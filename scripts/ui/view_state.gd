@@ -186,7 +186,7 @@ func _parse_towers(raw: Variant, board_map: MapDef) -> Variant:
 		if cell == null or type == null or not board_map.is_buildable(cell):
 			return null
 		var id: String = data.tower_order[type]
-		var level = Check.as_int(e[2], 0, data.tower_levels(id).size() - 1)
+		var level = Check.as_int(e[2], 0, data.all_levels(id).size() - 1)  # étages compris
 		var owner = Check.as_int(e[3], 1, NetPayloads.MAX_PEER_ID)
 		var mode = Check.as_int(e[4], 0, SimTower.TARGET_NAMES.size() - 1)
 		var buffs = Check.as_int(e[5], 0, 127)  # auras reçues, et 8 : brouillée

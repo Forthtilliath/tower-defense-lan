@@ -36,6 +36,12 @@ static func sanitize(raw: Variant, data: GameData, map: MapDef) -> Variant:
 			if cell == null or d.size() != 2:
 				return INVALID
 			return {"a": action, "cell": cell}
+		"move":
+			var cell = Check.as_int(d.get("cell"), 0, last_cell)
+			var to = Check.as_int(d.get("to"), 0, last_cell)
+			if cell == null or to == null or cell == to or d.size() != 3:
+				return INVALID
+			return {"a": action, "cell": cell, "to": to}
 		"send":
 			var monster = Check.as_int(d.get("monster"), 0, data.monster_order.size() - 1)
 			if monster == null or d.size() != 2:

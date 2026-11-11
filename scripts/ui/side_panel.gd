@@ -144,7 +144,7 @@ func _build_panel() -> void:
 func _tower_info(id: String, special: int, builder: PlayerKit) -> void:
 	var data := _game.state.data
 	var def: Dictionary = data.towers[id]
-	var levels: Array = def["levels"]
+	var levels: Array = data.levels_for(id, builder)
 	var last := levels.size() - 1
 	add_child(UiTheme.label(def["name"], 22, Color(def["color"]).lightened(0.35)))
 	add_child(UiTheme.label(def["description"], 16, UiTheme.TEXT))
@@ -158,12 +158,12 @@ func _tower_info(id: String, special: int, builder: PlayerKit) -> void:
 func _tower_panel(t: Dictionary) -> void:
 	var data := _game.state.data
 	var def: Dictionary = data.towers[t["type"]]
-	var levels: Array = def["levels"]
 	var level: int = t["level"]
 	var special := _game.map.special_at(_selected)
-	add_child(UiTheme.label("%s — niveau %d / %d" % [def["name"], level + 1, levels.size()], 24, UiTheme.ACCENT))
 	var owner: int = t["owner"]
 	var builder: PlayerKit = _game.kits.get(owner)
+	var levels: Array = data.levels_for(t["type"], builder)  # étages de l'Architecte compris
+	add_child(UiTheme.label("%s — niveau %d / %d" % [def["name"], level + 1, levels.size()], 24, UiTheme.ACCENT))
 	var builder_name: String = builder.title(data) if builder != null else "?"
 	add_child(UiTheme.label("Propriétaire : %s (%s)" % [_game.names.get(owner, "?"), builder_name], 17, _game.colors.get(owner, UiTheme.TEXT)))
 	_special_info()

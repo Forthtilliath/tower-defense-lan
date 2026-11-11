@@ -54,7 +54,7 @@ static func effective_stats(t: SimTower) -> Dictionary:
 
 ## Portée de tir, aura de portée comprise.
 static func reach(t: SimTower) -> float:
-	return float(t.stats["range"]) * (1.0 + t.buff("range"))
+	return float(t.stats["range"]) * (1.0 + t.buff("range")) * BoardLayout.reach_mult(t)
 
 
 ## Délai entre deux tirs, aura de cadence comprise.

@@ -4,6 +4,11 @@ extends RefCounted
 
 const DEFAULT_PATH := "res://data/game_data.json"
 const MAX_FILE_SIZE := 512 * 1024
+## Étages (Architecte) : niveaux en plus des tourelles du tronc commun.
+const FLOORS := 2
+const FLOOR_COST := 1.6
+const FLOOR_POWER := 1.35
+const FLOOR_RANGE := 0.2
 
 var player := {}
 var coop_scaling := {}
@@ -25,6 +30,7 @@ var waves := {}
 var maps: Array[MapDef] = []
 ## Vide si les données sont valides, sinon le message de la première anomalie.
 var error := ""
+var _floors := {}  # cache de all_levels
 
 
 static func load_file(path: String = DEFAULT_PATH) -> GameData:
@@ -61,10 +67,35 @@ func tower_levels(type: String) -> Array:
 	return towers[type]["levels"]
 
 
+## Niveaux qu'un joueur peut atteindre : ceux des données, plus ses étages (Architecte) sur une
+## tourelle du tronc commun.
+func levels_for(type: String, kit: PlayerKit = null) -> Array:
+	var floors := int(kit.m("floors")) if kit != null else 0
+	if floors <= 0 or not common_towers.has(type):
+		return tower_levels(type)
+	return all_levels(type).slice(0, tower_levels(type).size() + floors)
+
+
+## Tous les niveaux possibles : ceux des données, puis FLOORS étages pour une tourelle du tronc
+## commun (chacun : dégâts ×FLOOR_POWER, un peu plus de portée, prix ×FLOOR_COST).
+func all_levels(type: String) -> Array:
+	if not _floors.has(type):
+		var out: Array = tower_levels(type).duplicate()
+		if common_towers.has(type):
+			for k in FLOORS:
+				var top: Dictionary = out[-1].duplicate()
+				top["cost"] = roundi(float(top["cost"]) * FLOOR_COST)
+				scale_damage(top, FLOOR_POWER)
+				top["range"] = float(top["range"]) + FLOOR_RANGE
+				out.append(top)
+		_floors[type] = out
+	return _floors[type]
+
+
 ## Statistiques d'une tourelle à un niveau donné, avec les bonus de la case spéciale et du
 ## kit de son propriétaire (PlayerKit, ou index de bâtisseur sans talents ; null : aucun).
 func tower_stats(type: String, level: int, special := -1, kit: Variant = null) -> Dictionary:
-	var stats: Dictionary = tower_levels(type)[level].duplicate()
+	var stats: Dictionary = all_levels(type)[level].duplicate()
 	if special >= 0 and special < specials.size():
 		var s: Dictionary = specials[special]
 		stats["range"] *= s["range"]
