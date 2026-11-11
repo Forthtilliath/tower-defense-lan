@@ -93,8 +93,11 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 - **Cartes partagées, en zones ou mixtes** : sur une carte en zones, chacun ne construit que dans la sienne (teintée de sa couleur) ;
   une carte mixte ajoute des cases communes. Avec moins de joueurs que de zones, chacun en tient plusieurs ;
   la zone d'un joueur qui quitte la partie devient commune.
-- **Cartes à plusieurs couloirs séparés** (Quatre fiefs, Bastion) : la réserve de vies est multipliée par le nombre de couloirs,
-  et si vous êtes moins nombreux que les couloirs, l'or de départ et des vagues l'est par le nombre de couloirs tenus.
+- **Cartes à plusieurs couloirs séparés** (Quatre fiefs, Bastion) : un couloir s'ouvre par joueur, et la réserve de vies
+  est multipliée par le nombre de couloirs ouverts. Les zones des couloirs fermés sont assombries : personne n'y construit
+  (pas de pillage de leurs filons d'or en petit comité).
+- **Difficulté des cartes** : le salon les classe de la plus facile à la plus difficile. Sur les cartes à très longue route
+  (Spirale, Labyrinthe, Quatre fiefs), les monstres ont plus de PV.
 
 ### Contenu
 
@@ -189,7 +192,8 @@ Les cartes s'écrivent en texte dans `data/game_data.json` : `.` herbe construct
 Les chemins sont calculés automatiquement de chaque départ vers l'arrivée la plus proche. `flyer_speed` (facultatif)
 ralentit les volants sur une carte où leur ligne droite est un trop grand raccourci (Spirale, Labyrinthe).
 Facultatifs aussi : `zones` (mêmes dimensions que la carte, `1` à `4` pour une zone de joueur, `.` pour une case commune),
-`lanes` (nombre de couloirs défendus séparément, pour les vies et l'or en coopération), `min_players` / `max_players`
+`lanes` (nombre de couloirs défendus séparément, pour les vies et l'or en coopération), `tier` (difficulté affichée,
+0 à 2, mesurée au bot), `hp` (PV des monstres sur cette carte, 1 par défaut), `min_players` / `max_players`
 (nombre de joueurs conseillé, affiché dans le salon). Les bâtisseurs (`builders`) et les vagues spéciales
 (`wave_modifiers`, appliquées par le champ `modifier` d'une vague) se règlent dans le même fichier.
 
