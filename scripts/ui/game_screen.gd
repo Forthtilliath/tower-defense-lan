@@ -199,6 +199,9 @@ func _award_xp() -> void:
 	var passed := state.wave if won else maxi(0, state.wave - 1)
 	var total := map.waves.size()
 	var amount := TalentRules.match_xp(Data.db, won, mini(passed, total), total, int(config.get("difficulty", 1)))
+	var kit := my_kit()
+	if won and kit != null and kit.m("saver") > 0.0:  # Épargnant : l'or gardé rapporte de l'expérience
+		amount = roundi(amount * (1.0 + kit.m("saver") * int(state.players.get(my_id, {}).get("gold", 0)) / 100.0))
 	var builder := my_builder()
 	var levels := Progress.award(builder, amount)
 	xp_summary = "+%d XP pour %s (niveau %d)" % [amount, Data.db.builders[builder]["name"], levels[1]]

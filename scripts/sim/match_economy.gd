@@ -137,6 +137,9 @@ static func credit_bounty(sim: SimMatch, owner: int, gold: int, big := false, me
 	var rng := sim.boards[0].rng
 	if kit.m("jackpot") > 0.0 and rng.randf() < kit.m("jackpot"):
 		mult *= JACKPOT
+		for other in sim.order:  # Butin partagé : les alliés touchent une part du gain
+			if other != owner:
+				credit(sim, other, roundi(gold * (JACKPOT - 1) * kit.m("jackpot_share")))
 	var bonus := LOOT_GOLD if kit.m("loot") > 0.0 and rng.randf() < kit.m("loot") else 0
 	credit(sim, owner, roundi(gold * mult) + bonus)
 

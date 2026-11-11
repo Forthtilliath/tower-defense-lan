@@ -61,7 +61,10 @@ const SPECIAL := {
 	"char": ["text", 1], "id": ["id"], "name": ["text", 24], "color": ["color"],
 	"description": ["text", 120, ""], "range": ["num", 0.5, 3.0, 1.0], "damage": ["num", 0.5, 5.0, 1.0],
 	"rate": ["num", 0.5, 5.0, 1.0], "gold_per_wave": ["int", 0, 10000, 0],
+	"rare": ["bool", false], "slow": ["num", 0.0, 0.9, 0.0],
 }
+## rare : ne se pose qu'avec le talent du Terrassier qui la nomme (Butte, Fossé), pas avec la
+## Géomancie. slow : ralentit les monstres qui passent à côté (BoardTerrain.DITCH_REACH).
 ## support : tourelle de soutien, qui ne tire pas mais renforce les tourelles dans sa portée.
 ## attack : façon de frapper (voir ATTACKS). element : voir ELEMENTS (vide : physique).
 const TOWER := {

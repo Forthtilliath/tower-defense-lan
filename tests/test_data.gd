@@ -7,7 +7,7 @@ func test_bundled_data_is_valid() -> void:
 	check(gd.maps.size() == 9, "9 cartes attendues")
 	check(gd.builders.size() == 6 and gd.modifiers.size() == 4, "6 bâtisseurs et 4 vagues spéciales")
 	check(gd.tower_order.size() == 36, "36 tourelles attendues")
-	check(gd.difficulties.size() == 4 and gd.specials.size() == 4, "4 difficultés et 4 cases spéciales")
+	check(gd.difficulties.size() == 4 and gd.specials.size() == 6, "4 difficultés et 6 cases spéciales (dont Butte et Fossé)")
 	check(gd.sendable_monsters().size() == 11, "11 monstres envoyables : %d" % gd.sendable_monsters().size())
 	for id in gd.tower_order:
 		check(gd.tower_levels(id).size() == 5, "%s : 5 niveaux" % id)

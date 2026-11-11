@@ -27,9 +27,15 @@ const TALENT := {
 	"hot_hand": ["int", 0, 50, 0], "early_wave": ["num", 0.0, 2.0, 0.0], "risk": ["num", 0.0, 0.1, 0.0],
 	"nerve": ["num", 0.0, 2.0, 0.0], "floors": ["int", 0, 2, 0], "moves": ["int", 0, 3, 0],
 	"scrap": ["num", 0.0, 1.0, 0.0], "spare": ["num", 0.0, 0.5, 0.0], "tinker": ["num", 0.0, 1.0, 0.0],
-	"team_aura": ["num", 0.0, 0.2, 0.0],
+	"team_aura": ["num", 0.0, 0.2, 0.0], "vein_tiles": ["int", 0, 5, 0], "mound_tiles": ["int", 0, 5, 0],
+	"ditch_tiles": ["int", 0, 5, 0], "fertile": ["num", 0.0, 1.0, 0.0], "saver": ["num", 0.0, 0.1, 0.0],
+	"jackpot_share": ["num", 0.0, 1.0, 0.0],
 }
-## team_aura (Support) : puissance d'aura en plus par allié dans la partie.
+## team_aura (Support) : puissance d'aura en plus par allié dans la partie. vein_tiles,
+## mound_tiles, ditch_tiles (Terrassier) : Filons, Buttes et Fossés à poser par partie. fertile :
+## bonus des cases spéciales multiplié d'autant en plus pour ses tourelles. saver (Usurier) :
+## expérience en plus d'une victoire, par 100 or gardés. jackpot_share : part d'un jackpot versée
+## aussi à chaque allié.
 ## Bâtisseur : floors (étages : niveaux de tourelle en plus, tronc commun seulement), moves
 ## (tourelles déplacées gratuitement par vague), scrap (prime en plus des véhicules), spare
 ## (vendre une tourelle renforce d'autant la prochaine construite), tinker (cadence en plus d'une
