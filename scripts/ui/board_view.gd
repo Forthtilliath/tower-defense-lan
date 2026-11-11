@@ -103,7 +103,7 @@ func _draw() -> void:
 		MonsterPainter.draw(self, data.monsters[m["type"]], m, pos, facing, _ts)
 	for id in b["proj"]:
 		var p: Dictionary = b["proj"][id]
-		UnitPainter.projectile(self, to_px(p["from"]), to_px(state.projectile_pos(p)), _ts)
+		UnitPainter.projectile(self, data, p["kind"], to_px(p["from"]), to_px(state.projectile_pos(p)), _ts)
 	for f in b["fx"]:
 		UnitPainter.fx(self, data, f, _origin, _ts)
 	if not b["alive"]:

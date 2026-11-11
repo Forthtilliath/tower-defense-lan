@@ -228,14 +228,15 @@ func _parse_projectiles(raw: Variant) -> Variant:
 		return null
 	var out := {}
 	for e in raw:
-		if not _is_tuple(e, 3):
+		if not _is_tuple(e, 4):
 			return null
 		var id = Check.as_int(e[0], 0, NetPayloads.MAX_PEER_ID)
 		var x = Check.as_num(e[1], -2.0, map.width + 2.0)
 		var y = Check.as_num(e[2], -2.0, map.height + 2.0)
-		if id == null or x == null or y == null:
+		var kind = Check.as_int(e[3], 0, data.tower_order.size() - 1)  # tourelle qui a tiré (son aspect)
+		if id == null or x == null or y == null or kind == null:
 			return null
-		out[id] = {"from": Vector2(x, y), "to": Vector2(x, y)}
+		out[id] = {"from": Vector2(x, y), "to": Vector2(x, y), "kind": kind}
 	return out
 
 
