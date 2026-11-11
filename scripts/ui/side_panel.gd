@@ -59,8 +59,12 @@ func _rebuild() -> void:
 	elif t != null:
 		_tower_panel(t)
 	elif _game.map.is_buildable(_selected):
-		var owners := _zone_owners(_game.map.zone_at(_selected))
-		if owners.is_empty() or owners.has(_game.my_id):
+		var zone := _game.map.zone_at(_selected)
+		var owners := _zone_owners(zone)
+		if zone >= 0 and not _game.is_versus and _game.map.zone_closed(zone, _game.order.size()):
+			add_child(UiTheme.label("Zone fermée", 22, UiTheme.MUTED))
+			add_child(UiTheme.label("Aucun joueur ne défend ce couloir : aucun monstre n'y passe, on n'y construit pas.", 17, UiTheme.MUTED))
+		elif owners.is_empty() or owners.has(_game.my_id):
 			_build_panel()
 		else:
 			var who := " / ".join(owners.map(func(id: int) -> String: return _game.names.get(id, "?")))

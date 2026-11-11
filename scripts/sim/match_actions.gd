@@ -4,6 +4,7 @@ extends RefCounted
 ## Chaque action vérifie les règles et renvoie "" si elle est acceptée, sinon la raison du refus.
 
 const LOCKED := "Construction possible seulement entre les vagues"
+const CLOSED := "Zone fermée : aucun monstre ne passe par ce couloir"
 
 
 static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: int, type: String) -> String:
@@ -25,12 +26,15 @@ static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: 
 
 
 ## Zones de joueurs (coopération) : "" si le joueur peut construire sur cette case.
-## Une zone dont tous les propriétaires ont quitté la partie devient commune.
+## Une zone dont tous les propriétaires ont quitté la partie devient commune ; une zone fermée
+## (couloir sans joueur) le reste.
 static func zone_refusal(sim: SimMatch, id: int, cell: int) -> String:
 	var zone := sim.map.zone_at(cell)
 	if sim.mode != SimMatch.Mode.COOP or zone < 0:
 		return ""
 	var n := sim.order.size()
+	if sim.map.zone_closed(zone, n):
+		return CLOSED
 	var owned := false
 	for i in n:
 		if sim.map.zone_allows(zone, i, n) and sim.players[sim.order[i]]["connected"]:
