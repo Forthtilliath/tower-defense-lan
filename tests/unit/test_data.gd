@@ -79,7 +79,9 @@ func test_unknown_keys_are_dropped() -> void:
 
 func test_rejects_bad_specials_and_splits() -> void:
 	var gd := GameData.from_text(_bundled_text().replace("\"split_into\": \"mini_slime\"", "\"split_into\": \"slime\""))
-	check(not gd.is_valid() and gd.error.contains("diviser"), "division en cascade refusée : " + gd.error)
+	check(not gd.is_valid() and gd.error.contains("ne peut rien produire"), "division en cascade refusée : " + gd.error)
+	var brood := GameData.from_text(_bundled_text().replace("\"brood_into\": \"spiderling\"", "\"brood_into\": \"spider\""))
+	check(not brood.is_valid() and brood.error.contains("ne peut rien produire"), "ponte en cascade refusée : " + brood.error)
 	gd = GameData.from_text(_bundled_text().replace("\"split_into\": \"mini_slime\"", "\"split_into\": \"fantome\""))
 	check(not gd.is_valid() and gd.error.contains("inconnu"), "division vers un inconnu refusée : " + gd.error)
 	gd = GameData.from_text(_bundled_text().replace("{ \"char\": \"^\"", "{ \"char\": \"=\""))
