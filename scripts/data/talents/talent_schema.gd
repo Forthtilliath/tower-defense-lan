@@ -103,10 +103,12 @@ const GRANT_CAPS := {"armor_pierce": 1.0, "stun_chance": 1.0, "shred": 0.9, "hea
 ## débloquent les leurs), branches de talents, et bonus de classe. Les multiplicateurs (dégâts,
 ## portée, cadence, contrôles, auras) valent pour les tourelles de « bonus_towers » (toutes si vide).
 ## cc : multiplie les chances et durées de contrôle. bounty : multiplie sa part des primes.
-## interest / interest_cap / start_gold : s'ajoutent à ceux du joueur.
+## interest / interest_cap / start_gold : s'ajoutent à ceux du joueur. roams (Support, coopération) :
+## construit dans toutes les zones ouvertes, et ses alliés construisent dans la sienne (MatchActions.zone_refusal).
 const BUILDER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"], "description": ["text", 200, ""],
 	"damage": ["num", 0.5, 3.0, 1.0], "range": ["num", 0.5, 3.0, 1.0], "rate": ["num", 0.5, 3.0, 1.0],
 	"cc": ["num", 0.5, 3.0, 1.0], "aura": ["num", 0.5, 3.0, 1.0], "bounty": ["num", 0.5, 3.0, 1.0],
 	"interest": ["num", 0.0, 0.2, 0.0], "interest_cap": ["int", 0, 10000, 0], "start_gold": ["int", 0, 10000, 0],
+	"roams": ["bool", false],
 }

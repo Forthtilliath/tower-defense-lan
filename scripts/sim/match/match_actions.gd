@@ -55,7 +55,8 @@ static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: 
 
 ## Zones de joueurs (coopération) : "" si le joueur peut construire sur cette case.
 ## Une zone dont tous les propriétaires ont quitté la partie devient commune ; une zone fermée
-## (couloir sans joueur) le reste.
+## (couloir sans joueur) le reste. Un joueur qui « roams » (Support) construit dans toutes les
+## zones ouvertes, et sa zone est ouverte à tous (voir zone_open_to).
 static func zone_refusal(sim: SimMatch, id: int, cell: int) -> String:
 	var zone := sim.map.zone_at(cell)
 	if sim.mode != SimMatch.Mode.COOP or zone < 0:
@@ -63,13 +64,32 @@ static func zone_refusal(sim: SimMatch, id: int, cell: int) -> String:
 	var n := sim.order.size()
 	if sim.map.zone_closed(zone, n):
 		return CLOSED
+	var builders: Array[int] = []
+	var connected: Array[bool] = []
+	for pid in sim.order:
+		builders.append(int(sim.players[pid]["builder"]))
+		connected.append(bool(sim.players[pid]["connected"]))
+	return "" if zone_open_to(sim.data, sim.map, zone, sim.order.find(id), builders, connected) else "Cette zone appartient à un autre joueur"
+
+
+## Le joueur n° index (dans l'ordre des joueurs) peut-il construire dans cette zone ouverte ?
+## Oui s'il en est propriétaire, s'il « roams », si un propriétaire connecté « roams », ou si plus
+## aucun propriétaire n'est connecté. Partagé par l'hôte et l'interface (même règle).
+static func zone_open_to(data: GameData, map: MapDef, zone: int, index: int, builders: Array[int], connected: Array[bool]) -> bool:
+	var n := builders.size()
+	if index >= 0 and _roams(data, builders[index]):
+		return true
 	var owned := false
 	for i in n:
-		if sim.map.zone_allows(zone, i, n) and sim.players[sim.order[i]]["connected"]:
-			if sim.order[i] == id:
-				return ""
+		if map.zone_allows(zone, i, n) and connected[i]:
+			if i == index or _roams(data, builders[i]):
+				return true
 			owned = true
-	return "Cette zone appartient à un autre joueur" if owned else ""
+	return not owned
+
+
+static func _roams(data: GameData, builder: int) -> bool:
+	return builder >= 0 and builder < data.builders.size() and data.builders[builder]["roams"]
 
 
 ## Case où ce joueur peut construire en ce moment (hors or) : utile aux joueurs automatiques.
