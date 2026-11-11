@@ -219,7 +219,7 @@ func test_digger_places_bonus_tiles() -> void:
 	var cell := 2 * sim.map.width + 2
 	check(sim.apply_command(1, {"a": "build", "cell": cell, "tower": "crossbow"}) == "", "tourelle posée")
 	var before: float = b.towers[cell].stats["damage"]
-	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": 3}) != "", "pas de Filon d'or")
+	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": 3}) != "", "pas de Tableau de chasse sans le talent Filon")
 	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": 1}) == "", "Cristal posé sous la tourelle")
 	check(is_equal_approx(b.towers[cell].stats["damage"], before * 1.3), "la tourelle en profite : %f" % b.towers[cell].stats["damage"])
 	check(sim.apply_command(1, {"a": "tile", "cell": cell + 1, "special": 0}).contains("Plus"), "plus de case à poser")

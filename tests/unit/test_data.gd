@@ -7,7 +7,8 @@ func test_bundled_data_is_valid() -> void:
 	check(gd.maps.size() == 9, "9 cartes attendues")
 	check(gd.builders.size() == 6 and gd.modifiers.size() == 4, "6 bâtisseurs et 4 vagues spéciales")
 	check(gd.tower_order.size() == 36, "36 tourelles attendues")
-	check(gd.difficulties.size() == 4 and gd.specials.size() == 6, "4 difficultés et 6 cases spéciales (dont Butte et Fossé)")
+	check(gd.difficulties.size() == 4 and gd.specials.size() == 19, "4 difficultés et 19 cases spéciales (dont Butte et Fossé) : %d" % gd.specials.size())
+	check(gd.specials.all(func(s: Dictionary) -> bool: return s["id"] != "gold"), "plus de Filon d'or")
 	check(gd.sendable_monsters().size() == 11, "11 monstres envoyables : %d" % gd.sendable_monsters().size())
 	for id in gd.tower_order:
 		check(gd.tower_levels(id).size() == 5, "%s : 5 niveaux" % id)
@@ -129,8 +130,8 @@ func test_builders_and_modifiers() -> void:
 func test_special_tiles_on_maps() -> void:
 	var gd := load_data()
 	var prairie: MapDef = gd.maps[0]
-	var hill := 3 * prairie.width + 6
-	check(prairie.special_at(hill) == 0 and prairie.is_buildable(hill), "colline constructible en (6, 3)")
+	var hill := 3 * prairie.width + 8
+	check(prairie.special_at(hill) == 0 and prairie.is_buildable(hill), "colline constructible en (8, 3)")
 	var s := gd.tower_stats("crossbow", 0, 0)
 	check(is_equal_approx(s["range"], 2.5 * 1.25), "portée bonifiée : %f" % s["range"])
 	check(is_equal_approx(gd.tower_stats("venom", 0, 1)["poison_dps"], 5 * 1.3), "le cristal renforce le poison")

@@ -228,7 +228,7 @@ func test_lanes_open_one_per_player() -> void:
 	check(trio.open_paths.size() == 3 and trio.boards[0].lives == 60, "à trois : 3 couloirs, 3 fois plus de vies")
 	check(trio.players[1]["gold"] == 150 and trio.players[3]["gold"] == 150, "chacun son couloir : or normal")
 	for p in trio.open_paths.size():
-		check(trio.map._start_zone(trio.open_paths[p]) == p, "le joueur %d défend le couloir de sa zone" % (p + 1))
+		check(MapSpawns.start_zone(trio.map, trio.open_paths[p]) == p, "le joueur %d défend le couloir de sa zone" % (p + 1))
 	var full := _sim(4, FIEFS)
 	check(full.coop_scaling(4) == [1.0, 4.0, 1.0] and full.players[4]["gold"] == 150, "un joueur par couloir : règles solo")
 	check(full.coop_scaling(2) == [1.0, 4.0, 2.0], "deux joueurs partis : les couloirs restent, l'or double")

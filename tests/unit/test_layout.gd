@@ -91,12 +91,12 @@ func test_terraformer_tiles_use_their_own_charges() -> void:
 	kit.money = {"mound_tiles": 1.0, "vein_tiles": 1.0}
 	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": mound}) == "", "Butte posée avec sa charge")
 	check(MatchActions.charges_left(p, "mound") == 0 and MatchActions.charges_left(p, "tile") == 3, "charge de Butte dépensée, pas celle de Géomancie")
-	check(sim.apply_command(1, {"a": "tile", "cell": _cell(sim, 3, 2), "special": _special(sim, "gold")}) == "", "Filon posé")
+	check(sim.apply_command(1, {"a": "tile", "cell": _cell(sim, 3, 2), "special": _special(sim, "hunt")}) == "", "Tableau de chasse posé (talent Filon)")
 	var view := ViewState.new(sim.data, sim.map, sim.boards.size())
 	var snap := sim.snapshot()
 	snap["speed"] = 1
 	snap["iv"] = 0.1
-	check(view.apply(snap), "un client accepte la Butte et le Filon posés")
+	check(view.apply(snap), "un client accepte la Butte et le Tableau de chasse posés")
 	check(int(view.players[1].get("tile", -1)) == 3 and int(view.players[1].get("mound", -1)) == 0, "charges reçues")
 
 

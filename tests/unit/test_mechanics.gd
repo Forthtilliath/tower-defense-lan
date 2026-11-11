@@ -103,18 +103,6 @@ func test_golem_ignores_slow() -> void:
 	check(orc.is_slowed(), "l'orc est ralenti")
 
 
-func test_gold_vein_pays_each_wave() -> void:
-	var gd := load_data()
-	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]])
-	var vein := 6 * sim.map.width + 14  # « $ » de la prairie
-	check(sim.map.special_at(vein) == 3, "filon d'or en (14, 6)")
-	sim.apply_command(1, {"a": "build", "cell": vein, "tower": "crossbow"})
-	var before: int = sim.players[1]["gold"]
-	sim.countdown = 0.0
-	sim.launch_next_wave()
-	check(sim.players[1]["gold"] == before + 4 + 15 + 15, "intérêts (4) + vague (15) + filon (15) : %d" % (sim.players[1]["gold"] - before))
-
-
 func test_difficulty_changes_lives_gold_and_hp() -> void:
 	var gd := load_data()
 	var easy := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]], 0)

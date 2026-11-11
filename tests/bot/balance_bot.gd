@@ -13,7 +13,7 @@ const PLAN := [
 	"crossbow", "crossbow", "cannon", "frost", "sentinel", "venom", "tesla", "ballista",
 	"mortar", "crossbow", "venom", "sentinel", "cannon", "tesla", "mortar", "ballista",
 ]
-## Plan concentré, joué par l'utilisateur : une Arbalète (sur le Filon d'or), puis Tesla, Givre,
+## Plan concentré, joué par l'utilisateur : une Arbalète (sur la meilleure case), puis Tesla, Givre,
 ## Venin, Brasier, chacune montée au maximum avant la suivante (le Givre ralentit, les autres en profitent).
 const FOCUS_PLAN := ["crossbow", "tesla", "frost", "venom", "brazier", "tesla", "frost", "venom", "brazier"]
 const MAX_TOWERS := 16
