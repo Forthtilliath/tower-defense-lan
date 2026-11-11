@@ -64,6 +64,10 @@ func _run() -> void:
 	await _wait(0.4)
 	_shot("1b-talents")
 	tree.queue_free()
+	_fill_history()
+	main.show_history()
+	await _wait(0.4)
+	_shot("1c-historique")
 	Net.host("Forth")
 	Net.set_option("mode", _mode)
 	Net.set_option("map", _map)
@@ -128,6 +132,23 @@ func _showcase(map: MapDef) -> void:
 		board.spawn(monsters[k], 50.0, -1, 2.0 + k * 1.6)
 	await _wait(1.2)
 	_shot("5-vitrine")
+
+
+## Quelques parties pour le compte invité (jamais enregistré) : historique et étoiles du salon.
+func _fill_history() -> void:
+	var base := {"t": int(Time.get_unix_time_from_system()) - 86400, "map": Data.db.maps[_map].id, "diff": "normal", "mode": "coop",
+		"won": true, "wave": 20, "waves": 20, "lives": 18, "start": 20, "stars": 3, "class": "arcanist", "lvl": 12, "xp": 640, "team": []}
+	var games := [
+		{"team": [["Atthis", "support"], ["Bob", "gunner"]], "lives": 54, "start": 60},
+		{"won": false, "stars": 0, "wave": 14, "lives": 0, "diff": "hard", "team": [["Atthis", "support"]], "xp": 210},
+		{"lives": 20, "stars": 2, "class": "gunner", "lvl": 7, "diff": "easy", "start": 30},
+		{"lives": 6, "stars": 1, "map": Data.db.maps[(_map + 1) % Data.db.maps.size()].id},
+	]
+	for i in games.size():
+		var g := base.duplicate(true)
+		g.merge(games[games.size() - 1 - i], true)
+		g["t"] += i * 3600
+		MatchHistory.add(Progress.history, g)
 
 
 func _wait(seconds: float) -> void:

@@ -181,7 +181,7 @@ func test_progress_file_validation() -> void:
 		"{\"v\": 1, \"classes\": {\"arcanist\": {\"xp\": 10}}}",
 		"{\"v\": 1, \"classes\": {\"Arc Niste\": {\"xp\": 10, \"talents\": {}}}}",
 		"{\"v\": 1, \"last\": 3, \"classes\": {}}",
-		"{\"v\": 3, \"name\": \"Bob\", \"classes\": {}}",
+		"{\"v\": 4, \"name\": \"Bob\", \"classes\": {}}",
 		"{\"v\": 2, \"name\": \"\", \"classes\": {}}",
 		"{\"v\": 2, \"name\": 12, \"classes\": {}}",
 		"{\"v\": 2, \"name\": \"  Bob\", \"classes\": {}}",
