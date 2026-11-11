@@ -19,7 +19,7 @@ static func update(b: SimBoard, dt: float, rewards: Array) -> void:
 		if not m.is_alive():
 			continue
 		if m.regen > 0.0:
-			m.hp = minf(m.max_hp, m.hp + m.regen * m.marks.heal_mult() * dt)
+			m.hp = minf(m.max_hp, m.hp + m.regen * m.marks.heal_mult() * m.marks.regen_mult * dt)
 		m.shred_timer = maxf(0.0, m.shred_timer - dt)
 		m.marks.update(dt)
 		_damage_over_time(b, m, dt, rewards)

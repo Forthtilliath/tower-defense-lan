@@ -39,6 +39,12 @@ var hex := 0.0
 var hex_timer := 0.0
 var controlled := 0
 var charm_power := 0.0
+## Capacités des monstres des thèmes (MonsterExtras) : vitesse et régénération du moment
+## (meute, piétinement, rôdeur, bosquet), enfoui (ni visé ni touché), horloges et paliers.
+var pace := 1.0
+var regen_mult := 1.0
+var burrowed := false
+var clocks := {}  # "burrow" / "brood" / "raise" -> secondes ; "steps" -> paliers déjà pondus
 
 
 func apply_resist_down(part: float, duration: float) -> void:

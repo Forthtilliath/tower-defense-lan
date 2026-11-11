@@ -187,7 +187,7 @@ func _parse_monsters(raw: Variant) -> Variant:
 		var path = Check.as_int(e[2], 0, map.start_count() - 1)
 		var progress = Check.as_num(e[3], 0.0, 100000.0)
 		var hp = Check.as_int(e[4], 0, 255)
-		var flags = Check.as_int(e[5], 0, 4095)
+		var flags = Check.as_int(e[5], 0, 8191)
 		if id == null or type == null or path == null or progress == null or hp == null or flags == null:
 			return null
 		var type_id: String = data.monster_order[type]
@@ -198,6 +198,7 @@ func _parse_monsters(raw: Variant) -> Variant:
 			"burning": flags & 8 != 0, "bleeding": flags & 16 != 0, "stunned": flags & 32 != 0,
 			"feared": flags & 64 != 0, "charmed": flags & 128 != 0, "warded": flags & 256 != 0,
 			"frostbitten": flags & 512 != 0, "shocked": flags & 1024 != 0, "grounded": flags & 2048 != 0,
+			"burrowed": flags & 4096 != 0,
 		}
 	return out
 

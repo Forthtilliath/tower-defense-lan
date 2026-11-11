@@ -150,6 +150,7 @@ func step(dt: float) -> Array:
 		eliminate()
 		return rewards
 	MonsterAbilities.update(self, dt)
+	MonsterExtras.update(self, dt)
 	MonsterEffects.update(self, dt, rewards)
 	BoardPatches.update(self, dt, rewards)
 	BoardCombat.fire_towers(self, dt, rewards)
@@ -163,6 +164,7 @@ func step(dt: float) -> Array:
 ## personne n'a contribué), majorée s'il meurt près d'un Comptoir (dont le propriétaire touche
 ## en plus une part du supplément), et division éventuelle en petits monstres.
 func kill(m: SimMonster, killer: int, rewards: Array) -> void:
+	MonsterExtras.on_death(self, m)  # tombe (relève du nécromancien)
 	var counter := BoardAuras.best_at(self, m.pos, "aura_bounty")
 	var gold := m.gold
 	if float(counter[0]) > 0.0 and m.gold > 0:

@@ -48,7 +48,7 @@ const PASSIVE_TRAITS := {
 	"resist_fire": ["num", 0.0, 0.9, 0.0], "resist_ice": ["num", 0.0, 0.9, 0.0],
 	"resist_lightning": ["num", 0.0, 0.9, 0.0], "resist_elements": ["num", 0.0, 0.9, 0.0],
 	"resist_physical": ["num", 0.0, 1.0, 0.0], "resist_pierce": ["num", 0.0, 1.0, 0.0],
-	"resist_blunt": ["num", 0.0, 1.0, 0.0],
+	"resist_blunt": ["num", 0.0, 1.0, 0.0], "resist_poison": ["num", 0.0, 0.9, 0.0],
 }
 ## Vague spéciale : multiplicateurs (PV, vitesse, nombre, primes) et ajouts (armure, régénération
 ## en part des PV max par seconde, bonus passifs) appliqués à tous les monstres de la vague.
@@ -218,7 +218,26 @@ const ABILITIES := {
 	"jam_radius": ["num", 0.0, 5.0, 0.0], "jam_interval": ["num", 0.0, 60.0, 0.0],
 	"jam_duration": ["num", 0.0, 10.0, 0.0],
 }
-const LINKED := [["blink_interval", "blink_distance"], ["ward_radius", "ward"], ["jam_radius", "jam_interval", "jam_duration"]]
+const LINKED := [["blink_interval", "blink_distance"], ["ward_radius", "ward"], ["jam_radius", "jam_interval", "jam_duration"],
+	["pack_radius", "pack_count", "pack_speed"], ["haste_radius", "haste"], ["burrow_interval", "burrow_duration"],
+	["raise_interval", "raise_radius"]]
+## Capacités des monstres des thèmes (MonsterExtras), lues dans les données à chaque usage :
+## pack : +pack_speed de vitesse avec pack_count congénères à pack_radius cases (meute) ;
+## haste : les autres monstres à haste_radius cases avancent de `haste` plus vite (piétinement) ;
+## burrow : s'enfouit burrow_duration s toutes les burrow_interval s (ni visé ni touché) ;
+## brood_into : petit monstre pondu toutes les brood_interval s, ou à chaque palier de PV perdus
+## (brood_steps paliers égaux : une tête d'hydre par tiers avec 3) ; raise_into : toutes les
+## raise_interval s, relève un monstre au sol mort à raise_radius cases depuis le dernier appel ;
+## lurk : volant qui ne dépasse pas le monstre au sol le plus avancé ; grove_regen : régénération
+## multipliée d'autant à côté d'un arbre.
+const EXTRAS := {
+	"pack_radius": ["num", 0.0, 5.0, 0.0], "pack_count": ["num", 0.0, 10.0, 0.0], "pack_speed": ["num", 0.0, 2.0, 0.0],
+	"haste_radius": ["num", 0.0, 5.0, 0.0], "haste": ["num", 0.0, 1.0, 0.0],
+	"burrow_interval": ["num", 0.0, 60.0, 0.0], "burrow_duration": ["num", 0.0, 10.0, 0.0],
+	"brood_into": ["id", ""], "brood_interval": ["num", 0.0, 60.0, 0.0], "brood_steps": ["int", 0, 5, 0],
+	"raise_into": ["id", ""], "raise_interval": ["num", 0.0, 60.0, 0.0], "raise_radius": ["num", 0.0, 5.0, 0.0],
+	"lurk": ["bool", false], "grove_regen": ["num", 0.0, 10.0, 0.0],
+}
 const WAVE := {
 	"id": ["id"], "gold": ["int", 0, 100000, 0], "hp": ["num", 0.1, 100.0, 1.0], "modifier": ["id", ""],
 }

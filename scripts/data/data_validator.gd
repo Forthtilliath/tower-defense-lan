@@ -120,11 +120,17 @@ func tower_ids(src: Variant, lo: int, where: String, towers: Dictionary) -> Vari
 ## Monstre : division, et capacités dont les champs vont ensemble ; un brouillage plus long
 ## que son intervalle désactiverait les tourelles pour toujours.
 func _monster(src: Variant, where: String) -> Variant:
-	var m = _obj(src, DataSchema.MONSTER.merged(DataSchema.PASSIVE_TRAITS).merged(DataSchema.ABILITIES), where)
+	var m = _obj(src, DataSchema.MONSTER.merged(DataSchema.PASSIVE_TRAITS).merged(DataSchema.ABILITIES).merged(DataSchema.EXTRAS), where)
 	if m == null:
 		return null
 	if (m["split_into"] == "") != (m["split_count"] == 0):
 		return _fail("%s : split_into et split_count vont ensemble" % where)
+	if (m["brood_into"] == "") != (m["brood_interval"] == 0.0 and m["brood_steps"] == 0):
+		return _fail("%s : brood_into va avec brood_interval ou brood_steps" % where)
+	if (m["raise_into"] == "") != (m["raise_interval"] == 0.0):
+		return _fail("%s : raise_into et raise_interval vont ensemble" % where)
+	if m["burrow_interval"] > 0.0 and m["burrow_duration"] >= m["burrow_interval"] * 0.5:
+		return _fail("%s : burrow_duration doit rester sous la moitié de burrow_interval" % where)
 	for group in DataSchema.LINKED:
 		if group.any(func(k: String) -> bool: return m[k] > 0.0) and not group.all(func(k: String) -> bool: return m[k] > 0.0):
 			return _fail("%s : %s vont ensemble" % [where, ", ".join(group)])
@@ -133,18 +139,21 @@ func _monster(src: Variant, where: String) -> Variant:
 	return m
 
 
-## Division à la mort : le monstre produit doit exister et ne pas se diviser lui-même.
+## Monstres produits (division, ponte, relève) : ils doivent exister et ne rien produire à leur
+## tour (sinon une chaîne sans fin).
 func _check_splits(monsters: Dictionary) -> bool:
 	for id in monsters:
-		var target: String = monsters[id]["split_into"]
-		if target == "":
-			continue
-		if not monsters.has(target):
-			_fail("monsters « %s » : split_into « %s » inconnu" % [id, target])
-			return false
-		if monsters[target]["split_into"] != "":
-			_fail("monsters « %s » : « %s » ne peut pas se diviser à son tour" % [id, target])
-			return false
+		for key in ["split_into", "brood_into", "raise_into"]:
+			var target: String = monsters[id][key]
+			if target == "":
+				continue
+			if not monsters.has(target):
+				_fail("monsters « %s » : %s « %s » inconnu" % [id, key, target])
+				return false
+			var t: Dictionary = monsters[target]
+			if t["split_into"] != "" or t["brood_into"] != "" or t["raise_into"] != "":
+				_fail("monsters « %s » : « %s » ne peut rien produire à son tour" % [id, target])
+				return false
 	return true
 
 
