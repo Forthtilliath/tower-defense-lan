@@ -106,6 +106,18 @@ func test_level_one_beginners() -> void:
 	check(lost * 2 > gd.builders.size(), "niveau 1 en Normal : %s se gagne trop facilement (%d classe(s) sur %d la perdent)" % [gd.maps[hardest].id, lost, gd.builders.size()])
 
 
+## Niveau 1 en Normal, toutes classes et toutes cartes : le joueur débutant en finit quelques-unes,
+## pas la plupart (un humain joue mieux que le bot : la marge doit rester nette).
+func test_level_one_wins_few_maps_in_normal() -> void:
+	var gd := load_data()
+	var won := 0
+	for b in gd.builders.size():
+		for m in gd.maps.size():
+			won += 1 if play(gd, m, 1, NORMAL, {}, [b], 1).result == "victory" else 0
+	var total := gd.builders.size() * gd.maps.size()
+	check(won * 5 <= total * 2, "niveau 1 en Normal : %d parties gagnées sur %d (40 %% au plus)" % [won, total])
+
+
 ## Au niveau 15, chaque classe de dégâts (Artilleur, Arcaniste, Fléau) a au moins une
 ## spécialisation qui finit la plupart des cartes difficiles en Difficile (un joueur choisit sa
 ## spécialisation selon la carte) ; les classes utilitaires, elles, comptent sur le groupe.
