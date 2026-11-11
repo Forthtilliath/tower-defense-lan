@@ -5,8 +5,11 @@ extends RefCounted
 ## bonus par tourelle (classe × talents), économie (primes, intérêts, or de départ, coûts, revente, dons).
 
 const STATS := ["damage", "rate", "range", "cc", "aura"]
+## Économie des talents (MatchEconomy), une valeur par rang qui s'additionne (voir DataSchema.TALENT).
+const MONEY := ["loot", "loan", "boss_bounty", "jackpot", "trophy", "contract", "rent", "compound", "ally_start",
+	"invest", "team_discount", "share_interest", "hot_hand", "early_wave", "risk", "nerve"]
 const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
-	"team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"]
+	"team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"] + MONEY
 ## Auras des tourelles de soutien, toutes renforcées par la statistique « aura ».
 const AURAS := ["aura_rate", "aura_damage", "aura_cc", "aura_range", "aura_frostbite", "aura_shock", "aura_bounty", "aura_discount"]
 ## Plafonds : réduction des prix, part de revente, part d'un don reçue par l'allié.
@@ -36,8 +39,14 @@ var raze_charges := 0
 var tile_charges := 0
 ## Ses tourelles d'imprégnation renforcent toutes leurs voisines (pas seulement leur élément).
 var imbue_all := false
-## En partie : vagues franchies sans fuite par son plateau (Phénix : croissance, BoardFeats).
+## En partie : vagues franchies sans fuite par son plateau (Phénix : croissance, BoardFeats),
+## d'affilée (Main chaude), boss tués (Trophées), dernière vague où le Contrat a payé.
 var clean_waves := 0
+var clean_streak := 0
+var trophies := 0
+var contract_wave := -99  # -1 est la vague « avant la première »
+## Économie des talents (MONEY) : valeurs cumulées des rangs.
+var money := {}
 var _base := {}  # multiplicateurs de la classe
 var _bonus_towers := {}  # tourelles visées par le bonus de classe (vide : toutes)
 var _all := {}  # bonus des talents sur toutes les tourelles
@@ -93,6 +102,9 @@ func _apply(t: Dictionary, rank: int) -> void:
 	raze_charges += int(t["raze_charges"]) * rank
 	tile_charges += int(t["tile_charges"]) * rank
 	imbue_all = imbue_all or t["imbue_all"]
+	for key in MONEY:
+		if float(t.get(key, 0.0)) > 0.0:
+			money[key] = float(money.get(key, 0.0)) + float(t[key]) * rank
 	for key in t["grant"]:
 		if t["grant"][key] > 0:
 			for id in (t["towers"] if not t["towers"].is_empty() else [""]):
@@ -110,6 +122,11 @@ func _apply(t: Dictionary, rank: int) -> void:
 				if not _per.has(id):
 					_per[id] = {}
 				_per[id][s] = float(_per[id].get(s, 0.0)) + v
+
+
+## Valeur d'un effet d'économie des talents (0 s'il n'en a pas).
+func m(key: String) -> float:
+	return float(money.get(key, 0.0))
 
 
 func allows(type: String) -> bool:

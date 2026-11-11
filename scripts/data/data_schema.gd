@@ -49,7 +49,24 @@ const TALENT := {
 	"team_bounty": ["num", 0.0, 0.2, 0.0], "early_bonus": ["num", 0.0, 2.0, 0.0], "clean_gold": ["int", 0, 1000, 0],
 	"imbue_all": ["bool", false], "raze_charges": ["int", 0, 20, 0], "tile_charges": ["int", 0, 10, 0],
 	"ultimate": ["bool", false],
+	"loot": ["num", 0.0, 0.2, 0.0], "loan": ["int", 0, 2000, 0], "boss_bounty": ["num", 0.0, 2.0, 0.0],
+	"jackpot": ["num", 0.0, 0.1, 0.0], "trophy": ["num", 0.0, 0.1, 0.0], "contract": ["num", 0.0, 10.0, 0.0],
+	"rent": ["int", 0, 100, 0], "compound": ["num", 0.0, 0.5, 0.0], "ally_start": ["int", 0, 500, 0],
+	"invest": ["num", 0.0, 0.5, 0.0], "team_discount": ["num", 0.0, 0.2, 0.0], "share_interest": ["num", 0.0, 1.0, 0.0],
+	"hot_hand": ["int", 0, 50, 0], "early_wave": ["num", 0.0, 2.0, 0.0], "risk": ["num", 0.0, 0.1, 0.0],
+	"nerve": ["num", 0.0, 2.0, 0.0],
 }
+## Économie des talents (MatchEconomy) : loot (chance qu'un monstre tué rapporte LOOT_GOLD de
+## plus), loan (prêt au départ, remboursé avec LOAN_RATE à la vague LOAN_WAVE), boss_bounty (prime
+## en plus sur les gros monstres), jackpot (chance de prime ×JACKPOT), trophy (+part de primes par
+## gros monstre tué dans la partie), contract (le premier monstre tué de chaque vague rapporte ×(1 +
+## contract)), rent (or fixe par vague), compound (part de l'or investi dans ses tourelles comptée
+## dans ses intérêts), ally_start (or de départ pour chaque allié), invest (part d'un don rendue
+## INVEST_WAVES vagues plus tard), team_discount (améliorations moins chères pour les alliés),
+## share_interest (part de ses intérêts versée aussi à chaque allié), hot_hand (or par vague
+## franchie sans fuite d'affilée), early_wave (part de l'or de la vague en plus si lancée en
+## avance), risk (+part de primes par vie perdue, plafond RISK_CAP), nerve (primes en plus à
+## NERVE_LIVES vies ou moins).
 ## ultimate : talent ultime d'une spécialisation, réservé au niveau maximum (le dernier point).
 ## grant (objet facultatif, voir GRANT) : effets ajoutés aux tourelles visées (après les bonus).
 const GRANT := {
