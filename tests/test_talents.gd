@@ -13,12 +13,12 @@ func _builder(gd: GameData, id: String) -> int:
 
 func test_levels_and_match_xp() -> void:
 	var gd := load_data()
-	check(TalentRules.level_for(gd, 0) == 1 and TalentRules.level_for(gd, 99) == 1, "niveau 1 au départ")
-	check(TalentRules.level_for(gd, 100) == 2 and TalentRules.level_for(gd, 220) == 3, "100 puis 120 XP")
-	check(TalentRules.level_for(gd, 100000000) == 15, "plafonné au niveau 15")
-	check(TalentRules.level_progress(gd, 150) == [50, 120], "50 / 120 XP dans le niveau 2")
+	check(TalentRules.level_for(gd, 0) == 1 and TalentRules.level_for(gd, 199) == 1, "niveau 1 au départ")
+	check(TalentRules.level_for(gd, 200) == 2 and TalentRules.level_for(gd, 420) == 3, "200 puis 220 XP")
+	check(TalentRules.level_for(gd, 100000000) == 30, "plafonné au niveau 30")
+	check(TalentRules.level_progress(gd, 250) == [50, 220], "50 / 220 XP dans le niveau 2")
 	check(TalentRules.match_xp(gd, true, 20, 20, 1) == 250, "victoire en Normal : 10 XP par vague + 25 %")
-	check(TalentRules.match_xp(gd, true, 20, 20, 3) == 400, "Cauchemar : x1,6")
+	check(TalentRules.match_xp(gd, true, 20, 20, 3) == 500, "Cauchemar : x2")
 	check(TalentRules.match_xp(gd, false, 2, 20, 1) == 2, "défaite au 1er palier : 10 % par vague")
 	check(TalentRules.match_xp(gd, false, 5, 20, 1) == 17, "2e palier dès 25 % : 35 % par vague")
 	check(TalentRules.match_xp(gd, false, 10, 20, 1) == 60, "3e palier à mi-partie : 60 % par vague")
@@ -26,8 +26,9 @@ func test_levels_and_match_xp() -> void:
 	check(TalentRules.match_xp(gd, false, 0, 15, 1) == 0, "défaite immédiate : rien")
 
 
-## Chaque classe : un tronc de 4 points et 4 spécialisations de 10 points plus un talent ultime
-## d'un point (niveau 15 = 15 points : tout le tronc, toute la spécialisation et l'ultime).
+## Chaque classe : un tronc de 12 rangs sans ultime, et 4 spécialisations de 16 à 18 rangs plus
+## un ultime d'un point qui donne un pouvoir (niveau 30 : de quoi remplir le tronc et presque toute
+## la spécialisation).
 func test_every_class_has_a_trunk_and_four_specs() -> void:
 	var gd := load_data()
 	for b in gd.builders:
@@ -39,14 +40,15 @@ func test_every_class_has_a_trunk_and_four_specs() -> void:
 			for t in branch["talents"]:
 				if t["ultimate"]:
 					ultimates.append(int(t["max_rank"]))
+					check(MatchPowers.POWERS.has(t["power"]), "%s : l'ultime donne un pouvoir" % t["id"])
 				else:
 					points += int(t["max_rank"])
 			if branch["trunk"]:
 				trunk += 1
-				check(points == 4 and ultimates.is_empty(), "%s : tronc de 4 points, sans ultime (%d)" % [b["id"], points])
+				check(points == 12 and ultimates.is_empty(), "%s : tronc de 12 rangs, sans ultime (%d)" % [b["id"], points])
 			else:
 				specs += 1
-				check(points == 10, "%s / %s : 10 points (%d)" % [b["id"], branch["id"], points])
+				check(points >= 16 and points <= 18, "%s / %s : 16 à 18 rangs (%d)" % [b["id"], branch["id"], points])
 				check(ultimates == [1], "%s / %s : un ultime d'un point" % [b["id"], branch["id"]])
 		check(trunk == 1 and specs == 4, "%s : 1 tronc et 4 spécialisations" % b["id"])
 
@@ -54,68 +56,71 @@ func test_every_class_has_a_trunk_and_four_specs() -> void:
 func test_ultimate_only_at_max_level() -> void:
 	var gd := load_data()
 	var a := _builder(gd, "arcanist")
-	var full := {"ar_conductive": 3, "ar_pylon": 1, "ar_overload": 2, "ar_tempest": 2, "ar_railgun": 1, "ar_voltage": 1}
+	var full := {"ar_conduction": 3, "ar_stable": 3, "ar_pylon": 1, "ar_static": 3, "ar_railgun": 1, "ar_short": 3, "ar_surge": 3}
 	var with_ult := full.duplicate()
-	with_ult["ar_storm_eternal"] = 1
-	check(TalentRules.validate(gd, a, with_ult, 14) == null, "ultime refusé au niveau 14")
-	check(TalentRules.validate(gd, a, with_ult, 15) != null, "ultime permis au niveau 15")
-	check(TalentRules.add_refusal(gd, a, full, "ar_storm_eternal", 14).contains("ultime"), "refus expliqué")
-	check(TalentRules.add_refusal(gd, a, full, "ar_storm_eternal", 15) == "", "ajout permis au niveau 15")
+	with_ult["ar_tempest"] = 1
+	check(TalentRules.validate(gd, a, with_ult, 29) == null, "ultime refusé au niveau 29")
+	check(TalentRules.validate(gd, a, with_ult, 30) != null, "ultime permis au niveau 30")
+	check(TalentRules.add_refusal(gd, a, full, "ar_tempest", 29).contains("ultime"), "refus expliqué")
+	check(TalentRules.add_refusal(gd, a, full, "ar_tempest", 30) == "", "ajout permis au niveau 30")
 	var kit := PlayerKit.make(gd, a, with_ult)
-	check(int(gd.tower_stats("tesla", 0, -1, kit)["chain"]) == 4, "la Tesla rebondit 2 fois de plus")
+	var base := int(gd.tower_levels("tesla")[0]["chain"])
+	check(int(gd.tower_stats("tesla", 0, -1, kit)["chain"]) == base + 3, "Conduction : la Tesla rebondit 3 fois de plus")
+	check(kit.power == "tempest", "l'ultime donne le pouvoir Tempête")
 	var gunner := _builder(gd, "gunner")
-	var sniper := PlayerKit.make(gd, gunner, {"gu_pierce": 1})
-	check(is_equal_approx(gd.tower_stats("ballista", 0, -1, sniper)["armor_pierce"], 0.5), "la Baliste ignore la moitié de l'armure")
-	var deluge := PlayerKit.make(gd, gunner, {"gu_deluge": 1})
-	check(int(gd.tower_stats("gatling", 0, -1, deluge)["multishot"]) == 3, "Rafale : une cible de plus")
-	check(int(gd.tower_stats("crossbow", 0, -1, deluge)["multishot"]) == 1, "l'Arbalète n'est pas concernée")
+	var sniper := PlayerKit.make(gd, gunner, {"gu_pierce": 2})
+	check(int(gd.tower_stats("ballista", 0, -1, sniper)["pierce"]) == 2, "Carreau perçant : la Baliste traverse 2 monstres")
+	var belt := PlayerKit.make(gd, gunner, {"gu_belt": 1})
+	var shots := int(gd.tower_levels("gatling")[0]["multishot"])
+	check(int(gd.tower_stats("gatling", 0, -1, belt)["multishot"]) == shots + 1, "Rafale : une cible de plus")
+	check(int(gd.tower_stats("crossbow", 0, -1, belt)["multishot"]) == 1, "l'Arbalète n'est pas concernée")
 
 
 func test_validation_of_received_talents() -> void:
 	var gd := load_data()
 	var a := _builder(gd, "arcanist")
-	check(TalentRules.validate(gd, a, {"ar_conductive": 2, "ar_pylon": 1}, 3) != null, "palier 2 atteint avec 2 points")
-	check(TalentRules.validate(gd, a, {"ar_conductive": 1, "ar_pylon": 1}, 5) == null, "palier 2 non atteint")
-	check(TalentRules.validate(gd, a, {"ar_conductive": 3}, 2) == null, "plus de points que le niveau")
-	check(TalentRules.validate(gd, a, {"ar_conductive": 4}, 10) == null, "rang au-delà du maximum")
+	check(TalentRules.validate(gd, a, {"ar_conduction": 2, "ar_stable": 1, "ar_pylon": 1}, 4) != null, "palier 2 atteint avec 3 points")
+	check(TalentRules.validate(gd, a, {"ar_conduction": 2, "ar_pylon": 1}, 5) == null, "palier 2 non atteint")
+	check(TalentRules.validate(gd, a, {"ar_conduction": 3}, 2) == null, "plus de points que le niveau")
+	check(TalentRules.validate(gd, a, {"ar_conduction": 4}, 10) == null, "rang au-delà du maximum")
 	check(TalentRules.validate(gd, a, {"gu_powder": 1}, 10) == null, "talent d'une autre classe")
-	check(TalentRules.validate(gd, a, {"ar_conductive": 1.5}, 10) == null, "rang non entier")
+	check(TalentRules.validate(gd, a, {"ar_conduction": 1.5}, 10) == null, "rang non entier")
 	check(TalentRules.validate(gd, a, {1: 1}, 10) == null, "clé non texte")
 	check(TalentRules.validate(gd, a, "texte", 10) == null, "pas un dictionnaire")
 	check(TalentRules.validate(gd, a, {}, 0) == {}, "aucun talent : valable")
-	check(TalentRules.validate(gd, a, {"ar_conductive": 1, "ar_embers": 1}, 10) == null, "deux spécialisations refusées")
-	check(TalentRules.validate(gd, a, {"ar_focus": 3, "ar_flow": 1, "ar_embers": 1}, 10) != null, "tronc + une spécialisation")
+	check(TalentRules.validate(gd, a, {"ar_conduction": 1, "ar_embers": 1}, 10) == null, "deux spécialisations refusées")
+	check(TalentRules.validate(gd, a, {"ar_focus": 3, "ar_power": 1, "ar_embers": 1}, 10) != null, "tronc + une spécialisation")
 
 
 func test_add_and_remove_rules() -> void:
 	var gd := load_data()
 	var a := _builder(gd, "arcanist")
 	check(TalentRules.add_refusal(gd, a, {}, "ar_pylon", 5).contains("paliers"), "palier verrouillé")
-	check(TalentRules.add_refusal(gd, a, {"ar_conductive": 1}, "ar_conductive", 1).contains("point"), "plus de point")
-	check(TalentRules.add_refusal(gd, a, {"ar_conductive": 1}, "ar_embers", 5).contains("Mage de foudre"), "autre spécialisation fermée")
-	check(TalentRules.add_refusal(gd, a, {"ar_conductive": 1}, "ar_focus", 5) == "", "le tronc reste ouvert")
-	var built := {"ar_conductive": 2, "ar_pylon": 1}
-	check(TalentRules.remove_refusal(gd, a, built, "ar_conductive").contains("dépendent"), "retrait qui casserait le palier refusé")
+	check(TalentRules.add_refusal(gd, a, {"ar_conduction": 1}, "ar_conduction", 1).contains("point"), "plus de point")
+	check(TalentRules.add_refusal(gd, a, {"ar_conduction": 1}, "ar_embers", 5).contains("Mage de foudre"), "autre spécialisation fermée")
+	check(TalentRules.add_refusal(gd, a, {"ar_conduction": 1}, "ar_focus", 5) == "", "le tronc reste ouvert")
+	var built := {"ar_conduction": 3, "ar_pylon": 1}
+	check(TalentRules.remove_refusal(gd, a, built, "ar_conduction").contains("dépendent"), "retrait qui casserait le palier refusé")
 	check(TalentRules.remove_refusal(gd, a, built, "ar_pylon") == "", "retrait du talent du haut permis")
 
 
 func test_kit_bonuses_and_economy() -> void:
 	var gd := load_data()
 	var goblin := _builder(gd, "goblin")
-	var kit := PlayerKit.make(gd, goblin, {"go_thrift": 2, "go_stocking": 3, "go_chest": 1})
-	check(is_equal_approx(kit.bounty, 1.15 + 0.06), "primes : classe + Pingrerie : %f" % kit.bounty)
+	var kit := PlayerKit.make(gd, goblin, {"go_greed": 2, "go_stocking": 3, "go_rate": 1})
+	check(is_equal_approx(kit.bounty, 1.15 + 0.12), "primes : classe + Avarice : %f" % kit.bounty)
 	var rule := kit.interest_rule(gd)
-	check(is_equal_approx(rule[0], 0.055) and rule[1] == 40, "intérêts : 4 + 1,5 %%, plafond 30 + 10 : %s" % str(rule))
+	check(is_equal_approx(rule[0], 0.05) and rule[1] == 60, "intérêts : 4 + 1 %%, plafond 30 + 30 : %s" % str(rule))
 	check(kit.spec_name(gd) == "Usurier" and kit.title(gd) == "Gobelin · Usurier", "spécialisation reconnue")
-	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "G", 0, goblin, {"go_purse": 2}]])
-	check(sim.players[1]["gold"] == 150 + 40, "or de départ : +2 x 20")
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "G", 0, goblin, {"go_smuggle": 2}]])
+	check(sim.players[1]["gold"] == 150 + 80, "or de départ : Contrebande 2 x 40")
 	var support := _builder(gd, "support")
-	var warlord := PlayerKit.make(gd, support, {"su_orders": 3, "su_drum": 1, "su_fanfare": 1})
+	var warlord := PlayerKit.make(gd, support, {"su_orders": 3, "su_drum": 1, "su_presence": 3})
 	check(warlord.allows("drum") and not warlord.allows("banner"), "Tambour débloqué, Étendard pas encore")
 	var drum := gd.tower_stats("drum", 0, -1, warlord)
-	check(is_equal_approx(drum["aura_rate"], 0.12 * 1.15 * 1.08), "aura : classe +15 %%, Fanfare +8 %% : %f" % drum["aura_rate"])
-	var crossbow := gd.tower_stats("crossbow", 0, -1, warlord)
-	check(is_equal_approx(crossbow["damage"], 4 * 1.09), "Ordres : +3 %% de dégâts par rang : %f" % crossbow["damage"])
+	var base := float(gd.tower_levels("drum")[0]["aura_rate"])
+	check(is_equal_approx(drum["aura_rate"], base * 1.15 * 1.18 + 0.15), "aura : classe +15 %%, Présence +18 %%, Ordres +0,15 : %f" % drum["aura_rate"])
+	check(is_equal_approx(gd.tower_stats("crossbow", 0, -1, warlord)["damage"], 4.0), "l'Arbalète n'est pas une tourelle du Support")
 
 
 ## Héritage : chaque classe au niveau maximum donne son bonus aux autres (pas à elle-même).
@@ -143,11 +148,11 @@ func test_mason_costs_and_refunds() -> void:
 	var mason := _builder(gd, "mason")
 	var plain := PlayerKit.make(gd, mason)
 	check(plain.allows("cannon") and not plain.allows("ballista"), "tronc commun seulement")
-	var architect := PlayerKit.make(gd, mason, {"bu_tools": 3, "bu_quote": 3})
-	check(architect.cost(100) == 85, "−6 %% (Outils) −9 %% (Devis) : %d" % architect.cost(100))
-	var scrapper := PlayerKit.make(gd, mason, {"bu_salvage": 3})
-	check(is_equal_approx(scrapper.sell_ratio(), 0.79), "revente 70 + 9 %%")
-	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "B", 0, mason, {"bu_tools": 3, "bu_quote": 3}]])
+	var architect := PlayerKit.make(gd, mason, {"ma_thrifty": 2})
+	check(architect.cost(100) == 90, "−10 %% (Économe) : %d" % architect.cost(100))
+	var scrapper := PlayerKit.make(gd, mason, {"ma_resale": 3})
+	check(is_equal_approx(scrapper.sell_ratio(), 0.85), "revente 70 + 15 %%")
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "B", 0, mason, {"ma_thrifty": 2}]])
 	var start: int = sim.players[1]["gold"]
 	check(start == 150 + 50, "+50 or de départ (classe)")
 	var cell := 2 * sim.map.width + 2
@@ -159,16 +164,16 @@ func test_mason_costs_and_refunds() -> void:
 func test_patron_gifts_lose_less() -> void:
 	var gd := load_data()
 	var goblin := _builder(gd, "goblin")
-	var patron := PlayerKit.make(gd, goblin, {"go_generous": 3})
-	check(MatchActions.gift_received(gd, 100) == 50 and MatchActions.gift_received(gd, 100, patron) == 80, "don : 50 %% puis 80 %%")
+	var patron := PlayerKit.make(gd, goblin, {"go_generosity": 3})
+	check(MatchActions.gift_received(gd, 100) == 50 and MatchActions.gift_received(gd, 100, patron) == 74, "don : 50 %% puis 74 %%")
 
 
 func test_progress_file_validation() -> void:
 	var gd := load_data()
-	var good := ProgressFile.serialize(gd, "Forth", {"arcanist": {"xp": 300, "talents": {"ar_conductive": 2, "ar_pylon": 1}}}, 1)
+	var good := ProgressFile.serialize(gd, "Forth", {"arcanist": {"xp": 700, "talents": {"ar_conduction": 2, "ar_stable": 1, "ar_pylon": 1}}}, 1)
 	var parsed = ProgressFile.parse(gd, good)
-	check(parsed != null and parsed[0]["arcanist"]["xp"] == 300 and parsed[1] == 1 and parsed[2] == "Forth", "fichier relu")
-	check(parsed != null and parsed[0]["arcanist"]["talents"].size() == 2, "talents relus")
+	check(parsed != null and parsed[0]["arcanist"]["xp"] == 700 and parsed[1] == 1 and parsed[2] == "Forth", "fichier relu")
+	check(parsed != null and parsed[0]["arcanist"]["talents"].size() == 3, "talents relus")
 	var bad := [
 		"pas du json", "[]", "{\"v\": 2, \"classes\": {}}", "{\"v\": 1}",
 		"{\"v\": 1, \"classes\": {\"arcanist\": {\"xp\": -5, \"talents\": {}}}}",
@@ -184,7 +189,7 @@ func test_progress_file_validation() -> void:
 	]
 	for text in bad:
 		check(ProgressFile.parse(gd, text) == null, "fichier rejeté : " + text)
-	var old = ProgressFile.parse(gd, "{\"v\": 1, \"classes\": {\"retiree\": {\"xp\": 5, \"talents\": {}}, \"arcanist\": {\"xp\": 50, \"talents\": {\"ar_conductive\": 3}}}}")
+	var old = ProgressFile.parse(gd, "{\"v\": 1, \"classes\": {\"retiree\": {\"xp\": 5, \"talents\": {}}, \"arcanist\": {\"xp\": 50, \"talents\": {\"ar_conduction\": 3}}}}")
 	check(old != null and not old[0].has("retiree"), "classe inconnue ignorée")
 	check(old != null and old[0]["arcanist"]["xp"] == 50 and old[0]["arcanist"]["talents"].is_empty(), "talents trop nombreux pour le niveau : remis à zéro, XP gardée")
 
@@ -211,9 +216,9 @@ func test_tree_data_validation() -> void:
 	var cases := {
 		"tourelle à débloquer inconnue": ["\"unlock\": \"pylon\" },", "\"unlock\": \"laser\" },", "débloquer"],
 		"palier inexistant": ["\"tier\": 4, \"max_rank\": 2, \"towers\": [\"cannon\", \"mortar\"]", "\"tier\": 9, \"max_rank\": 2, \"towers\": [\"cannon\", \"mortar\"]", "tier"],
-		"talent sans effet": ["\"tier\": 1, \"max_rank\": 3, \"interest\": 0.005", "\"tier\": 1, \"max_rank\": 3", "ne fait rien"],
-		"paliers décroissants": ["\"talent_tiers\": [0, 2, 4, 5]", "\"talent_tiers\": [0, 4, 2, 5]", "talent_tiers"],
-		"deux troncs": ["\"description\": \"Intérêts.\", \"talents\"", "\"description\": \"Intérêts.\", \"trunk\": true, \"talents\"", "tronc"],
+		"talent sans effet": ["\"tier\": 1, \"max_rank\": 3, \"interest\": 0.01", "\"tier\": 1, \"max_rank\": 3", "ne fait rien"],
+		"paliers décroissants": ["\"talent_tiers\": [0, 3, 7, 11, 15]", "\"talent_tiers\": [0, 7, 3, 11, 15]", "talent_tiers"],
+		"deux troncs": ["\"description\": \"L'or qui dort rapporte.\", \"talents\"", "\"description\": \"L'or qui dort rapporte.\", \"trunk\": true, \"talents\"", "tronc"],
 		"tronc commun inconnu": ["\"common_towers\": [\"crossbow\",", "\"common_towers\": [\"laser\",", "common_towers"],
 		"tronc commun sans anti-aérien": ["\"common_towers\": [\"crossbow\", \"sentinel\", \"dart\", \"cannon\", \"frost\", \"tesla\", \"brazier\", \"salamander\", \"venom\", \"thorns\", \"gong\"]", "\"common_towers\": [\"cannon\", \"gong\"]", "l'air"],
 	}

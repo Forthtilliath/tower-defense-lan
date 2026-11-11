@@ -155,14 +155,14 @@ func test_builder_restricts_towers_and_boosts_them() -> void:
 	var cell := 2 * beginner.map.width + 2
 	check(_build(beginner, 1, cell, "mortar").contains("bâtisseur"), "mortier interdit à l'arcaniste")
 	check(_build(beginner, 1, cell, "pylon").contains("bâtisseur"), "pylône à débloquer par la spécialisation")
-	var talents := {"ar_conductive": 3, "ar_pylon": 1, "ar_overload": 1}
+	var talents := {"ar_conduction": 3, "ar_pylon": 1, "ar_focus": 1, "ar_power": 2}
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, arcanist, talents]])
 	check(_build(sim, 1, cell, "pylon") == "", "pylône débloqué")
 	var t: SimTower = sim.boards[0].towers[cell]
 	var base: float = gd.tower_levels("pylon")[0]["rate"]
-	check(is_equal_approx(t.stats["rate"], base * 1.06), "cadence : Surcharge +6 %% : %f" % t.stats["rate"])
+	check(is_equal_approx(t.stats["rate"], base * 1.05), "cadence : Concentration +5 %% : %f" % t.stats["rate"])
 	var dmg: float = gd.tower_levels("pylon")[0]["damage"]
-	check(is_equal_approx(t.stats["damage"], dmg * 1.1 * 1.15), "dégâts : classe +10 %%, Conductivité 3 x 5 %% : %f" % t.stats["damage"])
+	check(is_equal_approx(t.stats["damage"], dmg * 1.1 * 1.12), "dégâts : classe +10 %%, Puissance arcanique 2 x 6 %% : %f" % t.stats["damage"])
 	var arrow := _build(sim, 1, cell + 1, "crossbow")
 	check(arrow == "" and is_equal_approx(sim.boards[0].towers[cell + 1].stats["damage"], gd.tower_levels("crossbow")[0]["damage"]), "bonus de classe réservé aux tourelles élémentaires")
 

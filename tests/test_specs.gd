@@ -61,7 +61,7 @@ func test_frost_stele_imbues_ice_neighbours_only() -> void:
 
 func test_imbue_all_talent_reaches_every_neighbour() -> void:
 	var b := _board()
-	var kit := _kit(b.data, "scourge", {"fl_numb": 3, "fl_frost_stele": 1, "fl_chilblains": 2, "fl_black_frost": 2, "fl_spread_frost": 1})
+	var kit := _kit(b.data, "scourge", {"sc_chilblains": 3, "sc_stele": 1, "sc_imbue_frost": 1})
 	var arrow := _tower(b, "crossbow", AT)
 	_tower(b, "frost_stele", AT + Vector2(1, 0), 3, kit)
 	check(arrow.buff("frostbite") > 3.0, "avec le talent, l'Arbalète imprégnée (gelure renforcée) : %f" % arrow.buff("frostbite"))
@@ -155,19 +155,19 @@ func test_patron_team_bounty_and_gambler_gold() -> void:
 	for i in gd.builders.size():
 		if gd.builders[i]["id"] == "goblin":
 			goblin = i
-	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 0, {}], [2, "G", 1, goblin, {"go_generous": 3, "go_patronage": 2}]])
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 0, {}], [2, "G", 1, goblin, {"go_fund": 2}]])
 	var before: int = sim.players[1]["gold"]
 	MatchEconomy.credit_bounty(sim, 1, 100)
 	check(sim.players[1]["gold"] - before == 106, "l'allié touche +6 %% grâce au Mécène : %d" % (sim.players[1]["gold"] - before))
-	var gambler := PlayerKit.make(gd, goblin, {"go_stake": 3, "go_bet": 2, "go_double": 1})
-	check(is_equal_approx(gambler.early_bonus, 1.0) and gambler.clean_gold == 6, "Parieur : avance ×2, +6 or sans fuite")
+	var gambler := PlayerKit.make(gd, goblin, {"go_daring": 2, "go_flawless": 1})
+	check(is_equal_approx(gambler.early_bonus, 1.0) and gambler.clean_gold == 10, "Parieur : avance ×2, +10 or sans fuite")
 	var solo := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "P", 0, goblin, gambler.talents]])
 	solo.apply_command(1, {"a": "ready"})  # vague 1, sans bonus
 	var g0: int = solo.players[1]["gold"]
 	solo.countdown = 10.0
 	solo.launch_next_wave()  # vague 2 lancée en avance, aucune vie perdue
 	var wave: Dictionary = gd.waves[solo.map.waves[1]]
-	var expected := int(wave["gold"]) + 10 * 2 + 6
+	var expected := int(wave["gold"]) + 10 * 2 + 10
 	var got: int = solo.players[1]["gold"] - g0
 	check(got - MatchFlow.interest(gd, g0, gambler) == expected, "or de vague + avance ×2 + vague propre : %d" % got)
 
@@ -197,7 +197,7 @@ func _mason_sim(talents: Dictionary) -> SimMatch:
 
 
 func test_digger_razes_decor_to_build_on_it() -> void:
-	var sim := _mason_sim({"bu_survey": 1})  # 2 charges
+	var sim := _mason_sim({"ma_clearing": 1})  # 2 charges
 	var b := sim.boards[0]
 	var tree := 2  # Prairie : « ..T... » sur la première ligne
 	var route := sim.map.width  # deuxième ligne : départ et route
@@ -214,7 +214,7 @@ func test_digger_razes_decor_to_build_on_it() -> void:
 
 
 func test_digger_places_bonus_tiles() -> void:
-	var sim := _mason_sim({"bu_survey": 3, "bu_foundations": 1, "bu_terrace": 1})  # 1 case
+	var sim := _mason_sim({"ma_clearing": 3, "ma_geomancy": 1})  # 1 case
 	var b := sim.boards[0]
 	var cell := 2 * sim.map.width + 2
 	check(sim.apply_command(1, {"a": "build", "cell": cell, "tower": "crossbow"}) == "", "tourelle posée")
@@ -228,7 +228,7 @@ func test_digger_places_bonus_tiles() -> void:
 
 
 func test_terrain_changes_reach_the_view_and_are_checked() -> void:
-	var sim := _mason_sim({"bu_survey": 3, "bu_foundations": 1, "bu_terrace": 1})
+	var sim := _mason_sim({"ma_clearing": 3, "ma_geomancy": 1})
 	var tree := 2
 	sim.apply_command(1, {"a": "raze", "cell": tree})
 	sim.apply_command(1, {"a": "build", "cell": tree, "tower": "crossbow"})
@@ -246,9 +246,9 @@ func test_terrain_changes_reach_the_view_and_are_checked() -> void:
 
 func test_scourge_poison_and_bleed_stack() -> void:
 	var b := _board()
-	var kit := _kit(b.data, "scourge", {"fl_toxins": 3, "fl_plague": 1, "fl_virulence": 2})
+	var kit := _kit(b.data, "scourge", {"sc_incubation": 2})
 	var venom := _tower(b, "venom", AT, 7, kit)
-	check(int(venom.stats["poison_stacks"]) == 3, "Virulence 2 : 3 charges")
+	check(int(venom.stats["poison_stacks"]) == 3, "Incubation 2 : 3 charges")
 	var orc := _mob(b, "orc", AT + Vector2(1, 0))
 	for i in 4:
 		_fire(b, venom)
