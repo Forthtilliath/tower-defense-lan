@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Chargement et validation des données, calcul des chemins.
 
 

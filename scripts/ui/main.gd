@@ -88,9 +88,9 @@ func _start_autotest() -> bool:
 	for arg in OS.get_cmdline_user_args():
 		var path := ""
 		if arg.begins_with("--autotest="):
-			path = "res://tests/net_smoke.gd"
+			path = "res://tests/auto/net_smoke.gd"
 		elif arg.begins_with("--screenshot="):
-			path = "res://tests/screenshot.gd"
+			path = "res://tests/auto/screenshot.gd"
 		if path == "" or not ResourceLoader.exists(path):
 			continue
 		var script: GDScript = load(path)

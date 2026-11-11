@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Talents du Support (BoardSupport) : auras des talents (critique, Vétérans, Ralliement, Charge,
 ## Garde rapprochée, Sanctuaire, Lumière, Fanfare), effets sur les monstres (affaibli, résistances
 ## réduites, maléfice, peur contagieuse, contrôles répétés), Esprit d'équipe.

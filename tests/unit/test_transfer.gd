@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Transfert de compte entre appareils : validation des messages reçus, puis échanges réels en
 ## boucle locale (127.0.0.1) : compte reçu, code faux, arrêt après trop d'essais.
 

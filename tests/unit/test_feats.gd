@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Effets des talents sur les coups (BoardFeats) : critique, exécution, perforation, ricochet,
 ## marque, armure brisée, recul, onde et éclats à la mort, gros monstres, réactions, résonance,
 ## contagion à la mort, échauffement, série.

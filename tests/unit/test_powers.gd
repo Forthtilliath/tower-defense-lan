@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Pouvoirs actifs (MatchPowers) : refus (sans talent, avant la partie, en recharge), effets
 ## instantanés (Séisme, Tir parfait, Météore, Tornade, Curée, Grande parade, Encaissement, Âge
 ## d'or, Coup de génie, Remodelage) et à durée (Pluie de plomb, Ruée vers l'or, Va-tout, Fléau
@@ -165,7 +165,7 @@ func test_remount_and_reshape() -> void:
 ## Le joueur automatique lance son pouvoir au niveau 30 (sans plantage), pour chaque classe.
 func test_bot_uses_its_power() -> void:
 	var gd := load_data()
-	var bot = preload("res://tests/balance_bot.gd").new()
+	var bot = preload("res://tests/bot/balance_bot.gd").new()
 	for b in gd.builders.size():
 		var sim: SimMatch = bot.play(gd, 0, 1, 0, {}, [[b, 0]], 30)
 		check(int(sim.players[1].get("power_wave", -99)) >= 0, "%s : pouvoir lancé au moins une fois" % gd.builders[b]["id"])

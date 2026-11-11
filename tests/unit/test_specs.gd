@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Mécaniques des spécialisations : gelure et électrifié (tourelles d'imprégnation), soins coupés,
 ## volants cloués au sol, tir multiple, aura de portée, Comptoir, Chantier, primes d'équipe,
 ## or des vagues lancées en avance et des vagues sans fuite, et leur transmission.

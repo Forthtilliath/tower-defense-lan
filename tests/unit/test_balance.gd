@@ -1,8 +1,8 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Équilibrage, avec le joueur automatique de balance_bot.gd : courbe de progression voulue
 ## (niveau 1, 10, 15), coopération en équipes mixtes, partie perdue sans tourelle.
 
-const Bot := preload("res://tests/balance_bot.gd")
+const Bot := preload("res://tests/bot/balance_bot.gd")
 const DT := 0.05
 const EASY := 0
 const NORMAL := 1

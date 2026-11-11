@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Tourelles élémentaires : onde, trait, souffle, rayon, nappes au sol, bonus contre les
 ## monstres gelés, armure rongée, poison contagieux, coups critiques, et leur transmission.
 

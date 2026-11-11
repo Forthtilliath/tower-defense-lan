@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Coopération : rythmes, lancement des vagues, zones, bâtisseurs, intérêts, dons, vagues
 ## spéciales et cartes à plusieurs couloirs.
 

@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Moteur de combat : brûlure, saignement, contrôles (étourdi, peur, charme), résistance des
 ## boss, auras de soutien, partage des primes selon la contribution, économie des classes.
 
