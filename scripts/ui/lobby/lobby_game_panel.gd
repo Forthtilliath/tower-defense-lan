@@ -1,6 +1,6 @@
 class_name LobbyGamePanel
 extends VBoxContainer
-## Bloc « Partie » du salon : options réglées par l'hôte (mode, carte, rythme, lancement),
+## Bloc « Partie » du salon : options réglées par l'hôte (mode, carte, rythme, lancement, héritage),
 ## résumé de ces choix et aperçu de la carte (zones des joueurs comprises). Chaque carte montre
 ## les étoiles que ce compte y a gagnées à la difficulté votée (records : MatchHistory).
 
@@ -8,6 +8,7 @@ var _mode: OptionButton
 var _map: OptionButton
 var _rhythm: OptionButton
 var _launch: OptionButton
+var _heritage: OptionButton
 var _help: Label
 var _preview: BoardView
 var _map_text: Label
@@ -32,6 +33,7 @@ func _ready() -> void:
 	left.add_child(line2)
 	_rhythm = _host_option(line2, "Rythme", SimMatch.RHYTHM_NAMES, "rhythm")
 	_launch = _host_option(line2, "Lancement", SimMatch.LAUNCH_NAMES, "launch")
+	_heritage = _host_option(line2, "Héritage", SimMatch.HERITAGE_NAMES, "heritage")
 	_help = UiTheme.label("", 15, UiTheme.MUTED)
 	left.add_child(_help)
 	var right := UiTheme.vbox(6)
@@ -85,6 +87,8 @@ func refresh(colors: Array[Color]) -> void:
 	_map.select(_map.get_item_index(s["map"]))
 	_rhythm.select(s["rhythm"])
 	_launch.select(s["launch"])
+	_heritage.select(s["heritage"])
+	_heritage.tooltip_text = LobbyTexts.HERITAGE_HELP[s["heritage"]]
 	# En versus, rythme et lancement ne s'appliquent pas : désactivés plutôt que cachés (rien ne bouge).
 	_rhythm.disabled = not coop or not Net.is_host()
 	_launch.disabled = not coop or not Net.is_host()

@@ -27,6 +27,14 @@ const LAUNCH_SHORT := [
 	"Vagues en avance quand tous sont prêts.",
 	"Seul l'hôte lance les vagues en avance.",
 ]
+const HERITAGE_HELP := [
+	"Héritage activé : chaque classe montée au niveau maximum donne son bonus aux autres classes du joueur.",
+	"Héritage désactivé : aucun bonus d'héritage, chacun ne joue qu'avec sa classe et ses talents (plus équitable).",
+]
+const HERITAGE_SHORT := [
+	"Bonus d'héritage actifs.",
+	"Héritage désactivé : tous à égalité.",
+]
 
 
 ## Résumé des options choisies, une ligne par option qui s'applique au mode.
@@ -37,6 +45,7 @@ static func short_help(settings: Dictionary) -> String:
 		lines.append("%s %s" % [RHYTHM_SHORT[settings["rhythm"]], LAUNCH_SHORT[settings["launch"]]])
 	else:
 		lines.append("Rythme et lancement : réservés à la coopération.")
+	lines.append(HERITAGE_SHORT[int(settings.get("heritage", SimMatch.Heritage.ON))])
 	return "\n".join(lines)
 
 
@@ -93,10 +102,11 @@ static func vote_lines(players: Dictionary) -> Array[String]:
 	return [title, detail]
 
 
-## Bonus de la classe, spécialisation, tourelles en plus du tronc commun, héritage.
-static func builder_text(index: int) -> String:
+## Bonus de la classe, spécialisation, tourelles en plus du tronc commun, héritage (listé même
+## désactivé par l'hôte, avec la mention).
+static func builder_text(index: int, heritage_active: bool) -> String:
 	var b: Dictionary = Data.db.builders[index]
-	var kit := PlayerKit.make(Data.db, index, Progress.talents(index), Progress.heritage())
+	var kit := PlayerKit.make(Data.db, index, Progress.talents(index), Progress.heritage() if heritage_active else [])
 	var extra := []
 	for id in Data.db.tower_order:
 		if kit.allows(id) and not Data.db.common_towers.has(id):
@@ -112,16 +122,28 @@ static func builder_text(index: int) -> String:
 		text += "\nSpécialisation à choisir dans les talents : %s." % ", ".join(specs)
 	if not extra.is_empty():
 		text += "\nEn plus du tronc commun : %s." % ", ".join(extra)
-	return text + heritage_text(kit)
+	return text + heritage_text(index, heritage_active)
 
 
-## « Héritage : Artilleur (+20 % de dégâts des tirs physiques), … » (vide sans classe au niveau maximum).
-static func heritage_text(kit: PlayerKit) -> String:
+## « Héritage : Artilleur (+20 % de dégâts des tirs physiques), … » (vide sans classe au niveau
+## maximum) ; « Héritage désactivé pour cette partie : … » si l'hôte l'a coupé.
+static func heritage_text(builder: int, active: bool) -> String:
 	var parts := []
-	for h in kit.heritage:
-		var hb: Dictionary = Data.db.builders[h]
-		parts.append("%s (%s)" % [hb["name"], String(hb["heritage"]["description"]).trim_suffix(".")])
-	return "" if parts.is_empty() else "\nHéritage : " + ", ".join(parts) + "."
+	for h in heritage_classes(builder):
+		parts.append("%s (%s)" % [Data.db.builders[h]["name"], heritage_bonus(h).trim_suffix(".")])
+	if parts.is_empty():
+		return ""
+	return "\nHéritage%s : %s." % ["" if active else " désactivé pour cette partie", ", ".join(parts)]
+
+
+## Classes de ce compte dont l'héritage profite à `builder` : montées au niveau maximum, sauf elle.
+static func heritage_classes(builder: int) -> Array[int]:
+	return PlayerKit.make(Data.db, builder, {}, Progress.heritage()).heritage
+
+
+## Description du bonus d'héritage d'une classe (« +20 % de dégâts des tirs physiques. »).
+static func heritage_bonus(builder: int) -> String:
+	return String(Data.db.builders[builder]["heritage"]["description"])
 
 
 static func _num(v: float) -> String:

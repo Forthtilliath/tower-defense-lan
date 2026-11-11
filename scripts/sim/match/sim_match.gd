@@ -14,9 +14,13 @@ enum Mode { COOP, VERSUS }
 enum Rhythm { FREE, BETWEEN }
 ## Qui lance la vague suivante : tous les joueurs prêts, ou l'hôte seul (coopération).
 enum Launch { VOTE, HOST }
+## Héritage (bonus des classes au niveau maximum) : actif, ou coupé par l'hôte pour que tout le
+## monde parte à égalité. Appliqué en amont : le roster arrive alors sans héritage (NetPayloads).
+enum Heritage { ON, OFF }
 
 const RHYTHM_NAMES := ["Libre", "Entre les vagues"]
 const LAUNCH_NAMES := ["Vote de tous", "Hôte seul"]
+const HERITAGE_NAMES := ["Activé", "Désactivé"]
 const BETWEEN_WAVES := 12.0
 const BUILD_PHASE := 20.0
 const SELL_RATIO := 0.7

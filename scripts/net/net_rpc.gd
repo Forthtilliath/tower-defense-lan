@@ -38,7 +38,8 @@ func lobby(payload: Variant) -> void:
 	if parsed == null:
 		return
 	net.players = parsed["players"]
-	net.settings = {"mode": parsed["mode"], "map": parsed["map"], "rhythm": parsed["rhythm"], "launch": parsed["launch"]}
+	net.settings = {"mode": parsed["mode"], "map": parsed["map"], "rhythm": parsed["rhythm"], "launch": parsed["launch"],
+		"heritage": parsed["heritage"]}
 	net.lobby_changed.emit()
 
 
