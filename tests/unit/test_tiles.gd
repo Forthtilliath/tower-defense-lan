@@ -53,9 +53,10 @@ func test_maps_pick_a_few_special_kinds() -> void:
 			if m.special_at(i) >= 0:
 				kinds[m.special_at(i)] = true
 				count += 1
-		check(kinds.size() >= 2 and kinds.size() <= 3, "%s : %d types de cases spéciales (2 ou 3)" % [m.id, kinds.size()])
-		var most := 3 * m.lanes if m.lanes > 1 else 7  # 4 à 7, ou 3 par couloir sur une carte à couloirs
-		check(count >= 4 and count <= most, "%s : %d cases spéciales (%d au plus)" % [m.id, count, most])
+		# 1 à 3 types (la Gorge du vautour n'a que ses 3 Belvédères), jamais un de chaque
+		check(kinds.size() >= 1 and kinds.size() <= 3, "%s : %d types de cases spéciales (1 à 3)" % [m.id, kinds.size()])
+		var most := 3 * m.lanes if m.lanes > 1 else 7  # 3 à 7, ou 3 par couloir sur une carte à couloirs
+		check(count >= 3 and count <= most, "%s : %d cases spéciales (%d au plus)" % [m.id, count, most])
 
 
 func test_entries_open_by_wave() -> void:
