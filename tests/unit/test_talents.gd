@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Talents et progression : niveaux, expérience, validation des talents (réseau, sauvegarde),
 ## spécialisation exclusive, effets sur les tourelles et l'économie, relecture du fichier de
 ## progression (et migration des anciennes classes).

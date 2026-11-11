@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Économie des talents (MatchEconomy, PlayerKit.MONEY) : prêt, or offert aux alliés, rente,
 ## Main chaude, or d'avance, intérêts composés et partagés, primes (gros monstres, trophées,
 ## risque, nerfs, contrat, jackpot, butin), dons investis, améliorations moins chères.

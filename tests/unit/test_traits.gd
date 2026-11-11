@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Bonus des monstres : lévitation, véhicule, résistances aux éléments (et vagues spéciales qui
 ## les donnent), bonds, protection des voisins, brouillage des tourelles, leurs textes, leur
 ## validation et leur transmission.

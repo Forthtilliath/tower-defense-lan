@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Talents de disposition (BoardLayout) et étages : voisinage, plans, contreforts, chef-d'œuvre,
 ## pièces détachées, déplacement d'une tourelle, niveaux 6 et 7 de l'Architecte, Ferraille.
 

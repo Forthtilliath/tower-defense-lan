@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Règles de jeu appliquées par l'hôte : construction, propriété, or, vagues, fin de partie.
 
 const DT := 0.05

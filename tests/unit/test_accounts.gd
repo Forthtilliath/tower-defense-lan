@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Comptes de l'appareil (AccountStore) : création, relecture, liste, fichiers illisibles mis
 ## de côté, suppression et migration de l'ancienne progression. Dossier de test à part, vidé.
 

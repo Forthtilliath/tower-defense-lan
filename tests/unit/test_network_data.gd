@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Données reçues par le réseau : instantanés, messages de salon, annonces LAN.
 
 

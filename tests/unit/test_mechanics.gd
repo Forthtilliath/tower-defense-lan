@@ -1,4 +1,4 @@
-extends "res://tests/test_base.gd"
+extends "res://tests/unit/test_base.gd"
 ## Mécaniques : armure, poison, division, chaîne, soins, régénération, immunité,
 ## cases spéciales, difficultés et renforcement coop à plusieurs.
 
