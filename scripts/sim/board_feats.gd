@@ -80,8 +80,8 @@ static func storm(b: SimBoard, t: SimTower, def: Dictionary, dt: float, rewards:
 static func slow_of(p: SimProjectile) -> Array:
 	var factor := p.stat("slow_factor") if p.stats.has("slow_factor") else 1.0
 	var duration := p.stat("slow_duration")
-	if p.stat("slow") > 0.0:
-		factor = minf(factor, 1.0 - p.stat("slow"))
+	if p.stat("slow") > 0.0:  # s'ajoute au ralentissement de la tourelle (Froid mordant), ou en crée un
+		factor *= 1.0 - p.stat("slow")
 		duration = maxf(duration, 1.0)
 	return [factor, duration]
 

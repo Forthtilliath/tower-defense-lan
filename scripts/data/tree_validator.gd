@@ -4,7 +4,7 @@ extends RefCounted
 ## avec les outils de DataValidator (même règle : rejet du fichier entier à la première anomalie).
 
 const MAX_BRANCHES := 6  # tronc + spécialisations
-const MAX_TALENTS := 8  # par branche
+const MAX_TALENTS := 10  # par branche
 
 
 ## Tronc commun : tourelles ouvertes à tous, de quoi tirer sur l'air et le sol (hors soutien).
