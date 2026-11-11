@@ -118,7 +118,7 @@ static func move_projectiles(b: SimBoard, dt: float, rewards: Array) -> void:
 ## de plus, puis la protection d'un monstre voisin (ward) retire sa part. Crédite les joueurs
 ## (dégâts réellement retirés), gère la mort et le partage de la prime.
 static func damage(b: SimBoard, m: SimMonster, amount: float, pierce: bool, credit: Array, rewards: Array, armor_pierce := 0.0, share := true) -> void:
-	if not m.is_alive() or amount <= 0.0:
+	if not m.is_alive() or amount <= 0.0 or m.marks.burrowed:
 		return
 	if not pierce:
 		var armor := m.armor_against(armor_pierce)
@@ -249,6 +249,6 @@ static func _mark(m: SimMonster, p: SimProjectile) -> void:
 ## Monstre vivant, non charmé, que la tourelle sait viser : un volant par les tourelles qui visent
 ## l'air (et par toutes s'il est cloué au sol), un monstre au sol par celles qui visent le sol.
 static func can_hit(air: bool, ground: bool, m: SimMonster) -> bool:
-	if not m.is_alive() or m.is_charmed():
+	if not m.is_alive() or m.is_charmed() or m.marks.burrowed:  # enfoui : hors d'atteinte
 		return false
 	return (air or m.marks.is_grounded()) if m.flying else ground

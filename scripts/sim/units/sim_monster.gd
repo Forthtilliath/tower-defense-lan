@@ -196,7 +196,7 @@ func move(dt: float) -> void:
 		charm_timer = maxf(0.0, charm_timer - dt)
 		progress = maxf(0.0, progress - speed * BACK_SPEED * mult * dt)
 		return
-	progress += speed * mult * dt
+	progress += speed * mult * marks.pace * dt
 
 
 ## Ajoute des points de contribution. credit : [[id joueur, part], ...] (parts de somme 1).

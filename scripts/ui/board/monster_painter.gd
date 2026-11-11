@@ -14,6 +14,7 @@ const RESIST_COLORS := {
 	"resist_fire": Color("#ff7a2f"), "resist_ice": Color("#9fdcff"),
 	"resist_lightning": Color("#ffe14a"), "resist_elements": Color("#f4f0ff"),
 	"resist_physical": Color("#b8c4d6"), "resist_pierce": Color("#c9b37a"), "resist_blunt": Color("#7d8590"),
+	"resist_poison": Color("#8be04e"),
 }
 
 
@@ -22,6 +23,10 @@ static func draw(ci: CanvasItem, def: Dictionary, m: Dictionary, pos: Vector2, f
 	var w := Ink.width(ts, 0.04)
 	var col := _tint(Color(def["color"]), m)
 	var t := Time.get_ticks_msec() / 1000.0
+	if m.get("burrowed", false):  # enfoui : seulement un monticule de terre qui avance
+		Ink.ellipse(ci, pos + Vector2(0, r * 0.4), r * 1.1, r * 0.45, Color("#6a4a2a"))
+		Ink.ellipse(ci, pos + Vector2(-r * 0.2, r * 0.25), r * 0.4, r * 0.15, Color("#8a6a40"))
+		return
 	if def["resist_physical"] >= 1.0:  # intangible : corps translucide et traîne qui ondule
 		col.a = 0.6
 		var sway := sin(t * 4.0 + pos.x * 0.05) * r * 0.25

@@ -2,7 +2,7 @@ class_name MonsterText
 extends RefCounted
 ## Textes des bonus d'un monstre (prochaine vague, dans le panneau de coopération).
 
-const RESIST_TEXT := {"fire": "au feu", "ice": "à la glace", "lightning": "à la foudre"}
+const RESIST_TEXT := {"fire": "au feu", "ice": "à la glace", "lightning": "à la foudre", "poison": "au poison"}
 const FAST_FROM := 2.0
 
 
@@ -46,7 +46,28 @@ static func traits_text(def: Dictionary) -> String:
 		parts.append("protège ses voisins (%d %% de dégâts en moins)" % _pct(def["ward"]))
 	if def["jam_interval"] > 0.0:
 		parts.append("brouille les tourelles proches (%s s toutes les %s s)" % [_n(def["jam_duration"]), _n(def["jam_interval"])])
+	_extras_text(def, parts)
 	return ", ".join(parts)
+
+
+## Capacités des monstres des thèmes (MonsterExtras).
+static func _extras_text(def: Dictionary, parts: Array) -> void:
+	if def["pack_count"] > 0.0:
+		parts.append("chasse en meute (+%d %% de vitesse entouré des siens)" % _pct(def["pack_speed"]))
+	if def["haste"] > 0.0:
+		parts.append("entraîne ses voisins (+%d %% de vitesse)" % _pct(def["haste"]))
+	if def["burrow_interval"] > 0.0:
+		parts.append("s'enfouit %s s toutes les %s s (ni visé ni touché)" % [_n(def["burrow_duration"]), _n(def["burrow_interval"])])
+	if def["brood_steps"] > 0:
+		parts.append("perd une tête à chaque coup dur (un monstre de plus)")
+	if def["brood_interval"] > 0.0:
+		parts.append("pond un petit toutes les %s s" % _n(def["brood_interval"]))
+	if def["raise_into"] != "":
+		parts.append("relève les morts voisins toutes les %s s" % _n(def["raise_interval"]))
+	if def["lurk"]:
+		parts.append("ne dépasse pas les monstres au sol")
+	if def["grove_regen"] > 0.0:
+		parts.append("se régénère bien plus vite près des arbres")
 
 
 ## Monstres d'une vague, un par ligne avec leurs bonus : « Feu follet : lévite… ».

@@ -34,4 +34,4 @@ static func _flags(m: SimMonster) -> int:
 			| (8 if m.is_burning() else 0) | (16 if m.is_bleeding() else 0) | (32 if m.is_stunned() else 0) \
 			| (64 if m.is_feared() else 0) | (128 if m.is_charmed() else 0) | (256 if m.warded > 0.0 else 0) \
 			| (512 if m.marks.is_frostbitten() else 0) | (1024 if m.marks.is_shocked() else 0) \
-			| (2048 if m.marks.is_grounded() else 0)
+			| (2048 if m.marks.is_grounded() else 0) | (4096 if m.marks.burrowed else 0)
