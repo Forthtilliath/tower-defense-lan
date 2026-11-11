@@ -1,6 +1,6 @@
 class_name HudBar
 extends PanelContainer
-## Barre du haut : or, vies, vague, compte à rebours, « lancer maintenant », vitesse, quitter.
+## Barre du haut : or, vies, vague, compte à rebours, « lancer maintenant », vitesse, talents, quitter.
 
 var _game: GameScreen
 var _gold: Label
@@ -37,6 +37,7 @@ func _ready() -> void:
 	if Net.is_host():
 		_speed = UiTheme.button("Vitesse x1", func() -> void: _game.send({"a": "speed"}), 48, false)
 		row.add_child(_speed)
+	row.add_child(UiTheme.button("Talents", _game.open_talents, 48, false))
 	row.add_child(UiTheme.button("Quitter", _game.ask_quit, 48, false))
 
 

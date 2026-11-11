@@ -3,6 +3,8 @@ extends ColorRect
 ## Arbre de talents d'une classe, par-dessus le salon : niveau, expérience, points, et une
 ## colonne par branche. Toucher un talent ajoute un rang ; « − » en retire un, si les paliers
 ## supérieurs restent valables. Chaque changement est enregistré puis annoncé à l'hôte.
+## En partie (viewer) : les talents joués, en lecture seule. Dans les deux cas, la liste des
+## bonus d'héritage du compte, marquée « désactivé » si l'hôte l'a coupé.
 
 var _builder := 0
 var _on_change: Callable
@@ -11,6 +13,10 @@ var _header: Label
 var _message: Label
 var _body: HBoxContainer
 var _tab := -1  # branche de spécialisation affichée (index dans les branches de la classe)
+## Partie en cours : talents figés (ceux de la partie) et héritage tel que l'hôte l'a réglé.
+var _read_only := false
+var _fixed := {}
+var _heritage_on := true
 
 
 func _init(builder: int, on_change: Callable, on_close: Callable) -> void:
@@ -20,6 +26,19 @@ func _init(builder: int, on_change: Callable, on_close: Callable) -> void:
 	color = Color(0, 0, 0, 0.75)
 	set_anchors_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_STOP
+
+
+## Arbre en lecture seule, pendant une partie : les talents du kit joué, rien à modifier.
+static func viewer(kit: PlayerKit, heritage_active: bool, on_close: Callable) -> TalentPanel:
+	var p := TalentPanel.new(kit.builder, Callable(), on_close)
+	p._read_only = true
+	p._fixed = kit.talents
+	p._heritage_on = heritage_active
+	return p
+
+
+func _talents() -> Dictionary:
+	return _fixed if _read_only else Progress.talents(_builder)
 
 
 func _ready() -> void:
@@ -40,7 +59,8 @@ func _ready() -> void:
 	_header = UiTheme.label("", 16, UiTheme.MUTED)
 	titles.add_child(_header)
 	top.add_child(titles)
-	top.add_child(UiTheme.button("Tout retirer", _reset, 48, false))
+	if not _read_only:
+		top.add_child(UiTheme.button("Tout retirer", _reset, 48, false))
 	top.add_child(UiTheme.button("Fermer", func() -> void: _on_close.call(), 48, false))
 	_message = UiTheme.label("", 16, UiTheme.DANGER)
 	box.add_child(_message)
@@ -57,16 +77,20 @@ func _ready() -> void:
 func _rebuild() -> void:
 	UiTheme.clear(_body)
 	var data := Data.db
-	var talents := Progress.talents(_builder)
+	var talents := _talents()
 	var level := Progress.level(_builder)
-	var progress := TalentRules.level_progress(data, Progress.xp(_builder))
-	var xp_text := "niveau maximum" if progress[1] == 0 else "%d / %d XP vers le niveau %d" % [progress[0], progress[1], level + 1]
 	var kit := PlayerKit.make(data, _builder, talents)
-	var chosen := "spécialisation : %s (retire ses points pour en changer)" % kit.spec_name(data) if kit.spec >= 0 \
-			else "choisis UNE spécialisation : les trois autres se ferment"
-	_header.text = "Niveau %d (%s) · %d point(s) libre(s) sur %d · %s.\nPaliers : %s points dans la branche." % [
-		level, xp_text, Progress.points_left(_builder), TalentRules.points(level), chosen,
-		" / ".join(data.talent_tiers.slice(1).map(func(n: int) -> String: return str(n)))]
+	if _read_only:
+		_header.text = "Partie en cours : lecture seule (les talents se changent au salon). La partie continue pendant ce temps.\n%d point(s) placé(s) · %s." % [
+			TalentRules.spent(talents), "spécialisation : " + kit.spec_name(data) if kit.spec >= 0 else "aucune spécialisation"]
+	else:
+		var progress := TalentRules.level_progress(data, Progress.xp(_builder))
+		var xp_text := "niveau maximum" if progress[1] == 0 else "%d / %d XP vers le niveau %d" % [progress[0], progress[1], level + 1]
+		var chosen := "spécialisation : %s (retire ses points pour en changer)" % kit.spec_name(data) if kit.spec >= 0 \
+				else "choisis UNE spécialisation : les trois autres se ferment"
+		_header.text = "Niveau %d (%s) · %d point(s) libre(s) sur %d · %s.\nPaliers : %s points dans la branche." % [
+			level, xp_text, Progress.points_left(_builder), TalentRules.points(level), chosen,
+			" / ".join(data.talent_tiers.slice(1).map(func(n: int) -> String: return str(n)))]
 	var box := UiTheme.vbox(14)
 	box.size_flags_horizontal = SIZE_EXPAND_FILL
 	_body.add_child(box)
@@ -82,6 +106,25 @@ func _rebuild() -> void:
 			tabs.add_child(_tab_button(i, branch, talents, kit.spec >= 0 and kit.spec != i))
 	box.add_child(tabs)
 	box.add_child(_branch_block(branches[_tab], talents, kit.spec >= 0 and kit.spec != _tab))
+	box.add_child(_heritage_block(_heritage_on if _read_only else NetPayloads.heritage_on(Net.settings)))
+
+
+## Bonus d'héritage du compte pour cette classe ; listés même quand l'hôte les a désactivés.
+func _heritage_block(active: bool) -> VBoxContainer:
+	var col := UiTheme.vbox(6)
+	col.add_child(UiTheme.label("Héritage" + ("" if active else " · désactivé pour cette partie"), 22,
+		UiTheme.ACCENT if active else UiTheme.MUTED))
+	var list := LobbyTexts.heritage_classes(_builder)
+	if list.is_empty():
+		col.add_child(UiTheme.label("Aucun bonus pour l'instant : une classe montée au niveau %d donne son bonus d'héritage à tes autres classes." \
+			% int(Data.db.progression["max_level"]), 15, UiTheme.MUTED))
+		return col
+	if not active:
+		col.add_child(UiTheme.label("L'hôte a désactivé l'héritage : ces bonus ne s'appliquent pas, tout le monde part à égalité.", 15, UiTheme.MUTED))
+	for h in list:
+		col.add_child(UiTheme.label("%s : %s" % [Data.db.builders[h]["name"], LobbyTexts.heritage_bonus(h)], 16,
+			UiTheme.SUCCESS if active else UiTheme.MUTED.darkened(0.2)))
+	return col
 
 
 static func _first_spec(branches: Array) -> int:
@@ -154,13 +197,20 @@ func _talent_row(t: Dictionary, talents: Dictionary) -> HBoxContainer:
 		func() -> void: _change(id, true), 70)
 	b.size_flags_horizontal = SIZE_EXPAND_FILL
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	var tint := UiTheme.TEXT
 	if rank > 0:
-		b.add_theme_color_override("font_color", UiTheme.SUCCESS)
+		tint = UiTheme.SUCCESS
 	elif t["ultimate"]:
-		b.add_theme_color_override("font_color", UiTheme.GOLD)
+		tint = UiTheme.GOLD
 	elif not open:
-		b.add_theme_color_override("font_color", UiTheme.MUTED.darkened(0.3))
+		tint = UiTheme.MUTED.darkened(0.3)
+	if tint != UiTheme.TEXT:
+		b.add_theme_color_override("font_color", tint)
 	row.add_child(b)
+	if _read_only:  # même couleur qu'au salon, mais rien à toucher
+		b.disabled = true
+		b.add_theme_color_override("font_disabled_color", tint if rank > 0 else tint.darkened(0.15))
+		return row
 	var minus := UiTheme.button("−", func() -> void: _change(id, false), 70, false)
 	minus.custom_minimum_size.x = 44
 	minus.disabled = rank == 0
@@ -169,6 +219,8 @@ func _talent_row(t: Dictionary, talents: Dictionary) -> HBoxContainer:
 
 
 func _change(id: String, add: bool) -> void:
+	if _read_only:
+		return
 	var data := Data.db
 	var talents := Progress.talents(_builder)
 	var points := TalentRules.points(Progress.level(_builder))

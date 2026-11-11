@@ -34,6 +34,7 @@ var _end: EndOverlay
 var _toast: Label
 var _toast_time := 0.0
 var _confirm: ConfirmationDialog
+var _talents: TalentPanel  # arbre en lecture seule, ouvert depuis la barre du haut
 
 
 func _init(nav: Node, p_config: Dictionary) -> void:
@@ -150,6 +151,7 @@ func _on_snapshot(snap: Dictionary) -> void:
 	if state.ended:
 		if recap.is_empty():
 			recap = MatchRecap.close(self, _start_lives)
+			close_talents()  # le résultat ne doit pas rester caché sous l'arbre
 		_end.show_result()
 
 
@@ -253,8 +255,23 @@ func ask_quit() -> void:
 	_confirm.popup_centered()
 
 
+## Talents de la partie (ceux envoyés à l'hôte), sans pouvoir les changer ; la partie continue.
+func open_talents() -> void:
+	if _talents == null:
+		_talents = TalentPanel.viewer(my_kit(), NetPayloads.heritage_on(config), close_talents)
+		add_child(_talents)
+
+
+func close_talents() -> void:
+	if _talents != null:
+		_talents.queue_free()
+		_talents = null
+
+
 func go_back() -> void:
-	if _view.selected >= 0:
+	if _talents != null:
+		close_talents()
+	elif _view.selected >= 0:
 		_on_cell_pressed(_view.selected)
 	else:
 		ask_quit()
