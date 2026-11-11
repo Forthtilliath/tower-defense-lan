@@ -3,6 +3,10 @@ extends RefCounted
 ## les tourelles que sa classe et ses talents renforcent, mais regarde la vague suivante et, si la
 ## plupart de ses tirs ne la toucheraient pas (fantômes, squelettes, résistance à son élément,
 ## volants, grosse armure), il construit la tourelle la plus efficace contre elle.
+## Placement des tourelles : bot_cells.gd ; lecture de la vague suivante : bot_counters.gd.
+
+const Cells := preload("res://tests/bot/bot_cells.gd")
+const Counters := preload("res://tests/bot/bot_counters.gd")
 
 const DT := 0.05
 const PLAN := [
@@ -20,10 +24,6 @@ const FIRST_WAVE_AFTER := 20.0
 const BOT_LEVEL := 10
 ## Classe sans spécialisation précisée : l'Artilleur Tireur d'élite, le plus polyvalent.
 const DEFAULT_SPEC := 1
-## En dessous de cette part de sa puissance de feu efficace contre la vague suivante, il s'adapte.
-const ADAPT_BELOW := 0.5
-## Au-delà de ce nombre de tourelles efficaces contre la vague suivante, il améliore au lieu d'en ajouter.
-const MAX_ANSWERS := 3
 ## Ses tourelles renforcées tapent peu (moins que cette part d'une Arbalète, pour l'or) : il alterne
 ## avec des tourelles de dégâts.
 const WEAK_RATIO := 0.6
@@ -32,8 +32,8 @@ const WEAK_RATIO := 0.6
 var calls_early := true
 ## Stratégie concentrée (> 0) : au plus `focus` tourelles, chacune montée au maximum avant la suivante.
 var focus := 0
-var _lanes := {}  # cache de lane_key
-var _foes := {}  # cache : vague -> [[monstre type, poids], ...]
+var _cells := Cells.new()
+var _counters := Counters.new()
 
 
 ## Branches de spécialisation d'une classe (hors tronc), dans l'ordre des données.
@@ -100,8 +100,8 @@ func play(gd: GameData, map_index: int, count: int, difficulty: int, options := 
 		var s: int = entry[1] if entry is Array else DEFAULT_SPEC
 		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level, s), heritage])
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster, difficulty, options)
-	var cells := ranked_cells(sim.map, false, sim.open_paths, gd.specials)
-	var air_cells := ranked_cells(sim.map, true, sim.open_paths, gd.specials)
+	var cells := Cells.ranked_cells(sim.map, false, sim.open_paths, gd.specials)
+	var air_cells := Cells.ranked_cells(sim.map, true, sim.open_paths, gd.specials)
 	var timer := 0.0
 	var wave := -1
 	var lives := 0
@@ -143,14 +143,14 @@ func act(sim: SimMatch, id: int, cells: Array[int], air_cells: Array[int]) -> vo
 	if focus > 0:
 		var top := sim.data.tower_levels(mine[0].type).size() - 1 if not mine.is_empty() else 0
 		want_build = mine.size() < 3 or (mine.size() < focus and lowest >= top)
-	var counter := counter_pick(sim, id, mine) if mine.size() >= 3 and focus == 0 else ""
+	var counter := _counters.counter_pick(sim, id, mine) if mine.size() >= 3 and focus == 0 else ""
 	if want_build or counter != "":
 		var type := counter
 		if type == "":
 			var plan := builder_plan(sim, id)
 			type = plan[mine.size() % plan.size()]
 		var air_only: bool = not sim.data.towers[type]["ground"]
-		var cell := pick_cell(sim, id, mine, air_cells if air_only else cells)
+		var cell := _cells.pick_cell(sim, id, mine, air_cells if air_only else cells)
 		if cell >= 0 and sim.apply_command(id, {"a": "build", "cell": cell, "tower": type}) == "":
 			return
 		if cell >= 0 and (mine.size() < 5 or counter != ""):
@@ -185,134 +185,6 @@ func use_power(sim: SimMatch, id: int) -> void:
 	sim.apply_command(id, {"a": "power", "cell": maxi(0, cell)})
 
 
-## Tourelle à construire contre la vague suivante si la plupart de sa puissance de feu ne la
-## toucherait pas ("" sinon) : la plus efficace contre elle, ses tourelles renforcées comptant plus.
-func counter_pick(sim: SimMatch, id: int, mine: Array[SimTower]) -> String:
-	var next := sim.wave_index + 1
-	if next >= sim.map.waves.size():
-		return ""
-	var foes := _wave_foes(sim, sim.map.waves[next])
-	var data := sim.data
-	var total := 0.0
-	var useful := 0.0
-	var answers := 0  # tourelles déjà efficaces contre cette vague
-	for t in mine:
-		if not t.support:
-			var power := dps_of(t.stats)
-			var e := effect(data, t.type, foes)
-			total += power
-			useful += power * e
-			answers += 1 if e >= 0.5 else 0
-	if total <= 0.0 or useful >= total * ADAPT_BELOW or answers >= MAX_ANSWERS:
-		return ""  # ses tirs portent, ou il a déjà de quoi répondre : il améliore plutôt
-	var kit: PlayerKit = sim.players[id]["kit"]
-	var best := ""
-	var best_score := 0.0
-	for type in data.tower_order:
-		if not kit.allows(type) or data.towers[type]["support"] or float(data.tower_levels(type)[0]["damage"]) <= 0.0:
-			continue
-		var e := effect(data, type, foes)
-		var score := early_value(data, type) * kit.mult(type, "damage") * e
-		if e >= 0.5 and score > best_score:
-			best_score = score
-			best = type
-	return best
-
-
-## Monstres d'une vague tels qu'ils apparaîtront (vague spéciale et armure de la difficulté
-## comprises), avec leur poids (nombre × PV).
-func _wave_foes(sim: SimMatch, wave_id: String) -> Array:
-	if not _foes.has(wave_id):
-		var wave: Dictionary = sim.data.waves[wave_id]
-		var mod: Dictionary = sim.data.modifiers.get(wave.get("modifier", ""), {})
-		var out := []
-		for g in wave["groups"]:
-			var m := SimMonster.new()
-			m.setup(sim.data.monsters[g["monster"]], 1.0, 1.0, mod)
-			m.armor += sim.boards[0].armor_bonus
-			out.append([m, float(g["count"]) * m.max_hp])
-		_foes[wave_id] = out
-	return _foes[wave_id]
-
-
-## Part de la puissance d'une tourelle qui touche vraiment ces monstres (0 à 1) : cible (sol ou
-## air), résistance à son élément, armure contre ses coups directs (les effets continus l'ignorent).
-static func effect(data: GameData, type: String, foes: Array) -> float:
-	var def: Dictionary = data.towers[type]
-	var l: Dictionary = data.tower_levels(type)[0]
-	var dot := float(l["poison_dps"]) + float(l["burn_dps"]) + float(l["bleed"]) * 100.0 > float(l["damage"])
-	var total := 0.0
-	var hit := 0.0
-	for f in foes:
-		var m: SimMonster = f[0]
-		total += f[1]
-		if not (def["air"] if m.flying else def["ground"]):
-			continue
-		var part := m.taken(def["element"])
-		var d := float(l["damage"])
-		if not dot and d > 0.0 and m.armor > 0.0:
-			part *= maxf(d - m.armor, d * BoardCombat.ARMOR_MIN_RATIO) / d
-		hit += f[1] * part
-	return hit / total if total > 0.0 else 1.0
-
-
-## Puissance d'une tourelle (dégâts par seconde, rebonds, poison, brûlure et nappes comptés grossièrement).
-static func dps_of(l: Dictionary) -> float:
-	var dps: float = l["damage"] * l["rate"] * (1.0 + 0.5 * l["chain"] + 0.5 * (l["multishot"] - 1))
-	return dps + l["poison_dps"] + l["burn_dps"] * l["burn_stacks"] * 0.5 + l["patch_dps"]
-
-
-## Dégâts par seconde au niveau 1 pour l'or dépensé : l'ordre dans lequel un joueur choisirait.
-static func early_value(data: GameData, type: String) -> float:
-	var l: Dictionary = data.tower_levels(type)[0]
-	return dps_of(l) / float(l["cost"])
-
-
-## Meilleure case libre du couloir ouvert où le bot a le moins de tourelles (-1 si aucune case).
-func pick_cell(sim: SimMatch, id: int, mine: Array[SimTower], ranked: Array[int]) -> int:
-	var load := {}
-	for t in mine:
-		var z := lane_key(sim.map, t.cell, sim.open_paths)
-		load[z] = int(load.get(z, 0)) + 1
-	var best_cell := -1
-	var best_key := INF
-	var seen := {}
-	for cell in ranked:
-		var z := lane_key(sim.map, cell, sim.open_paths)
-		if seen.has(z) or not MatchActions.can_build_for(sim, id, sim.boards[0], cell):
-			continue
-		seen[z] = true
-		var key := float(load.get(z, 0))
-		if key < best_key:
-			best_key = key
-			best_cell = cell
-	return best_cell
-
-
-## Couloir ouvert (parmi `paths`) qu'une case couvre le plus, sur une carte à plusieurs couloirs
-## (-1 : aucun, ou carte à un seul couloir).
-func lane_key(m: MapDef, cell: int, paths: Array[int]) -> int:
-	if m.lanes <= 1:
-		return -1
-	var key := "%s/%d/%s" % [m.id, cell, str(paths)]
-	if not _lanes.has(key):
-		var c := m.cell_center(cell)
-		var best := -1
-		var best_hits := 0
-		for p in paths:
-			var hits := 0
-			var d := 0.0
-			while d < m.path_length(p, false):
-				if c.distance_to(m.position_at(p, d, false)) <= 2.5:
-					hits += 1
-				d += 0.5
-			if hits > best_hits:
-				best_hits = hits
-				best = p
-		_lanes[key] = best
-	return _lanes[key]
-
-
 ## Plan de construction : ouverture à deux Arbalètes, puis les tourelles qui frappent et que sa
 ## classe ou ses talents renforcent, à tour de rôle (des plus efficaces au niveau 1 aux moins),
 ## avec des places pour l'anti-aérien et ses tourelles de soutien ; à défaut (classes d'économie),
@@ -330,15 +202,15 @@ func builder_plan(sim: SimMatch, id: int) -> Array:
 	var air := boosted.filter(func(type: String) -> bool: return not data.towers[type]["ground"])
 	if air.is_empty():
 		air = ["sentinel"]
-	favored.sort_custom(func(a: String, b: String) -> bool: return early_value(data, a) > early_value(data, b))
+	favored.sort_custom(func(a: String, b: String) -> bool: return Counters.early_value(data, a) > Counters.early_value(data, b))
 	var boosters := data.tower_order.filter(func(type: String) -> bool:
 		return kit.allows(type) and data.towers[type]["support"] and kit._per.has(type))
 	# Classe de soutien ou de contrôle : ses tourelles renforcées tapent peu, il alterne avec des
 	# tourelles de dégâts du tronc commun, comme le ferait un joueur
 	var mean := 0.0
 	for type in favored:
-		mean += early_value(data, type) / maxf(1.0, favored.size())
-	var weak := mean < WEAK_RATIO * early_value(data, "crossbow")
+		mean += Counters.early_value(data, type) / maxf(1.0, favored.size())
+	var weak := mean < WEAK_RATIO * Counters.early_value(data, "crossbow")
 	var damage := PLAN.filter(func(type: String) -> bool: return kit.allows(type) and type != "sentinel")
 	var plan := []
 	if favored.size() >= 2:
@@ -365,33 +237,3 @@ func builder_plan(sim: SimMatch, id: int) -> Array:
 		if kit.allows(type) and not plan.has(type):
 			plan.append(type)
 	return plan
-
-
-## Cases constructibles triées par longueur de chemin (au sol ou aérien) couverte à 2,5 cases,
-## sur les seuls chemins ouverts (`paths`, tous si vide) ; les cases qui n'en couvrent aucun sont écartées.
-## Comme un joueur, il vise les cases spéciales (`specials` : GameData.specials) : la Colline
-## allonge la portée, le Cristal et la Rune multiplient la puissance, le Filon d'or passe en tête.
-func ranked_cells(m: MapDef, air: bool, paths: Array[int] = [], specials: Array = []) -> Array[int]:
-	var scores := {}
-	for cell in m.cell_count():
-		if not m.is_buildable(cell):
-			continue
-		var c := m.cell_center(cell)
-		var tile: Dictionary = specials[m.special_at(cell)] if m.special_at(cell) >= 0 and m.special_at(cell) < specials.size() else {}
-		var reach := 2.5 * float(tile.get("range", 1.0))
-		var score := 0.0
-		for p in (paths if not paths.is_empty() else range(m.start_count())):
-			var d := 0.0
-			while d < m.path_length(p, air):
-				if c.distance_to(m.position_at(p, d, air)) <= reach:
-					score += 1.0
-				d += 0.25
-		score *= float(tile.get("damage", 1.0)) * float(tile.get("rate", 1.0))
-		if score > 0.0 and int(tile.get("gold_per_wave", 0)) > 0:
-			score += 1000.0
-		if score > 0.0:
-			scores[cell] = score
-	var cells: Array[int] = []
-	cells.assign(scores.keys())
-	cells.sort_custom(func(a: int, b: int) -> bool: return scores[a] > scores[b])
-	return cells
