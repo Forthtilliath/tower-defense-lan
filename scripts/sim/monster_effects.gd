@@ -14,6 +14,7 @@ const SPREAD_INTERVAL := 1.0
 
 
 static func update(b: SimBoard, dt: float, rewards: Array) -> void:
+	BoardTerrain.ditches(b)
 	for m in b.monsters:
 		if not m.is_alive():
 			continue

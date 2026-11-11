@@ -8,7 +8,8 @@ const STATS := ["damage", "rate", "range", "cc", "aura"]
 ## Économie des talents (MatchEconomy), une valeur par rang qui s'additionne (voir TalentSchema.TALENT).
 const MONEY := ["loot", "loan", "boss_bounty", "jackpot", "trophy", "contract", "rent", "compound", "ally_start",
 	"invest", "team_discount", "share_interest", "hot_hand", "early_wave", "risk", "nerve",
-	"floors", "moves", "scrap", "spare", "tinker", "team_aura"]
+	"floors", "moves", "scrap", "spare", "tinker", "team_aura", "vein_tiles", "mound_tiles", "ditch_tiles", "fertile",
+	"saver", "jackpot_share"]
 const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
 	"team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"] + MONEY
 ## Auras des tourelles de soutien, toutes renforcées par la statistique « aura ».

@@ -177,7 +177,7 @@ func snapshot() -> Dictionary:
 	for id in order:
 		var p: Dictionary = players[id]
 		pl.append([id, p["gold"], p["income"], p["ready"], p["alive"], p["board"],
-			MatchActions.charges_left(p, "raze"), MatchActions.charges_left(p, "tile")])
+			MatchActions.charges_left(p, "raze"), MatchActions.charges_left(p, "tile")] + MatchActions.own_charges(p))
 	var bs := []
 	for b in boards:
 		bs.append(b.snapshot())

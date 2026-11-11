@@ -11,6 +11,9 @@ static func parse(raw: Variant, base: MapDef, data: GameData) -> Variant:
 		return null
 	var m := base.clone()
 	var allowed := BoardTerrain.placeable(data)
+	for i in data.specials.size():  # Filon, Butte, Fossé : posés avec leurs propres charges
+		if BoardTerrain.charge_kind(data, i) != "tile":
+			allowed.append(i)
 	for e in raw:
 		if typeof(e) != TYPE_ARRAY or e.size() != 3:
 			return null

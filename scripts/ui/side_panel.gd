@@ -207,14 +207,22 @@ func _terrain_actions() -> void:
 			_game.send({"a": "raze", "cell": _selected}))
 		raze.disabled = locked
 		add_child(raze)
-	elif map.is_buildable(_selected) and map.special_at(_selected) < 0 and int(me.get("tile", 0)) > 0:
-		add_child(UiTheme.label("Poser une case bonus (encore %d) :" % int(me["tile"]), 16, UiTheme.ACCENT))
+	elif map.is_buildable(_selected) and map.special_at(_selected) < 0:
+		var data := _game.state.data
+		var choices := []  # [case spéciale, charges restantes]
+		for i in data.specials.size():
+			var left := int(me.get(BoardTerrain.charge_kind(data, i), 0))
+			if left > 0 and (BoardTerrain.placeable(data).has(i) or BoardTerrain.charge_kind(data, i) != "tile"):
+				choices.append([i, left])
+		if choices.is_empty():
+			return
+		add_child(UiTheme.label("Poser une case bonus :", 16, UiTheme.ACCENT))
 		var row := UiTheme.hbox(6)
 		add_child(row)
-		for i in BoardTerrain.placeable(_game.state.data):
-			var s: Dictionary = _game.state.data.specials[i]
-			var special: int = i
-			var b := UiTheme.button(s["name"], func() -> void:
+		for c in choices:
+			var s: Dictionary = data.specials[c[0]]
+			var special: int = c[0]
+			var b := UiTheme.button("%s (%d)" % [s["name"], c[1]], func() -> void:
 				_game.send({"a": "tile", "cell": _selected, "special": special}), 48, false)
 			b.tooltip_text = s["description"]
 			b.size_flags_horizontal = SIZE_EXPAND_FILL

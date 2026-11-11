@@ -72,3 +72,56 @@ func test_scrap_pays_more_for_vehicles() -> void:
 	p["gold"] = 0
 	MatchEconomy.credit_bounty(sim, 1, 10, false, true)
 	check(p["gold"] == 15, "véhicule : +50 %% (%d)" % p["gold"])
+
+func _special(sim: SimMatch, id: String) -> int:
+	for i in sim.data.specials.size():
+		if sim.data.specials[i]["id"] == id:
+			return i
+	return -1
+
+
+func test_terraformer_tiles_use_their_own_charges() -> void:
+	var sim := _solo()
+	var p: Dictionary = sim.players[1]
+	var kit: PlayerKit = p["kit"]
+	var cell := _cell(sim, 2, 2)
+	var mound := _special(sim, "mound")
+	kit.tile_charges = 3
+	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": mound}) != "", "la Géomancie ne pose pas de Butte")
+	kit.money = {"mound_tiles": 1.0, "vein_tiles": 1.0}
+	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": mound}) == "", "Butte posée avec sa charge")
+	check(MatchActions.charges_left(p, "mound") == 0 and MatchActions.charges_left(p, "tile") == 3, "charge de Butte dépensée, pas celle de Géomancie")
+	check(sim.apply_command(1, {"a": "tile", "cell": _cell(sim, 3, 2), "special": _special(sim, "gold")}) == "", "Filon posé")
+	var view := ViewState.new(sim.data, sim.map, sim.boards.size())
+	var snap := sim.snapshot()
+	snap["speed"] = 1
+	snap["iv"] = 0.1
+	check(view.apply(snap), "un client accepte la Butte et le Filon posés")
+	check(int(view.players[1].get("tile", -1)) == 3 and int(view.players[1].get("mound", -1)) == 0, "charges reçues")
+
+
+func test_ditch_slows_and_fertile_soil() -> void:
+	var sim := _solo()
+	var b := sim.boards[0]
+	var kit: PlayerKit = sim.players[1]["kit"]
+	kit.money = {"ditch_tiles": 1.0}
+	var cell := _cell(sim, 3, 2)  # à côté de la route de Prairie (ligne 1)
+	check(sim.apply_command(1, {"a": "tile", "cell": cell, "special": _special(sim, "ditch")}) == "", "Fossé creusé")
+	var m := b.spawn("goblin", 1.0, 0, 0.0)
+	m.pos = b.map.cell_center(cell) + Vector2(0.0, -0.9)
+	BoardTerrain.ditches(b)
+	check(m.is_slowed() and is_equal_approx(m.slow_factor, 0.75), "ralenti de 25 %% près du fossé")
+	var hill := _special(sim, "hill")
+	var plain := float(sim.data.tower_stats("crossbow", 0, hill, kit)["range"])
+	kit.money["fertile"] = 1.0
+	var rich := float(sim.data.tower_stats("crossbow", 0, hill, kit)["range"])
+	var base := float(sim.data.tower_levels("crossbow")[0]["range"])
+	check(is_equal_approx(rich, base * 1.5) and is_equal_approx(plain, base * 1.25), "Terre fertile : Colline +50 %% au lieu de +25 %%")
+
+
+func test_shared_jackpot() -> void:
+	var sim := SimMatch.new(load_data(), 0, SimMatch.Mode.COOP, [[1, "A", 0], [2, "B", 1]])
+	sim.players[1]["kit"].money = {"jackpot": 1.0, "jackpot_share": 0.5}
+	sim.players[2]["gold"] = 0
+	MatchEconomy.credit_bounty(sim, 1, 10)
+	check(sim.players[2]["gold"] == 45, "l'allié touche la moitié du gain du jackpot : %d" % sim.players[2]["gold"])

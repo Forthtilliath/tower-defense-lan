@@ -119,7 +119,8 @@ static func raze(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: i
 static func place_tile(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: int, special: int) -> String:
 	if not MatchFlow.can_trade(sim):
 		return LOCKED
-	if charges_left(p, "tile") <= 0:
+	var kind := BoardTerrain.charge_kind(sim.data, special)
+	if charges_left(p, kind) <= 0:
 		return "Plus de case à poser (talents du Terrassier)"
 	var refusal := BoardTerrain.place_refusal(board, cell, special)
 	if refusal == "":
@@ -127,15 +128,21 @@ static func place_tile(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, c
 	if refusal != "":
 		return refusal
 	BoardTerrain.place(board, cell, special)
-	p["used_tile"] = int(p.get("used_tile", 0)) + 1
+	p["used_" + kind] = int(p.get("used_" + kind, 0)) + 1
 	return ""
 
 
-## Charges restantes d'un joueur : « raze » (décor à raser) ou « tile » (cases à poser).
+## Charges restantes d'un joueur : « raze » (décor à raser), « tile » (Colline, Cristal, Rune),
+## « vein » (Filon), « mound » (Butte), « ditch » (Fossé).
 static func charges_left(p: Dictionary, kind: String) -> int:
 	var kit: PlayerKit = p["kit"]
-	var total := kit.raze_charges if kind == "raze" else kit.tile_charges
+	var total: int = {"raze": kit.raze_charges, "tile": kit.tile_charges}.get(kind, int(kit.m(kind + "_tiles")))
 	return maxi(0, total - int(p.get("used_" + kind, 0)))
+
+
+## Charges restantes des cases à charges propres (BoardTerrain.OWN_CHARGES), dans l'ordre.
+static func own_charges(p: Dictionary) -> Array:
+	return BoardTerrain.OWN_CHARGES.values().map(func(kind: String) -> int: return charges_left(p, kind))
 
 
 static func cycle_target(id: int, board: SimBoard, cell: int) -> String:
