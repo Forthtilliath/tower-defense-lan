@@ -165,9 +165,9 @@ func test_patron_gifts_lose_less() -> void:
 
 func test_progress_file_validation() -> void:
 	var gd := load_data()
-	var good := ProgressFile.serialize(gd, {"arcanist": {"xp": 300, "talents": {"ar_conductive": 2, "ar_pylon": 1}}}, 1)
+	var good := ProgressFile.serialize(gd, "Forth", {"arcanist": {"xp": 300, "talents": {"ar_conductive": 2, "ar_pylon": 1}}}, 1)
 	var parsed = ProgressFile.parse(gd, good)
-	check(parsed != null and parsed[0]["arcanist"]["xp"] == 300 and parsed[1] == 1, "fichier relu")
+	check(parsed != null and parsed[0]["arcanist"]["xp"] == 300 and parsed[1] == 1 and parsed[2] == "Forth", "fichier relu")
 	check(parsed != null and parsed[0]["arcanist"]["talents"].size() == 2, "talents relus")
 	var bad := [
 		"pas du json", "[]", "{\"v\": 2, \"classes\": {}}", "{\"v\": 1}",
@@ -176,6 +176,11 @@ func test_progress_file_validation() -> void:
 		"{\"v\": 1, \"classes\": {\"arcanist\": {\"xp\": 10}}}",
 		"{\"v\": 1, \"classes\": {\"Arc Niste\": {\"xp\": 10, \"talents\": {}}}}",
 		"{\"v\": 1, \"last\": 3, \"classes\": {}}",
+		"{\"v\": 3, \"name\": \"Bob\", \"classes\": {}}",
+		"{\"v\": 2, \"name\": \"\", \"classes\": {}}",
+		"{\"v\": 2, \"name\": 12, \"classes\": {}}",
+		"{\"v\": 2, \"name\": \"  Bob\", \"classes\": {}}",
+		"{\"v\": 2, \"name\": \"abcdefghijklmnopqrstuvwxyz\", \"classes\": {}}",
 	]
 	for text in bad:
 		check(ProgressFile.parse(gd, text) == null, "fichier rejeté : " + text)

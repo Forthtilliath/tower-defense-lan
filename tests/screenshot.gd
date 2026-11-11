@@ -22,6 +22,39 @@ func _ready() -> void:
 
 func _run() -> void:
 	var tag := "versus" if _mode == 1 else "coop"
+	main.show_start()
+	await _wait(0.5)
+	_shot("0-accueil")
+	main.show_new_account()
+	await _wait(0.3)
+	_shot("0b-nouveau-compte")
+	main.show_accounts()  # comptes de cet appareil (retour à l'accueil s'il n'y en a aucun)
+	await _wait(0.4)
+	_shot("0c-continuer")
+	var shown: Node = main.get("_screen")
+	if shown is AccountsScreen:
+		var hovered: Array = shown.find_children("*", "Button", true, false)
+		if not hovered.is_empty():
+			hovered[0].mouse_entered.emit()  # aspect de la carte au survol
+			await _wait(0.2)
+			_shot("0c2-continuer-survol")
+	var accounts: Array = AccountStore.list(Data.db)["accounts"]
+	var screen_now: Node = main.get("_screen")
+	if screen_now is AccountsScreen and not accounts.is_empty():
+		screen_now._confirm_remove(accounts[0])  # affichée puis refermée : rien n'est supprimé
+		await _wait(0.3)
+		_shot("0d-suppression")
+		for child in screen_now.get_children():
+			if child is ConfirmationDialog:
+				child.queue_free()
+		main.show_send(accounts[0]["id"])
+		await _wait(0.3)
+		_shot("0f-envoyer")
+	main.show_receive()
+	await _wait(1.5)  # laisse passer une annonce : l'écran d'envoi ouvert juste avant n'écoute plus
+	_shot("0e-recevoir")
+	# Compte invité, jamais enregistré : la suite ne touche pas aux comptes de l'appareil.
+	Progress.use_guest("Forth")
 	main.show_menu()
 	await _wait(0.5)
 	_shot("1-menu")
