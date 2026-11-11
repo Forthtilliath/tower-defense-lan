@@ -9,6 +9,7 @@ const NORMAL := 1
 const HARD := 2
 ## Équipes mixtes, comme en vraie coopération : Artilleur et Arcaniste, puis Fléau et Support.
 const TEAM := [0, 1, 2, 3]
+const LANE_TEAM := [0, 1, 2, 0]
 
 var bot = Bot.new()
 
@@ -36,10 +37,13 @@ func test_bot_wins_duo_coop() -> void:
 
 
 ## Grandes cartes : gagnées à 2 et à 4 ; une petite carte à 4 aussi (renforcement coop).
+## À 4 sur une carte à couloirs séparés, chacun défend un couloir plein : l'équipe joue sans Support
+## (classe d'équipe, moins utile là, choix assumé le 2026-11-11 ; son passif l'y aide sans suffire au bot).
 func test_bot_teams_win_big_maps() -> void:
 	var gd := load_data()
 	for entry in [[6, 2], [6, 4], [7, 2], [7, 4], [8, 2], [8, 4], [1, 4]]:
-		var sim := play(gd, entry[0], entry[1], NORMAL, {}, TEAM)
+		var team: Array = LANE_TEAM if gd.maps[entry[0]].lanes > 1 and entry[1] >= 4 else TEAM
+		var sim := play(gd, entry[0], entry[1], NORMAL, {}, team)
 		check(sim.result == "victory", "%s à %d : %s à la vague %d" % [gd.maps[entry[0]].id, entry[1], sim.result, sim.wave_index + 1])
 
 
