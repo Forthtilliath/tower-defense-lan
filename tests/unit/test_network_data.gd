@@ -86,9 +86,10 @@ func test_projectiles_carry_their_tower() -> void:
 func test_lobby_payloads() -> void:
 	var gd := load_data()
 	var talents := {"ar_conduction": 2, "ar_stable": 1, "ar_pylon": 1}
-	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}, []], [4, "Bob", 1, 1, 3, 5, talents, [4, 0]]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1}
+	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}, []], [4, "Bob", 1, 1, 3, 5, talents, [4, 0]]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1, "heritage": 1}
 	var ok = NetPayloads.parse_lobby(good, gd, 2, 4)
 	check(ok != null and ok["players"].size() == 2 and ok["rhythm"] == 1 and ok["launch"] == 1, "salon valide")
+	check(ok != null and ok["heritage"] == SimMatch.Heritage.OFF, "héritage désactivé reçu")
 	check(ok != null and ok["players"][4]["builder"] == 1 and ok["players"][4]["vote"] == 3, "bâtisseur et vote reçus")
 	check(ok != null and ok["players"][4]["level"] == 5 and ok["players"][4]["talents"] == talents, "niveau et talents reçus")
 	check(ok != null and ok["players"][4]["heritage"] == [0, 4], "héritage reçu (trié)")
@@ -112,6 +113,8 @@ func test_lobby_payloads() -> void:
 		"carte inconnue": func(d): d["map"] = 99,
 		"rythme inconnu": func(d): d["rhythm"] = 2,
 		"lancement absent": func(d): d.erase("launch"),
+		"option d'héritage absente": func(d): d.erase("heritage"),
+		"option d'héritage inconnue": func(d): d["heritage"] = 2,
 		"couleur hors limites": func(d): d["players"][0][2] = 9,
 		"bâtisseur inconnu": func(d): d["players"][1][3] = 9,
 		"vote hors limites": func(d): d["players"][1][4] = 4,
@@ -126,14 +129,33 @@ func test_lobby_payloads() -> void:
 
 func test_match_config() -> void:
 	var gd := load_data()
-	var good := {"roster": [[1, "Hôte", 0, 1, {}, []], [3, "Ana", 1, 3, {"su_presence": 1}, [0]]], "mode": 0, "map": 8, "rhythm": 0, "launch": 1, "difficulty": 2}
+	var good := {"roster": [[1, "Hôte", 0, 1, {}, []], [3, "Ana", 1, 3, {"su_presence": 1}, [0]]], "mode": 0, "map": 8, "rhythm": 0, "launch": 1, "difficulty": 2, "heritage": 0}
 	var ok = NetPayloads.parse_config(good, gd, 2, 4)
 	check(ok != null and ok["difficulty"] == 2 and ok["roster"][1][3] == 3 and ok["roster"][1][5] == [0], "configuration valide")
+	var fair: Dictionary = good.duplicate(true)
+	fair["heritage"] = SimMatch.Heritage.OFF
+	fair["roster"][1][5] = []
+	check(NetPayloads.parse_config(fair, gd, 2, 4) != null, "configuration valide sans héritage")
 	for change in [["difficulty", 9], ["difficulty", null], ["launch", -1], ["roster", [[1, "Hôte", 0, 1, {}]]], ["roster", [[1, "Hôte", 0, -1, {}, []]]],
-			["roster", [[1, "Hôte", 0, 1, {"triche": 1}, []]]], ["roster", [[1, "Hôte", 0, 1, {}, ["x"]]]]]:
+			["roster", [[1, "Hôte", 0, 1, {"triche": 1}, []]]], ["roster", [[1, "Hôte", 0, 1, {}, ["x"]]]], ["heritage", 5], ["heritage", null],
+			["heritage", SimMatch.Heritage.OFF]]:  # désactivé alors qu'Ana a encore un héritage
 		var bad: Dictionary = good.duplicate(true)
 		bad[change[0]] = change[1]
 		check(NetPayloads.parse_config(bad, gd, 2, 4) == null, "configuration refusée : %s" % str(change))
+
+
+func test_heritage_option() -> void:
+	var players := {1: {"name": "Hôte", "color": 0, "builder": 0, "talents": {}, "heritage": [2]},
+		5: {"name": "Bob", "color": 1, "builder": 1, "talents": {}, "heritage": [0, 3]}}
+	var on := NetPayloads.match_roster(players, [1, 5], {"mode": 0, "heritage": SimMatch.Heritage.ON})
+	check(on[0][5] == [2] and on[1][5] == [0, 3], "héritage activé : transmis à la partie")
+	check(NetPayloads.heritage_on({"mode": 1}), "héritage actif si l'option manque (salon d'avant)")
+	var off := NetPayloads.match_roster(players, [1, 5], {"mode": 0, "heritage": SimMatch.Heritage.OFF})
+	check(off[0][5].is_empty() and off[1][5].is_empty(), "héritage désactivé : aucun joueur n'en reçoit")
+	check(players[5]["heritage"] == [0, 3], "le salon garde l'héritage annoncé (la liste reste affichable)")
+	var gd := load_data()
+	var kit := PlayerKit.make(gd, off[1][3], off[1][4], off[1][5])
+	check(kit.heritage.is_empty(), "kit de partie sans héritage")
 
 
 func test_difficulty_vote() -> void:
