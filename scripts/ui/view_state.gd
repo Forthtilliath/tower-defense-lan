@@ -111,33 +111,12 @@ func _parse(snap: Variant) -> Variant:
 		"iv": Check.as_num(s.get("iv", 0.1), 0.01, 1.0),
 		"nx": Check.as_bool(s.get("nx")),
 		"tr": Check.as_bool(s.get("tr")),
-		"players": _parse_players(s.get("pl")),
+		"players": ViewPlayers.parse(s.get("pl"), board_count),
 		"boards": _parse_boards(s.get("b")),
 	}
 	for key in out:
 		if out[key] == null:
 			return null
-	return out
-
-
-func _parse_players(raw: Variant) -> Variant:
-	if not _is_list(raw, 8):
-		return null
-	var out := {}
-	for e in raw:
-		if not _is_tuple(e, 8):
-			return null
-		var id = Check.as_int(e[0], 1, NetPayloads.MAX_PEER_ID)
-		var razes = Check.as_int(e[6], 0, 1000)  # charges du Terrassier restantes
-		var tiles = Check.as_int(e[7], 0, 1000)
-		var gold = Check.as_int(e[1], 0, 1000000000)
-		var income = Check.as_int(e[2], 0, 1000000000)
-		var ready = Check.as_bool(e[3])
-		var alive = Check.as_bool(e[4])
-		var board = Check.as_int(e[5], 0, board_count - 1)
-		if id == null or gold == null or income == null or ready == null or alive == null or board == null or razes == null or tiles == null:
-			return null
-		out[id] = {"gold": gold, "income": income, "ready": ready, "alive": alive, "board": board, "raze": razes, "tile": tiles}
 	return out
 
 
