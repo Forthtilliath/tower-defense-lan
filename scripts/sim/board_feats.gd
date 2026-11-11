@@ -21,8 +21,6 @@ const SPREADS := ["burn", "poison", "shock"]
 const LAST_STAND := 5
 const STATIC_HITS := 5
 const STORM_PERIOD := 8.0
-## Voisines (Harmonie) : tourelles du même joueur à cette distance au plus (diagonales comprises).
-const NEIGHBOUR := 1.5
 const ARMORED := 3.0
 const WOUNDED := 0.25
 const PUDDLE_RADIUS := 0.8
@@ -39,25 +37,12 @@ static func on_shot(b: SimBoard, t: SimTower, p: SimProjectile) -> void:
 		mult *= 1.0 + minf(p.stat("streak_cap"), p.stat("streak") * t.kills)
 	if p.stat("growth") > 0.0 and t.kit != null:
 		mult *= 1.0 + p.stat("growth") * t.kit.clean_waves
-	if p.stat("harmony") > 0.0:
-		mult *= 1.0 + p.stat("harmony") * elements_around(b, t)
+	mult *= BoardLayout.damage_mult(b, t, p)
 	if mult != 1.0:
 		GameData.scale_damage(p.stats, mult)
 	if int(p.stat("all_targets")) > 0:
 		p.hits_air = true
 		p.hits_ground = true
-
-
-## Éléments différents parmi les tourelles voisines du même joueur (elle exceptée).
-static func elements_around(b: SimBoard, t: SimTower) -> int:
-	var seen := {}
-	for cell in b.towers:
-		var o: SimTower = b.towers[cell]
-		if o != t and o.owner == t.owner and o.center.distance_to(t.center) <= NEIGHBOUR:
-			var e: String = b.data.towers[o.type]["element"]
-			if DataSchema.ELEMENTS.has(e):
-				seen[e] = true
-	return seen.size()
 
 
 ## Délai jusqu'au tir suivant : échauffement (+warmup de cadence par seconde de tir continu) et
@@ -69,6 +54,8 @@ static func next_delay(t: SimTower, base: float, lives := 99) -> float:
 		delay /= 1.0 + minf(float(t.stats["warmup_cap"]), w * t.warm)
 	if lives <= LAST_STAND:
 		delay /= 1.0 + float(t.stats.get("last_stand", 0.0))
+	delay /= BoardLayout.rate_mult(t)
+	t.tinker = maxf(0.0, t.tinker - delay)
 	t.warm += delay
 	return delay
 

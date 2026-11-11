@@ -39,6 +39,10 @@ var warm := 0.0
 var kills := 0
 ## Orage : secondes depuis le dernier éclair gratuit.
 var storm_clock := 0.0
+## Bâtisseur (BoardLayout) : dégâts en plus des pièces détachées, secondes de cadence en plus
+## après un déplacement (Bricolage).
+var spare := 0.0
+var tinker := 0.0
 
 
 func buff(kind: String) -> float:

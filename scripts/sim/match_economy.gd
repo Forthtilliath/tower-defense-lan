@@ -39,6 +39,7 @@ static func pay_wave(sim: SimMatch, wave: Dictionary, early: int, clean: Diction
 	for id in sim.order:
 		var p: Dictionary = sim.players[id]
 		p["ready"] = false
+		p["moves_used"] = 0  # Déménageur : déplacements rendus à chaque vague
 		if not p["alive"] or not p["connected"]:
 			continue
 		var kit: PlayerKit = p["kit"]
@@ -108,7 +109,7 @@ static func invested(sim: SimMatch, id: int) -> int:
 ## Part de prime d'un monstre tué : bonus de classe du joueur, plus les bonus d'équipe (Mécène)
 ## de tous les joueurs de la partie encore connectés (le sien compris), et ses talents : gros
 ## monstre, trophées, prise de risque, nerfs d'acier, contrat, jackpot, butin.
-static func credit_bounty(sim: SimMatch, owner: int, gold: int, big := false) -> void:
+static func credit_bounty(sim: SimMatch, owner: int, gold: int, big := false, mechanical := false) -> void:
 	var p: Dictionary = sim.players.get(owner, {})
 	if p.is_empty():
 		return
@@ -125,6 +126,8 @@ static func credit_bounty(sim: SimMatch, owner: int, gold: int, big := false) ->
 	if big:
 		mult += kit.m("boss_bounty")
 		kit.trophies += 1
+	if mechanical:
+		mult += kit.m("scrap")
 	if kit.m("contract") > 0.0 and kit.contract_wave != sim.wave_index:
 		kit.contract_wave = sim.wave_index
 		mult *= 1.0 + kit.m("contract")

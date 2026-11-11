@@ -21,7 +21,7 @@ static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: 
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost
-	board.add_tower(cell, type, id, cost, p["kit"])
+	BoardLayout.on_build(board.add_tower(cell, type, id, cost, p["kit"]))
 	return ""
 
 
@@ -55,7 +55,7 @@ static func upgrade(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell
 	var t := own_tower(id, board, cell)
 	if t == null:
 		return "Aucune tourelle à toi sur cette case"
-	var levels := sim.data.tower_levels(t.type)
+	var levels := sim.data.levels_for(t.type, p["kit"])
 	if t.level + 1 >= levels.size():
 		return "Niveau maximum atteint"
 	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"], zone_discount(board, cell) + MatchEconomy.team_discount(sim, id))
@@ -76,6 +76,26 @@ static func sell(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: i
 		return "Aucune tourelle à toi sur cette case"
 	p["gold"] += int(t.invested * p["kit"].sell_ratio())
 	board.remove_tower(cell)
+	BoardLayout.on_sell(p["kit"])
+	return ""
+
+
+## Ferrailleur : déplacer une de ses tourelles sur une case libre, gratuitement (moves par vague).
+static func move(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: int, to: int) -> String:
+	if not MatchFlow.can_trade(sim):
+		return LOCKED
+	var t := own_tower(id, board, cell)
+	if t == null:
+		return "Aucune tourelle à toi sur cette case"
+	if int(p.get("moves_used", 0)) >= int(p["kit"].m("moves")):
+		return "Plus de déplacement possible avant la prochaine vague"
+	if not board.can_build(to):
+		return "Impossible de construire ici"
+	var zone := zone_refusal(sim, id, to)
+	if zone != "":
+		return zone
+	p["moves_used"] = int(p.get("moves_used", 0)) + 1
+	BoardLayout.move(board, t, to)
 	return ""
 
 

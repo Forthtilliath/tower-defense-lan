@@ -167,8 +167,8 @@ func kill(m: SimMonster, killer: int, rewards: Array) -> void:
 	if float(counter[0]) > 0.0 and m.gold > 0:
 		gold = roundi(m.gold * (1.0 + float(counter[0])))
 		rewards.append([counter[1], maxi(1, roundi(m.gold * float(counter[0]) * COUNTER_CUT))])
-	for share in Bounty.split(gold, m.contrib, killer):  # [joueur, or, gros monstre ?] (talents d'économie)
-		rewards.append(share + [BoardFeats.is_big(m)])
+	for share in Bounty.split(gold, m.contrib, killer):  # [joueur, or, gros monstre ?, véhicule ?] (talents)
+		rewards.append(share + [BoardFeats.is_big(m), m.mechanical])
 	for i in m.split_count:
 		if monsters.size() + _born.size() >= MAX_MONSTERS:
 			break

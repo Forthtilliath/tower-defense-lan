@@ -95,7 +95,7 @@ func step(dt: float) -> void:
 		if not b.alive:
 			continue
 		for reward in b.step(dt):
-			MatchEconomy.credit_bounty(self, reward[0], reward[1], reward.size() > 2 and reward[2])
+			MatchEconomy.credit_bounty(self, reward[0], reward[1], reward.size() > 2 and reward[2], reward.size() > 3 and reward[3])
 		if not b.alive:
 			_on_board_lost(i)
 	_check_end()
@@ -118,6 +118,8 @@ func apply_command(id: int, cmd: Dictionary) -> String:
 			return MatchActions.upgrade(self, id, p, board, cmd["cell"])
 		"sell":
 			return MatchActions.sell(self, id, p, board, cmd["cell"])
+		"move":
+			return MatchActions.move(self, id, p, board, cmd["cell"], cmd["to"])
 		"mode":
 			return MatchActions.cycle_target(id, board, cmd["cell"])
 		"raze":
