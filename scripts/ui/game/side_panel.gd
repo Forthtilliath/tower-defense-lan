@@ -67,7 +67,7 @@ func _rebuild() -> void:
 		if zone >= 0 and not _game.is_versus and _game.map.zone_closed(zone, _game.order.size()):
 			add_child(UiTheme.label("Zone fermée", 22, UiTheme.MUTED))
 			add_child(UiTheme.label("Aucun joueur ne défend ce couloir : aucun monstre n'y passe, on n'y construit pas.", 17, UiTheme.MUTED))
-		elif owners.is_empty() or owners.has(_game.my_id):
+		elif owners.is_empty() or _zone_open(zone):
 			_build_panel()
 		else:
 			var who := " / ".join(owners.map(func(id: int) -> String: return _game.names.get(id, "?")))
@@ -102,7 +102,18 @@ func _power_button() -> void:
 	add_child(b)
 
 
-## Joueurs autorisés à construire dans une zone (vide : case commune).
+## Même règle que l'hôte (MatchActions.zone_open_to) : sa zone, ou toutes avec le Support, ou celle d'un Support.
+func _zone_open(zone: int) -> bool:
+	var builders: Array[int] = []
+	var connected: Array[bool] = []
+	for id in _game.order:
+		var kit: PlayerKit = _game.kits.get(id)
+		builders.append(kit.builder if kit != null else -1)
+		connected.append(true)
+	return MatchActions.zone_open_to(_game.state.data, _game.map, zone, _game.order.find(_game.my_id), builders, connected)
+
+
+## Joueurs propriétaires d'une zone (vide : case commune).
 func _zone_owners(zone: int) -> Array[int]:
 	var out: Array[int] = []
 	if zone < 0 or _game.is_versus:
