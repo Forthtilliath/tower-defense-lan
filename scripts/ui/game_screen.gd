@@ -6,6 +6,8 @@ extends Control
 const SIDE_WIDTH := 320
 
 var config: Dictionary
+## Commande en attente d'une case (voir aim), vide sinon.
+var aiming := {}
 var state: ViewState
 var map: MapDef
 var my_id := 1
@@ -148,11 +150,24 @@ func _on_snapshot(snap: Dictionary) -> void:
 
 
 func _on_cell_pressed(cell: int) -> void:
+	if not aiming.is_empty():  # pouvoir à viser ou tourelle à déplacer : cette case est la cible
+		var cmd := aiming.duplicate()
+		cmd[cmd.get("target", "cell")] = cell
+		cmd.erase("target")
+		aiming = {}
+		send(cmd)
+		return
 	_view.selected = -1 if cell == _view.selected else cell
 	_panel.set_selected(_view.selected)
 
 
 # --- API utilisée par les panneaux ---
+
+## Commande qui attend une case (pouvoir à viser, déplacement) : la prochaine case touchée la
+## complète (clé « target » : où ranger la case, « cell » par défaut).
+func aim(cmd: Dictionary, message: String) -> void:
+	aiming = cmd
+	show_toast(message)
 
 func send(cmd: Dictionary) -> void:
 	Net.send_command(cmd)

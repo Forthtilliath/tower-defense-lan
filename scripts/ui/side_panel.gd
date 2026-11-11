@@ -40,8 +40,8 @@ func _context() -> String:
 	var t: Variant = b.get("towers", {}).get(_selected)
 	var tower_sig := "" if t == null else "%s/%d/%d/%d" % [t["type"], t["level"], t["mode"], t.get("buffs", 0)]
 	var me := _game.me()
-	return "%d|%d|%s|%s|%s|%s|%d|%d|%d" % [_game.viewed_board, _selected, tower_sig, str(me.get("alive", false)), _previewed,
-		str(_game.state.can_trade), _game.state.map_version, int(me.get("raze", 0)), int(me.get("tile", 0))]
+	return "%d|%d|%s|%s|%s|%s|%d|%d|%d|%d" % [_game.viewed_board, _selected, tower_sig, str(me.get("alive", false)), _previewed,
+		str(_game.state.can_trade), _game.state.map_version, int(me.get("raze", 0)), int(me.get("tile", 0)), int(me.get("power", -1))]
 
 
 func _rebuild() -> void:
@@ -54,9 +54,12 @@ func _rebuild() -> void:
 		var owner: int = _game.player_on_board(_game.viewed_board)
 		add_child(UiTheme.label("Plateau de %s" % _game.names.get(owner, "?"), 24, UiTheme.ACCENT))
 		add_child(UiTheme.label("Tu observes ce plateau. Reviens au tien pour construire.", 17, UiTheme.MUTED))
-	elif not _game.me().get("alive", false) and _game.is_versus:
+		return
+	if not _game.me().get("alive", false) and _game.is_versus:
 		add_child(UiTheme.label("Tu as été éliminé.", 22, UiTheme.DANGER))
-	elif t != null:
+		return
+	_power_button()  # pouvoir du talent ultime, toujours à portée de main sur son plateau
+	if t != null:
 		_tower_panel(t)
 	elif _game.map.is_buildable(_selected):
 		var zone := _game.map.zone_at(_selected)
@@ -79,6 +82,24 @@ func _rebuild() -> void:
 		add_child(UiTheme.label("Les cases encadrées donnent un bonus.", 16, UiTheme.MUTED))
 		if _game.map.zone_count > 0 and not _game.is_versus:
 			add_child(UiTheme.label("Les cases teintées sont des zones de joueur : chacun construit dans la sienne.", 16, UiTheme.MUTED))
+
+
+## Pouvoir actif du joueur (talent ultime) : prêt, ou dans combien de vagues ; à viser ou immédiat.
+func _power_button() -> void:
+	var left := int(_game.me().get("power", -1))
+	var kit := _game.my_kit()
+	if left < 0 or kit == null or not MatchPowers.POWERS.has(kit.power):
+		return
+	var def: Array = MatchPowers.POWERS[kit.power]
+	var text := "Pouvoir : %s" % def[0] + (" (prêt)" if left == 0 else " (dans %d vague(s))" % left)
+	var b := UiTheme.button(text, func() -> void:
+		if def[1]:
+			_game.aim({"a": "power"}, "%s : touche la case visée" % def[0])
+		else:
+			_game.send({"a": "power", "cell": 0}))
+	b.disabled = left > 0 or not _game.state.received or _game.state.wave < 1
+	b.add_theme_color_override("font_color", UiTheme.GOLD)
+	add_child(b)
 
 
 ## Joueurs autorisés à construire dans une zone (vide : case commune).
@@ -194,6 +215,12 @@ func _tower_panel(t: Dictionary) -> void:
 		_game.send({"a": "sell", "cell": _selected}))
 	sell.disabled = locked
 	add_child(sell)
+	if _game.my_kit().m("moves") > 0.0 or _game.my_kit().power == "remount":  # Ferrailleur
+		var from := _selected
+		var move := UiTheme.button("Déplacer", func() -> void:
+			_game.aim({"a": "move", "cell": from, "target": "to"}, "Touche la case où déplacer la tourelle"))
+		move.disabled = locked
+		add_child(move)
 
 
 ## Terrassier : raser l'arbre ou le rocher sélectionné, ou poser une case spéciale sur une case
