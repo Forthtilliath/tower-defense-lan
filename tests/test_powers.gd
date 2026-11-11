@@ -160,3 +160,12 @@ func test_remount_and_reshape() -> void:
 	shape.players[1]["used_tile"] = 3
 	_use(shape)
 	check(not shape.players[1].has("used_tile"), "Remodelage : charges rendues")
+
+
+## Le joueur automatique lance son pouvoir au niveau 30 (sans plantage), pour chaque classe.
+func test_bot_uses_its_power() -> void:
+	var gd := load_data()
+	var bot = preload("res://tests/balance_bot.gd").new()
+	for b in gd.builders.size():
+		var sim: SimMatch = bot.play(gd, 0, 1, 0, {}, [[b, 0]], 30)
+		check(int(sim.players[1].get("power_wave", -99)) >= 0, "%s : pouvoir lancé au moins une fois" % gd.builders[b]["id"])
