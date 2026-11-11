@@ -15,7 +15,27 @@ puis réécrit avec [Godot 4](https://godotengine.org). Le prototype d'origine e
 
 On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne construit jamais sur la route.
 
+### Comptes
+
+Au lancement : **Continuer** (liste des comptes de l'appareil, avec le pseudo et le niveau de chaque classe) ou
+**Nouveau compte** (un pseudo, unique sur l'appareil). Chaque compte garde son pseudo, l'expérience et les talents de
+chaque classe, dans `user://accounts/<id>.json`. Un fichier illisible n'est jamais effacé : il est mis de côté
+(`<id>.invalid.json`) et signalé. Supprimer un compte demande confirmation.
+
+**Passer d'un appareil à l'autre** (ex. du PC au téléphone), sur le même Wi-Fi : sur l'appareil qui reçoit,
+« Recevoir un compte » (accueil ou « Continuer ») affiche un code à 4 chiffres ; sur l'autre, « Continuer » →
+« Envoyer » sur le compte, choisir l'appareil et taper le code. Le compte reçu est vérifié, montré (pseudo et niveaux),
+puis enregistré seulement après confirmation ; un compte du même pseudo est remplacé. L'original reste sur l'appareil
+qui l'a envoyé.
+
+À la mise à jour, l'ancienne progression
+unique (`progression.json`) devient automatiquement un compte au pseudo déjà utilisé (copie gardée en
+`progression.migrated.json`).
+
 ### Dans le salon
+
+Trois blocs : les **joueurs** (classe, niveau, vote) et la difficulté retenue à gauche ; la **partie** (options
+réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents, vote) à droite. Le lancement est en bas.
 
 - **Classe** (chaque joueur) : un bonus de classe, un tronc de talents et **4 spécialisations, dont une seule se choisit**.
   Tout le monde construit les 11 tourelles du tronc commun (Arbalète, Sentinelle, Fléchettes, Canon, Givre, Tesla,
@@ -49,7 +69,7 @@ On peut jouer seul (coop solo) pour s'entraîner. Jusqu'à **4 joueurs**. On ne 
   constructions et +10 % à la revente. Plus on a monté de classes, plus les suivantes sont faciles à monter. Les paliers 2, 3 et 4 d'une branche demandent 2, 4 et 5 points
   déjà placés dans cette branche. Placer un point dans une spécialisation ferme les trois autres ; on en change
   entre deux parties en retirant ses points.
-  La progression est enregistrée sur chaque appareil (`progression.json`) et vérifiée à la relecture ; l'hôte revalide
+  La progression appartient au **compte** choisi au lancement (voir *Comptes*), vérifiée à la relecture ; l'hôte revalide
   les talents de chacun (le niveau annoncé, lui, n'est pas vérifiable sans serveur).
 - **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile ou Cauchemar. La plus votée l'emporte ; en cas d'égalité, la plus facile.
 - **Rythme** (hôte, coopération) :
@@ -123,7 +143,8 @@ L'armure retire des dégâts fixes à chaque coup (au moins 25 % passent toujour
 4. Chacun choisit son bâtisseur et vote pour la difficulté ; l'hôte choisit le mode, la carte, le rythme et le lancement, puis lance.
 
 **Windows** : au premier lancement en tant qu'hôte, Windows demande d'autoriser le jeu dans le pare-feu. Accepter pour les **réseaux privés**.
-Ports utilisés (UDP) : `47800` (partie) et `47801` (découverte des parties).
+Ports utilisés (UDP) : `47800` (partie) et `47801` (découverte des parties) ; transfert de compte : `47802` (TCP)
+et `47803` (UDP, découverte), ouverts seulement pendant « Recevoir un compte ».
 
 Certains réseaux (Wi-Fi public, invité, « isolation des clients ») bloquent la communication entre appareils : utiliser alors un réseau domestique ou le partage de connexion d'un téléphone.
 
@@ -184,7 +205,10 @@ et interpolent l'affichage entre deux états reçus.
 ### Sécurité
 
 - Toute donnée externe est **validée en entier avant usage**, et rejetée à la première anomalie :
-  fichier de données, réglages, annonces LAN, messages de salon, états de jeu reçus, commandes des joueurs (types, bornes, propriétaire, or).
+  fichier de données, réglages, comptes, annonces LAN, messages de salon, états de jeu reçus, commandes des joueurs (types, bornes, propriétaire, or).
+- Transfert de compte : port ouvert seulement pendant l'attente, réseau local seulement, un message borné (128 Ko)
+  par connexion et 8 s au plus, code à 4 chiffres tiré au hasard (5 essais, puis arrêt), compte revérifié en entier
+  puis confirmé par le joueur avant d'être enregistré.
 - L'hôte limite les commandes à 20 par seconde et par joueur, exclut les connexions qui ne se présentent pas sous 5 s
   et refuse les versions différentes.
 - Le décodage d'objets Godot à travers le réseau reste désactivé (réglage par défaut).
