@@ -180,8 +180,8 @@
 		{
 			"id": "support", "name": "Support", "color": "#e070c0",
 			"heritage": { "id": "he_support", "name": "Héritage du Support", "description": "+25 % de contrôles et de puissance d'aura.", "tier": 1, "cc": 0.25, "aura": 0.25 },
-			"description": "Renforce l'équipe : +15 % de contrôles et +15 % de puissance d'aura. Gagne sa part des primes en aidant.",
-			"cc": 1.15, "aura": 1.15,
+			"description": "Renforce l'équipe : +15 % de contrôles et +15 % de puissance d'aura. Gagne sa part des primes en aidant. Construit dans toutes les zones, et ses alliés dans la sienne.",
+			"cc": 1.15, "aura": 1.15, "roams": true,
 			"branches": [
 				{ "id": "command", "name": "Commandement", "description": "Tronc commun du Support : ses tourelles de contrôle et de soutien.", "trunk": true, "talents": [
 					{ "id": "su_presence", "name": "Présence", "description": "+6 % de puissance d'aura par rang.", "tier": 1, "max_rank": 3, "towers": ["gong", "scarecrow", "flute", "alembic", "drum", "banner", "totem", "beacon"], "aura": 0.06 },
