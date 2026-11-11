@@ -39,7 +39,8 @@ static func on_shot(b: SimBoard, t: SimTower, p: SimProjectile) -> float:
 
 ## Cadence en plus : Charge, les CHARGE_TIME s qui suivent le départ d'une vague.
 static func rate_mult(b: SimBoard, t: SimTower) -> float:
-	return 1.0 + t.buff("charge") if since_wave(b) < CHARGE_TIME else 1.0
+	var charge := 1.0 + t.buff("charge") if since_wave(b) < CHARGE_TIME else 1.0
+	return charge * MatchPowers.rate_mult(b, t)
 
 
 static func since_wave(b: SimBoard) -> float:

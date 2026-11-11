@@ -7,6 +7,34 @@ const LOCKED := "Construction possible seulement entre les vagues"
 const CLOSED := "Zone fermée : aucun monstre ne passe par ce couloir"
 
 
+## Aiguille une commande déjà vérifiée (Commands) vers l'action qui la joue.
+static func dispatch(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cmd: Dictionary) -> String:
+	match cmd["a"]:
+		"build":
+			return build(sim, id, p, board, cmd["cell"], cmd["tower"])
+		"upgrade":
+			return upgrade(sim, id, p, board, cmd["cell"])
+		"sell":
+			return sell(sim, id, p, board, cmd["cell"])
+		"move":
+			return move(sim, id, p, board, cmd["cell"], cmd["to"])
+		"mode":
+			return cycle_target(id, board, cmd["cell"])
+		"raze":
+			return raze(sim, id, p, board, cmd["cell"])
+		"tile":
+			return place_tile(sim, id, p, board, cmd["cell"], cmd["special"])
+		"send":
+			return send(sim, id, p, cmd["monster"])
+		"give":
+			return give(sim, id, p, cmd["to"], cmd["amount"])
+		"power":
+			return MatchPowers.use(sim, id, p, board, cmd["cell"])
+		"ready":
+			return MatchFlow.call_wave(sim, id)
+	return "Commande inconnue"
+
+
 static func build(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: int, type: String) -> String:
 	if not MatchFlow.can_trade(sim):
 		return LOCKED
@@ -74,7 +102,8 @@ static func sell(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: i
 	var t := own_tower(id, board, cell)
 	if t == null:
 		return "Aucune tourelle à toi sur cette case"
-	p["gold"] += int(t.invested * p["kit"].sell_ratio())
+	var ratio: float = 1.0 if MatchPowers.active(board, "remount", id) else p["kit"].sell_ratio()  # Remontage
+	p["gold"] += int(t.invested * ratio)
 	board.remove_tower(cell)
 	BoardLayout.on_sell(p["kit"])
 	return ""
@@ -87,7 +116,7 @@ static func move(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell: i
 	var t := own_tower(id, board, cell)
 	if t == null:
 		return "Aucune tourelle à toi sur cette case"
-	if int(p.get("moves_used", 0)) >= int(p["kit"].m("moves")):
+	if int(p.get("moves_used", 0)) >= int(p["kit"].m("moves")) and not MatchPowers.active(board, "remount", id):
 		return "Plus de déplacement possible avant la prochaine vague"
 	if not board.can_build(to):
 		return "Impossible de construire ici"
@@ -143,6 +172,12 @@ static func charges_left(p: Dictionary, kind: String) -> int:
 ## Charges restantes des cases à charges propres (BoardTerrain.OWN_CHARGES), dans l'ordre.
 static func own_charges(p: Dictionary) -> Array:
 	return BoardTerrain.OWN_CHARGES.values().map(func(kind: String) -> int: return charges_left(p, kind))
+
+
+## Fin de l'état d'un joueur dans l'instantané : charges du Terrassier, puis vagues avant le
+## retour de son pouvoir (-1 : aucun).
+static func snapshot_tail(sim: SimMatch, p: Dictionary) -> Array:
+	return own_charges(p) + [MatchPowers.waves_left(sim, p)]
 
 
 static func cycle_target(id: int, board: SimBoard, cell: int) -> String:

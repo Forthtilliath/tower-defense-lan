@@ -9,7 +9,11 @@ static func parse(raw: Variant, board_count: int) -> Variant:
 		return null
 	var out := {}
 	for e in raw:
-		if not ViewState._is_tuple(e, 8 + BoardTerrain.OWN_CHARGES.size()):
+		var size := 8 + BoardTerrain.OWN_CHARGES.size() + 1
+		if not ViewState._is_tuple(e, size):
+			return null
+		var power = Check.as_int(e[size - 1], -1, 100)  # vagues avant le retour du pouvoir (-1 : aucun)
+		if power == null:
 			return null
 		var id = Check.as_int(e[0], 1, NetPayloads.MAX_PEER_ID)
 		var razes = Check.as_int(e[6], 0, 1000)  # charges du Terrassier restantes
@@ -29,4 +33,5 @@ static func parse(raw: Variant, board_count: int) -> Variant:
 			return null
 		out[id] = {"gold": gold, "income": income, "ready": ready, "alive": alive, "board": board, "raze": razes, "tile": tiles}
 		out[id].merge(own)
+		out[id]["power"] = power
 	return out

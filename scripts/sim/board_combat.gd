@@ -117,7 +117,7 @@ static func move_projectiles(b: SimBoard, dt: float, rewards: Array) -> void:
 ## part d'armure ignorée (l'armure rongée compte aussi). Un monstre électrifié en subit une part
 ## de plus, puis la protection d'un monstre voisin (ward) retire sa part. Crédite les joueurs
 ## (dégâts réellement retirés), gère la mort et le partage de la prime.
-static func damage(b: SimBoard, m: SimMonster, amount: float, pierce: bool, credit: Array, rewards: Array, armor_pierce := 0.0) -> void:
+static func damage(b: SimBoard, m: SimMonster, amount: float, pierce: bool, credit: Array, rewards: Array, armor_pierce := 0.0, share := true) -> void:
 	if not m.is_alive() or amount <= 0.0:
 		return
 	if not pierce:
@@ -125,6 +125,10 @@ static func damage(b: SimBoard, m: SimMonster, amount: float, pierce: bool, cred
 		if armor > 0.0:
 			amount = maxf(amount - armor, amount * ARMOR_MIN_RATIO)
 	amount *= (1.0 + m.marks.vulnerability()) * (1.0 - m.warded)
+	if share and m.marks.is_shocked() and MatchPowers.active(b, "chain_lightning"):  # Foudre en chaîne
+		for o in b.monsters:
+			if o != m and o.marks.is_shocked():
+				damage(b, o, amount * MatchPowers.CHAIN_SHARE, true, credit, rewards, 0.0, false)
 	m.add_contrib(credit, minf(amount, m.hp))
 	m.hp -= amount
 	if m.hp <= 0.0:
@@ -172,7 +176,10 @@ static func _chain(b: SimBoard, p: SimProjectile, first: SimMonster, rewards: Ar
 	var touched := {first.id: true}
 	var current_pos := first.pos
 	var dmg := p.stat("damage")
-	for k in int(p.stat("chain")):
+	var bounces := int(p.stat("chain"))
+	if p.element == "lightning" and MatchPowers.active(b, "tempest", p.owner):
+		bounces = maxi(bounces, MatchPowers.TEMPEST_CHAIN)
+	for k in bounces:
 		dmg *= CHAIN_FALLOFF + p.stat("chain_keep")
 		var next: SimMonster = null
 		var best := CHAIN_RANGE * CHAIN_RANGE
@@ -213,7 +220,8 @@ static func afflict(b: SimBoard, m: SimMonster, p: SimProjectile) -> void:
 	var slowed := m.apply_slow(factor, slow[1])
 	m.add_contrib(p.credit, slowed * (1.0 - factor) * m.max_hp * SimMonster.SLOW_POINTS)
 	var span := 1.0 + p.stat("dot_duration")
-	m.apply_poison(p.stat("poison_dps"), p.stat("poison_duration") * span, p.owner, p.stat("poison_spread"), int(p.stat("poison_stacks")))
+	var poison_time := MatchPowers.PLAGUE_TIME if MatchPowers.active(b, "plague", p.owner) else p.stat("poison_duration") * span
+	m.apply_poison(p.stat("poison_dps"), poison_time, p.owner, p.stat("poison_spread"), int(p.stat("poison_stacks")))
 	m.apply_burn(p.stat("burn_dps"), p.stat("burn_duration") * span, int(p.stat("burn_stacks")), p.owner)
 	m.apply_bleed(BoardFeats.bleed_of(m, p), p.stat("bleed_duration") * span, p.owner, int(p.stat("bleed_stacks")))
 	m.apply_shred(p.stat("shred"), p.stat("shred_duration"))

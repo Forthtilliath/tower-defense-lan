@@ -31,7 +31,7 @@ static func sanitize(raw: Variant, data: GameData, map: MapDef) -> Variant:
 			if cell == null or special == null or d.size() != 3:
 				return INVALID
 			return {"a": action, "cell": cell, "special": special}
-		"upgrade", "sell", "mode", "raze":
+		"upgrade", "sell", "mode", "raze", "power":
 			var cell = Check.as_int(d.get("cell"), 0, last_cell)
 			if cell == null or d.size() != 2:
 				return INVALID

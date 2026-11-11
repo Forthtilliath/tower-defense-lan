@@ -134,6 +134,7 @@ static func credit_bounty(sim: SimMatch, owner: int, gold: int, big := false, me
 	if kit.m("contract") > 0.0 and kit.contract_wave != sim.wave_index:
 		kit.contract_wave = sim.wave_index
 		mult *= 1.0 + kit.m("contract")
+	mult *= MatchPowers.bounty_mult(sim, owner)
 	var rng := sim.boards[0].rng
 	if kit.m("jackpot") > 0.0 and rng.randf() < kit.m("jackpot"):
 		mult *= JACKPOT

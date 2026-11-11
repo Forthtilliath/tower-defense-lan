@@ -90,6 +90,7 @@ func step(dt: float) -> void:
 		return
 	tick += 1
 	MatchFlow.update(self, dt)
+	MatchPowers.update(self, dt)
 	for i in boards.size():
 		var b := boards[i]
 		if not b.alive:
@@ -110,29 +111,7 @@ func apply_command(id: int, cmd: Dictionary) -> String:
 		return "Joueur inconnu"
 	if not p["alive"]:
 		return "Tu as été éliminé"
-	var board: SimBoard = boards[int(p["board"])]
-	match cmd["a"]:
-		"build":
-			return MatchActions.build(self, id, p, board, cmd["cell"], cmd["tower"])
-		"upgrade":
-			return MatchActions.upgrade(self, id, p, board, cmd["cell"])
-		"sell":
-			return MatchActions.sell(self, id, p, board, cmd["cell"])
-		"move":
-			return MatchActions.move(self, id, p, board, cmd["cell"], cmd["to"])
-		"mode":
-			return MatchActions.cycle_target(id, board, cmd["cell"])
-		"raze":
-			return MatchActions.raze(self, id, p, board, cmd["cell"])
-		"tile":
-			return MatchActions.place_tile(self, id, p, board, cmd["cell"], cmd["special"])
-		"send":
-			return MatchActions.send(self, id, p, cmd["monster"])
-		"give":
-			return MatchActions.give(self, id, p, cmd["to"], cmd["amount"])
-		"ready":
-			return MatchFlow.call_wave(self, id)
-	return "Commande inconnue"
+	return MatchActions.dispatch(self, id, p, boards[int(p["board"])], cmd)
 
 
 func player_left(id: int) -> void:
@@ -177,7 +156,7 @@ func snapshot() -> Dictionary:
 	for id in order:
 		var p: Dictionary = players[id]
 		pl.append([id, p["gold"], p["income"], p["ready"], p["alive"], p["board"],
-			MatchActions.charges_left(p, "raze"), MatchActions.charges_left(p, "tile")] + MatchActions.own_charges(p))
+			MatchActions.charges_left(p, "raze"), MatchActions.charges_left(p, "tile")] + MatchActions.snapshot_tail(self, p))
 	var bs := []
 	for b in boards:
 		bs.append(b.snapshot())
