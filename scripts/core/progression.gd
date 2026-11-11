@@ -1,21 +1,82 @@
 extends Node
-## Autoload « Progress » : expérience et talents de chaque classe, sauvegardés en JSON sur
-## l'appareil (format et validation : ProgressFile). Un fichier invalide n'est jamais écrasé
-## sans copie : il est mis de côté dans progression.invalid.json et la progression repart de zéro.
+## Autoload « Progress » : le compte ouvert (pseudo, expérience et talents de chaque classe),
+## enregistré à chaque changement (fichiers et validation : AccountStore, ProgressFile).
+## Au premier lancement après la mise à jour, l'ancienne progression devient un compte.
 
-const PATH := "user://progression.json"
-const BAD_PATH := "user://progression.invalid.json"
-const MAX_SIZE := 64 * 1024
+const LEGACY_PATH := "user://progression.json"
 
+var account_id := ""
+var account_name := ""
 var classes := {}  # id du bâtisseur -> {"xp": int, "talents": {id: rang}}
 var last_builder := 0
-## Message affichable si le fichier a dû être écarté au chargement (vide sinon).
+## Message affichable une fois sur l'écran d'accueil (vide sinon).
 var load_warning := ""
 
 
 func _ready() -> void:
 	if Data.db.is_valid():
-		_load()
+		_migrate()
+
+
+## Un compte est ouvert (un compte invité, sans fichier, compte aussi : captures d'écran).
+func has_account() -> bool:
+	return account_name != ""
+
+
+## Ouvre un compte enregistré. Renvoie "" ou un message d'erreur.
+func open_account(id: String) -> String:
+	var account = AccountStore.read(Data.db, id)
+	if account == null:
+		return "Ce compte est illisible ou a été supprimé."
+	account_id = id
+	account_name = account["name"]
+	classes = account["classes"]
+	last_builder = account["last"]
+	Settings.set_last_account(id)
+	return ""
+
+
+## Crée un compte vierge et l'ouvre. Renvoie "" ou un message d'erreur.
+func create_account(raw_name: String) -> String:
+	var name := Check.sanitize_name(raw_name)
+	if name == "":
+		return "Choisis un pseudo."
+	var existing: Array = AccountStore.list(Data.db)["accounts"]
+	if AccountStore.name_taken(existing, name):
+		return "Un compte « %s » existe déjà sur cet appareil : utilise « Continuer »." % name
+	if existing.size() >= AccountStore.MAX_ACCOUNTS:
+		return "%d comptes au plus sur un appareil : supprimes-en un d'abord." % AccountStore.MAX_ACCOUNTS
+	var id := AccountStore.new_id()
+	if not AccountStore.write(Data.db, id, name, {}, 0):
+		return "Impossible d'enregistrer le compte sur cet appareil."
+	return open_account(id)
+
+
+## Enregistre un compte reçu d'un autre appareil (déjà vérifié par ProgressFile) et l'ouvre.
+## Un compte du même pseudo est remplacé (cas du passage du PC au téléphone). Renvoie "" ou une erreur.
+func import_account(account: Dictionary) -> String:
+	var existing: Array = AccountStore.list(Data.db)["accounts"]
+	var id := AccountStore.find(existing, account["name"])
+	if id == "":
+		if existing.size() >= AccountStore.MAX_ACCOUNTS:
+			return "%d comptes au plus sur un appareil : supprimes-en un d'abord." % AccountStore.MAX_ACCOUNTS
+		id = AccountStore.new_id()
+	if not AccountStore.write(Data.db, id, account["name"], account["classes"], account["last"]):
+		return "Impossible d'enregistrer le compte sur cet appareil."
+	return open_account(id)
+
+
+func close_account() -> void:
+	account_id = ""
+	account_name = ""
+	classes = {}
+	last_builder = 0
+
+
+## Compte invité, jamais enregistré (captures d'écran automatiques).
+func use_guest(name: String) -> void:
+	close_account()
+	account_name = name
 
 
 func xp(builder: int) -> int:
@@ -81,23 +142,16 @@ func _entry_for_write(builder: int) -> Dictionary:
 	return classes[id]
 
 
-func _load() -> void:
-	if not FileAccess.file_exists(PATH):
-		return
-	var f := FileAccess.open(PATH, FileAccess.READ)
-	if f == null:
-		return
-	var parsed = ProgressFile.parse(Data.db, f.get_as_text()) if f.get_length() <= MAX_SIZE else null
-	f.close()
-	if parsed == null:
-		DirAccess.copy_absolute(ProjectSettings.globalize_path(PATH), ProjectSettings.globalize_path(BAD_PATH))
-		load_warning = "Progression illisible : mise de côté (progression.invalid.json), elle repart de zéro."
-		return
-	classes = parsed[0]
-	last_builder = parsed[1]
+func _migrate() -> void:
+	var name := Settings.legacy_name if Settings.legacy_name != "" else "Joueur"
+	var result = AccountStore.migrate(Data.db, LEGACY_PATH, name)
+	if result == null:
+		load_warning = "Ancienne progression illisible : mise de côté (progression.invalid.json)."
+	elif result != "":
+		Settings.set_last_account(result)
+		load_warning = "Ta progression a été placée dans le compte « %s »." % name
 
 
 func _save() -> void:
-	var f := FileAccess.open(PATH, FileAccess.WRITE)
-	if f != null:
-		f.store_string(ProgressFile.serialize(Data.db, classes, last_builder))
+	if account_id != "" and not AccountStore.write(Data.db, account_id, account_name, classes, last_builder):
+		push_warning("Progression non enregistrée (compte %s)" % account_id)
