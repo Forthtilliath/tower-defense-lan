@@ -56,6 +56,11 @@ func show_menu(message := "") -> void:
 	_switch(MenuScreen.new(self, message))
 
 
+## Parties jouées par le compte ouvert et étoiles gagnées sur chaque carte.
+func show_history() -> void:
+	_switch(HistoryScreen.new(self))
+
+
 func show_join() -> void:
 	_switch(JoinScreen.new(self))
 
