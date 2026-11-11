@@ -85,7 +85,7 @@ func test_projectiles_carry_their_tower() -> void:
 
 func test_lobby_payloads() -> void:
 	var gd := load_data()
-	var talents := {"ar_conductive": 2, "ar_pylon": 1}
+	var talents := {"ar_conduction": 2, "ar_stable": 1, "ar_pylon": 1}
 	var good := {"players": [[1, "Hôte", 0, 0, 1, 1, {}, []], [4, "Bob", 1, 1, 3, 5, talents, [4, 0]]], "mode": 1, "map": 8, "rhythm": 1, "launch": 1}
 	var ok = NetPayloads.parse_lobby(good, gd, 2, 4)
 	check(ok != null and ok["players"].size() == 2 and ok["rhythm"] == 1 and ok["launch"] == 1, "salon valide")
@@ -102,8 +102,8 @@ func test_lobby_payloads() -> void:
 		"talent inconnu": func(d): d["players"][1][6] = {"triche": 1},
 		"talent d'une autre classe": func(d): d["players"][1][6] = {"gu_powder": 1},
 		"palier non atteint": func(d): d["players"][1][6] = {"ar_pylon": 1},
-		"rang trop élevé": func(d): d["players"][1][6] = {"ar_conductive": 9},
-		"deux spécialisations": func(d): d["players"][1][6] = {"ar_conductive": 1, "ar_embers": 1},
+		"rang trop élevé": func(d): d["players"][1][6] = {"ar_conduction": 9},
+		"deux spécialisations": func(d): d["players"][1][6] = {"ar_conduction": 1, "ar_embers": 1},
 		"talents absents": func(d): d["players"][1].remove_at(6),
 		"sans hôte": func(d): d["players"].remove_at(0),
 		"id en double": func(d): d["players"][1][0] = 1,
