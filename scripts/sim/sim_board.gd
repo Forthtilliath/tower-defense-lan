@@ -227,7 +227,7 @@ func snapshot() -> Dictionary:
 		tws.append([t.cell, data.tower_order.find(t.type), t.level, t.owner, t.target_mode, t.buff_flags(), t.invested])
 	var prs := []
 	for p in projectiles:
-		prs.append([p.id, snappedf(p.pos.x, 0.01), snappedf(p.pos.y, 0.01)])
+		prs.append([p.id, snappedf(p.pos.x, 0.01), snappedf(p.pos.y, 0.01), p.kind])
 	var fx := []
 	for f in _fx:
 		var pos: Vector2 = f["pos"]

@@ -41,13 +41,40 @@ static func _rank(ci: CanvasItem, levels: int, at: Vector2, ts: float, w: float)
 		Ink.poly(ci, PackedVector2Array([Vector2(x, at.y + h), Vector2(x + bw, at.y), Vector2(x + bw * 2.0, at.y), Vector2(x + bw, at.y + h)]), UiTheme.GOLD, w * 0.5)
 
 
-## Projectile : traînée de vitesse de sa position précédente à sa position actuelle.
-static func projectile(ci: CanvasItem, from: Vector2, at: Vector2, ts: float) -> void:
-	if from.distance_squared_to(at) > 1.0:
-		ci.draw_line(from, at, Color(Ink.INK, 0.75), maxf(3.0, ts * 0.09))
-		ci.draw_line(from, at, Color(Ink.PAPER, 0.85), maxf(1.5, ts * 0.04))
-	ci.draw_circle(at, maxf(2.5, ts * 0.075), Ink.INK)
-	ci.draw_circle(at, maxf(1.5, ts * 0.045), Ink.PAPER)
+## Projectile à l'aspect de sa tourelle (`kind` : index dans tower_order) : traînée à sa couleur,
+## puis carreau (perçant), boulet (contondant), boule de feu, éclat de glace, goutte de poison,
+## épine (saignement) ou étincelle, cernés d'encre pour rester lisibles sur l'herbe comme sur la route.
+static func projectile(ci: CanvasItem, data: GameData, kind: int, from: Vector2, at: Vector2, ts: float) -> void:
+	var def: Dictionary = data.towers[data.tower_order[kind]]
+	var col := Color(def["color"])
+	var dir := (at - from).normalized() if from.distance_squared_to(at) > 1.0 else Vector2.RIGHT
+	var element: String = def["element"]
+	var tail := at - dir * ts * (0.45 if element == "pierce" else 0.32)
+	ci.draw_line(tail, at, Color(Ink.INK, 0.55), maxf(4.0, ts * 0.13))
+	ci.draw_line(tail, at, Color(col, 0.7), maxf(2.0, ts * 0.07))
+	var side := dir.orthogonal()
+	var w := maxf(1.5, ts * 0.035)
+	match element:
+		"pierce", "bleed":  # carreau ou épine : losange allongé
+			var l := ts * (0.2 if element == "pierce" else 0.15)
+			var k := ts * 0.06
+			Ink.poly(ci, PackedVector2Array([at + dir * l, at + side * k, at - dir * l * 0.6, at - side * k]), col.lightened(0.25), w)
+		"blunt":  # boulet : gros, sombre, reflet clair
+			Ink.disc(ci, at, ts * 0.13, col.darkened(0.35), w)
+			ci.draw_circle(at - Vector2(ts, ts) * 0.04, ts * 0.04, Color(Ink.PAPER, 0.85))
+		"fire":  # boule de feu : flamme orange, cœur jaune
+			Ink.disc(ci, at, ts * 0.13, FxPainter.FLAME, w)
+			ci.draw_circle(at, ts * 0.06, FxPainter.FLAME_CORE)
+		"ice":  # éclat de glace : losange bleu, reflet blanc
+			var l := ts * 0.16
+			Ink.poly(ci, PackedVector2Array([at + dir * l, at + side * l * 0.55, at - dir * l, at - side * l * 0.55]), col.lightened(0.3), w)
+			ci.draw_circle(at, ts * 0.03, Color.WHITE)
+		"poison":  # goutte verte qui laisse des gouttelettes
+			Ink.disc(ci, at, ts * 0.11, FxPainter.TOXIC, w)
+			for k in 2:
+				ci.draw_circle(at - dir * ts * (0.2 + 0.12 * k), ts * (0.045 - 0.012 * k), FxPainter.TOXIC)
+		_:  # foudre, vent, contrôles : étincelle à la couleur de la tourelle
+			Ink.poly(ci, Ink.burst(at, ts * 0.14, ts * 0.06, 5, kind), col.lightened(0.3), w)
 
 
 ## Effets : éclat d'impact avec lignes de vitesse (zone), éclair en zigzag (chaîne, trait),
