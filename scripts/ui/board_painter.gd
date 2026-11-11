@@ -1,7 +1,6 @@
 class_name BoardPainter
 extends RefCounted
-## Surcouches du terrain : zones des joueurs et trajectoire des volants (le décor des cases
-## est dans TerrainPainter).
+## Surcouche du terrain : zones des joueurs (le décor des cases est dans TerrainPainter).
 
 
 ## Teinte d'une zone fermée (couloir sans joueur) : assombrie, on n'y construit pas.
@@ -51,10 +50,3 @@ static func zones(ci: CanvasItem, map: MapDef, colors: Array[Color], origin: Vec
 
 static func _other_zone(map: MapDef, index: int, zone: int) -> bool:
 	return map.is_buildable(index) and map.zone_at(index) != zone
-
-
-## Trajectoire des volants : pointillés du départ à l'arrivée.
-static func flight_paths(ci: CanvasItem, map: MapDef, origin: Vector2, ts: float) -> void:
-	for p in map.start_count():
-		var pts: PackedVector2Array = map.air_paths[p]
-		ci.draw_dashed_line(origin + pts[0] * ts, origin + pts[pts.size() - 1] * ts, Color(Ink.PAPER, 0.3), maxf(1.5, ts * 0.04), ts * 0.25)

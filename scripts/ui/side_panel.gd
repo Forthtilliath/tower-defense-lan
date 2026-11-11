@@ -76,7 +76,7 @@ func _rebuild() -> void:
 	else:
 		add_child(UiTheme.label("Construire", 24, UiTheme.ACCENT))
 		add_child(UiTheme.label("Touche une case d'herbe libre pour y poser une tourelle, ou une tourelle pour l'améliorer.", 17, UiTheme.MUTED))
-		add_child(UiTheme.label("Les cases encadrées donnent un bonus. Les pointillés montrent la route des volants.", 16, UiTheme.MUTED))
+		add_child(UiTheme.label("Les cases encadrées donnent un bonus.", 16, UiTheme.MUTED))
 		if _game.map.zone_count > 0 and not _game.is_versus:
 			add_child(UiTheme.label("Les cases teintées sont des zones de joueur : chacun construit dans la sienne.", 16, UiTheme.MUTED))
 
