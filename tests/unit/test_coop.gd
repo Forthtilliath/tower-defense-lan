@@ -19,6 +19,27 @@ func _build(sim: SimMatch, id: int, cell: int, tower := "crossbow") -> String:
 	return sim.apply_command(id, {"a": "build", "cell": cell, "tower": tower})
 
 
+## Support (passif « roams ») : il construit dans la zone d'un allié, et l'allié dans la sienne.
+func test_support_builds_in_every_zone() -> void:
+	var support := 3
+	check(load_data().builders[support]["roams"], "le Support a le passif")
+	var duo := _sim(2, FIEFS, {}, [0, support])
+	var pair := _sim(2, FIEFS, {}, [0, 0])
+	for sim in [duo, pair]:
+		sim.players[1]["gold"] = 1000
+		sim.players[2]["gold"] = 1000
+	var zone_of := func(sim: SimMatch, z: int) -> int:
+		for i in sim.map.cell_count():
+			if sim.map.zone_at(i) == z and sim.boards[0].can_build(i):
+				return i
+		return -1
+	check(_build(duo, 2, zone_of.call(duo, 0)) == "", "le Support construit dans la zone de l'Artilleur")
+	check(_build(duo, 1, zone_of.call(duo, 1)) == "", "l'Artilleur construit dans la zone du Support")
+	check(_build(pair, 1, zone_of.call(pair, 1)) != "", "sans Support, chacun reste dans sa zone")
+	var cell: int = zone_of.call(duo, 3)
+	check(_build(duo, 2, cell) != "", "zone fermée : même le Support n'y construit pas")
+
+
 ## Première case constructible de la zone (-1 : case commune).
 func _cell_in_zone(m: MapDef, zone: int) -> int:
 	for i in m.cell_count():

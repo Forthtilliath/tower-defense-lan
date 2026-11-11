@@ -17,6 +17,25 @@ func _monster(b: SimBoard, type: String, progress := 10.0, moving := false) -> S
 	return m
 
 
+## Un effet qui ne se cumule pas n'est pas gaspillé : le Venin vise d'abord un monstre non empoisonné.
+func test_dot_towers_spread_their_effect() -> void:
+	var b := _board()
+	var front := _monster(b, "orc", 6.0)
+	var back := _monster(b, "orc", 5.0)
+	var cell := -1
+	for i in b.map.cell_count():
+		if b.can_build(i) and b.map.cell_center(i).distance_to(front.pos) < 1.5 and b.map.cell_center(i).distance_to(back.pos) < 1.5:
+			cell = i
+			break
+	var t := b.add_tower(cell, "venom", 7, 70)
+	var def: Dictionary = b.data.towers["venom"]
+	check(BoardCombat.find_target(b, t, def) == front, "sans poison : le plus avancé")
+	front.apply_poison(5.0, 3.0, 7)
+	check(BoardCombat.find_target(b, t, def) == back, "le plus avancé est déjà empoisonné : le suivant")
+	back.apply_poison(5.0, 3.0, 7)
+	check(BoardCombat.find_target(b, t, def) == front, "tous empoisonnés : de nouveau le plus avancé")
+
+
 func _shot(stats: Dictionary, owner := 7) -> SimProjectile:
 	var p := SimProjectile.new()
 	p.stats = stats
