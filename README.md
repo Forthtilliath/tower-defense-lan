@@ -63,7 +63,7 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   Phare (portée), Comptoir (prime des monstres tués à portée), Chantier (constructions moins chères autour, alliés
   compris), Alambic qui coupe les soins, primes d'équipe du Mécène, or des vagues lancées en avance ou sans fuite
   du Parieur, Terrassier qui rase arbres et rochers pour construire dessus et pose des cases bonus (Colline, Cristal,
-  Rune, et avec ses talents Filon d'or, Butte et Fossé), avec un nombre de charges par partie selon ses talents.
+  Rune, et avec ses talents Tableau de chasse, Butte et Fossé), avec un nombre de charges par partie selon ses talents.
 - **Talents et progression** (bouton « Talents » du salon, un onglet par spécialisation) : chaque classe gagne de
   l'expérience à chaque partie (victoire : 10 XP par vague × difficulté — Difficile ×1,5, Cauchemar ×2 —, + 25 % ;
   défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 % de ses 10 XP selon le quart de la partie atteint)
@@ -109,15 +109,21 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
   la zone d'un joueur qui quitte la partie devient commune.
 - **Cartes à plusieurs couloirs séparés** (Quatre fiefs, Bastion) : un couloir s'ouvre par joueur, et la réserve de vies
   est multipliée par le nombre de couloirs ouverts. Les zones des couloirs fermés sont assombries : personne n'y construit
-  (pas de pillage de leurs filons d'or en petit comité).
+  (pas de pillage de leurs cases spéciales en petit comité).
 - **Difficulté des cartes** : le salon les classe de la plus facile à la plus difficile. Sur les cartes à très longue route
   (Spirale, Labyrinthe, Quatre fiefs), les monstres ont plus de PV.
 
 ### Contenu
 
-- **9 cartes** de 15 à 20 vagues : Prairie, Carrefour, Rivière, Trois portes (3 entrées), Spirale, Labyrinthe,
-  et trois grandes cartes pour 2 à 4 joueurs : Grande plaine (partagée, un très long serpentin), Quatre fiefs (4 zones, 4 couloirs),
-  Bastion (4 zones autour d'un couloir central commun).
+- **15 cartes** de 20 vagues, chacune avec ses propres monstres et ses propres cases spéciales :
+  - décor Prairie : Prairie (bestiaire de base), Carrefour (peaux-vertes, 2 entrées), Rivière (créatures de l'eau),
+    Trois portes (assaut armé, 3 entrées), Spirale (magie), Labyrinthe (coureurs), et trois grandes cartes pour 2 à 4 joueurs :
+    Grande plaine (ciel ouvert), Quatre fiefs (horde, 4 zones, 4 couloirs), Bastion (siège, 4 zones autour d'un couloir commun) ;
+  - cartes à thème, avec leur décor : Lac gelé (toundra, 2 entrées), Caldeira (volcan, spirale autour d'un cratère de lave),
+    Tourbière (marais, 3 entrées), Cryptes (nécropole, 4 cryptes), Gorge du vautour (canyon, une très longue route),
+    Sylve profonde (forêt dense, deux routes qui se frôlent).
+- **Entrées par vague** : sur certaines cartes, les monstres arrivent par une entrée ou une autre selon la vague
+  (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et clignote sur le plateau.
 - **4 difficultés** : Facile, Normal, Difficile, Cauchemar (PV des monstres, vies, or de départ, primes).
 - **36 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
   - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
@@ -142,12 +148,21 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
   - résistances aux éléments (dégâts et effets de cet élément réduits) : Diablotin (feu), Yéti (glace : ralenti bien moins),
     Gargouille (foudre, volante), Sorcier (tous les éléments ; les tirs physiques restent entiers) ;
   - Ombre (bondit en avant toutes les 3 s), Porte-bouclier (ses voisins subissent 35 % de dégâts en moins),
-    Saboteur (toutes les 5 s, brouille 2 s les tourelles proches, auras de soutien comprises).
+    Saboteur (toutes les 5 s, brouille 2 s les tourelles proches, auras de soutien comprises) ;
+  - monstres des thèmes : Mammouth (ses voisins avancent plus vite), Loup des neiges (plus rapide en meute),
+    Braise vivante (se divise en étincelles), Hydre (une tête de plus à chaque tiers de PV perdu), Nécromancien
+    (relève en squelette les morts voisins), Scorpion (armure, insensible au poison), Ver des sables (s'enfouit : ni visé
+    ni touché), Vautour (volant qui ne dépasse pas les monstres au sol), Araignée (pond des petites), Sylvain
+    (se régénère bien plus vite près des arbres).
 
   Le panneau de droite liste les monstres de la prochaine vague et leurs bonus. Une vague spéciale peut aussi donner
   lévitation, véhicule ou résistances à tous ses monstres (`wave_modifiers`).
-- **Cases spéciales** (cadre coloré) : Colline (+25 % de portée), Cristal (+30 % de dégâts), Rune (+25 % de cadence),
-  Filon d'or (+15 or par vague au propriétaire de la tourelle).
+- **Cases spéciales** (cadre coloré), 1 à 3 types par carte, toujours sur un bon emplacement (vérifié par un test) :
+  Colline (+25 % de portée), Cristal (+30 % de dégâts), Rune (+25 % de cadence), Tableau de chasse (+1 or par monstre tué),
+  Feu de camp / Coulée refroidie / Menhir (bonus des tourelles de feu / glace / foudre), Tourbière (effets plus longs),
+  Belvédère (+50 % de portée, -15 % de cadence), Obsidienne (coups critiques), Nid de corbeaux (vise aussi les volants),
+  Autel (dégâts doublés contre les gros), Cloche (auras plus larges), Pierre de sang (plus forte à chaque monstre tué),
+  Filon instable (+60 % de dégâts, s'épuise après 6 vagues), Forge (améliorations moins chères), Îlot (pas de brouillage).
 
 Les volants vont en ligne droite du départ à l'arrivée : il faut de l'anti-aérien sur leur route.
 L'armure retire des dégâts fixes à chaque coup (au moins 25 % passent toujours) : préférer les gros coups ou le poison.
@@ -220,7 +235,10 @@ tools/                   Scripts PowerShell : lancement, vérification et build
 Les notes de conception (classes et talents, fiches des tourelles) sont dans `docs/`, non suivies par git.
 
 Les cartes s'écrivent en texte dans `data/game_data.json` : `.` herbe constructible, `=` route, `S` départ, `E` arrivée,
-`#` rocher, `~` eau, `T` arbre, et les symboles des cases spéciales (`^` colline, `*` cristal, `!` rune, `$` filon d'or).
+`#` rocher, `~` eau, `T` arbre, `1` à `4` départs numérotés (entrées par vague, avec le motif `entries`, ex.
+`["1", "2", "12"]`, répété en boucle), et les symboles des cases spéciales (`special_tiles`). `theme` choisit le décor
+(prairie, tundra, volcano, swamp, necropolis, canyon, forest). Les nouvelles cartes et les vagues de chaque carte se
+génèrent avec `tools/build-maps.ps1` et `tools/gen-waves.ps1`.
 Les chemins sont calculés automatiquement de chaque départ vers l'arrivée la plus proche. `flyer_speed` (facultatif)
 ralentit les volants sur une carte où leur ligne droite est un trop grand raccourci (Spirale, Labyrinthe).
 Facultatifs aussi : `zones` (mêmes dimensions que la carte, `1` à `4` pour une zone de joueur, `.` pour une case commune),
