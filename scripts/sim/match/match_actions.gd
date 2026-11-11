@@ -86,7 +86,8 @@ static func upgrade(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell
 	var levels := sim.data.levels_for(t.type, p["kit"])
 	if t.level + 1 >= levels.size():
 		return "Niveau maximum atteint"
-	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"], zone_discount(board, cell) + MatchEconomy.team_discount(sim, id))
+	var cut := zone_discount(board, cell) + MatchEconomy.team_discount(sim, id) + TileBonus.discount(sim.data, board.map, cell, t.type)
+	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"], cut)
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost

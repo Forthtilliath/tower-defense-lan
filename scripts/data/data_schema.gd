@@ -57,14 +57,18 @@ const WAVE_MODIFIER := {
 	"hp": ["num", 0.1, 20.0, 1.0], "speed": ["num", 0.2, 5.0, 1.0], "count": ["num", 0.1, 10.0, 1.0],
 	"gold": ["num", 0.0, 20.0, 1.0], "armor": ["num", 0.0, 1000.0, 0.0], "regen": ["num", 0.0, 1.0, 0.0],
 }
+## Case spéciale : voir TileBonus pour chaque effet. geomancy : se pose avec la Géomancie du
+## Terrassier (les autres cases posables ont leurs propres charges, BoardTerrain.OWN_CHARGES).
+## slow : ralentit les monstres qui passent à côté (BoardTerrain.DITCH_REACH).
 const SPECIAL := {
 	"char": ["text", 1], "id": ["id"], "name": ["text", 24], "color": ["color"],
 	"description": ["text", 120, ""], "range": ["num", 0.5, 3.0, 1.0], "damage": ["num", 0.5, 5.0, 1.0],
-	"rate": ["num", 0.5, 5.0, 1.0], "gold_per_wave": ["int", 0, 10000, 0],
-	"rare": ["bool", false], "slow": ["num", 0.0, 0.9, 0.0],
+	"rate": ["num", 0.5, 5.0, 1.0], "only": ["id", ""], "durations": ["num", 1.0, 3.0, 1.0],
+	"chain": ["int", 0, 3, 0], "crit": ["num", 0.0, 0.5, 0.0], "vs_big": ["num", 0.0, 3.0, 0.0],
+	"air": ["bool", false], "veteran": ["num", 0.0, 0.1, 0.0], "veteran_cap": ["num", 0.0, 1.0, 0.0],
+	"kill_gold": ["int", 0, 20, 0], "wears": ["int", 0, 50, 0], "discount": ["num", 0.0, 0.5, 0.0],
+	"nojam": ["bool", false], "geomancy": ["bool", false], "slow": ["num", 0.0, 0.9, 0.0],
 }
-## rare : ne se pose qu'avec le talent du Terrassier qui la nomme (Butte, Fossé), pas avec la
-## Géomancie. slow : ralentit les monstres qui passent à côté (BoardTerrain.DITCH_REACH).
 ## support : tourelle de soutien, qui ne tire pas mais renforce les tourelles dans sa portée.
 ## attack : façon de frapper (voir ATTACKS). element : voir ELEMENTS (vide : physique).
 const TOWER := {
@@ -226,6 +230,8 @@ const GROUP := {"monster": ["id"], "count": ["int", 1, 500], "interval": ["num",
 const MAP := {
 	"id": ["id"], "name": ["text", 32], "flyer_speed": ["num", 0.2, 1.0, 1.0],
 	"min_players": ["int", 1, 4, 1], "max_players": ["int", 1, 4, 4], "lanes": ["int", 1, 8, 1],
-	"tier": ["int", 0, 2, 1], "hp": ["num", 0.5, 4.0, 1.0],
+	"tier": ["int", 0, 2, 1], "hp": ["num", 0.5, 4.0, 1.0], "theme": ["id", "prairie"],
 }
 const MAP_TIERS := ["facile", "moyenne", "difficile"]
+## Thèmes de carte : couleurs du sol et dessin du décor (MapTheme).
+const THEMES := ["prairie", "tundra", "volcano", "swamp", "necropolis", "canyon", "forest"]

@@ -37,6 +37,8 @@ static func on_shot(b: SimBoard, t: SimTower, p: SimProjectile) -> void:
 		mult *= 1.0 + minf(p.stat("streak_cap"), p.stat("streak") * t.kills)
 	if p.stat("growth") > 0.0 and t.kit != null:
 		mult *= 1.0 + p.stat("growth") * t.kit.clean_waves
+	if p.stat("tile_veteran") > 0.0:  # Pierre de sang : monstres tués depuis la construction
+		mult *= 1.0 + minf(p.stat("tile_veteran_cap"), p.stat("tile_veteran") * t.kills_total)
 	mult *= BoardLayout.damage_mult(b, t, p) * BoardSupport.on_shot(b, t, p) * MatchPowers.damage_mult(b, t)
 	if mult != 1.0:
 		GameData.scale_damage(p.stats, mult)
@@ -184,6 +186,8 @@ static func after_hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: floa
 	if t != null:
 		t.kills += 1
 		t.kills_total += 1
+		if int(t.stats.get("kill_gold", 0)) > 0:  # Tableau de chasse
+			rewards.append([t.owner, int(t.stats["kill_gold"])])
 	if p.stat("kill_splash") > 0.0:
 		b.add_fx(SimBoard.Fx.RING, m.pos, Vector2.ZERO, NEAR)
 		for o in near(b, m, NEAR, 99):

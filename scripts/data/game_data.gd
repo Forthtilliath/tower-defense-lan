@@ -97,11 +97,8 @@ func all_levels(type: String) -> Array:
 func tower_stats(type: String, level: int, special := -1, kit: Variant = null) -> Dictionary:
 	var stats: Dictionary = all_levels(type)[level].duplicate()
 	if special >= 0 and special < specials.size():
-		var s: Dictionary = specials[special]
 		var boost: float = 1.0 + (kit.m("fertile") if kit is PlayerKit else 0.0)  # Terre fertile
-		stats["range"] *= 1.0 + (float(s["range"]) - 1.0) * boost
-		stats["rate"] *= 1.0 + (float(s["rate"]) - 1.0) * boost
-		scale_damage(stats, 1.0 + (float(s["damage"]) - 1.0) * boost)
+		TileBonus.apply(self, stats, type, specials[special], boost)
 	if typeof(kit) == TYPE_INT and kit >= 0 and kit < builders.size():
 		kit = PlayerKit.make(self, kit)
 	if kit is PlayerKit:

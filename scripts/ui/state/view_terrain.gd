@@ -11,7 +11,7 @@ static func parse(raw: Variant, base: MapDef, data: GameData) -> Variant:
 		return null
 	var m := base.clone()
 	var allowed := BoardTerrain.placeable(data)
-	for i in data.specials.size():  # Filon, Butte, Fossé : posés avec leurs propres charges
+	for i in data.specials.size():  # Tableau de chasse, Butte, Fossé : posés avec leurs propres charges
 		if BoardTerrain.charge_kind(data, i) != "tile":
 			allowed.append(i)
 	for e in raw:
@@ -27,7 +27,13 @@ static func parse(raw: Variant, base: MapDef, data: GameData) -> Variant:
 			return null  # la route, l'eau, le départ et l'arrivée ne changent jamais
 		if special >= 0 and (not allowed.has(special) or base.special_at(cell) >= 0):
 			return null
-		if special < 0 and not decor:
+		if special < 0 and not decor and not _wears(base, data, cell):
 			return null
 		m.set_cell(cell, kind, special)
 	return m
+
+
+## Case d'origine qui s'épuise (Filon instable) : elle peut redevenir une case normale.
+static func _wears(base: MapDef, data: GameData, cell: int) -> bool:
+	var s := base.special_at(cell)
+	return s >= 0 and int(data.specials[s]["wears"]) > 0
