@@ -26,7 +26,7 @@ static func common_towers(v: DataValidator, src: Variant, towers: Dictionary) ->
 ## Classe : tourelles en plus du tronc commun et tourelles visées par son bonus (listes
 ## facultatives), puis ses branches de talents.
 static func builder(src: Variant, where: String, v: DataValidator, towers: Dictionary, tier_count: int) -> Variant:
-	var b = v._obj(src, DataSchema.BUILDER, where)
+	var b = v._obj(src, TalentSchema.BUILDER, where)
 	if b == null:
 		return null
 	var extra = v.tower_ids(src.get("towers", []), 0, where + ".towers", towers)
@@ -72,7 +72,7 @@ static func branches(v: DataValidator, src: Variant, where: String, towers: Dict
 	var trunks := 0
 	for i in list.size():
 		var bw := "%s.branches[%d]" % [where, i]
-		var branch = v._obj(list[i], DataSchema.BRANCH, bw)
+		var branch = v._obj(list[i], TalentSchema.BRANCH, bw)
 		var talents = v._list(list[i].get("talents") if typeof(list[i]) == TYPE_DICTIONARY else null, 1, MAX_TALENTS, bw + ".talents")
 		if branch == null or talents == null:
 			return null
@@ -95,7 +95,7 @@ static func branches(v: DataValidator, src: Variant, where: String, towers: Dict
 
 
 static func _talent(v: DataValidator, src: Variant, where: String, towers: Dictionary, tier_count: int) -> Variant:
-	var t = v._obj(src, DataSchema.TALENT, where)
+	var t = v._obj(src, TalentSchema.TALENT, where)
 	if t == null:
 		return null
 	if t["tier"] > tier_count:
@@ -106,7 +106,7 @@ static func _talent(v: DataValidator, src: Variant, where: String, towers: Dicti
 	if ids == null:
 		return null
 	t["towers"] = ids
-	var grant = v._obj(src.get("grant", {}), DataSchema.GRANT, where + ".grant")
+	var grant = v._obj(src.get("grant", {}), TalentSchema.GRANT, where + ".grant")
 	if grant == null:
 		return null
 	t["grant"] = grant

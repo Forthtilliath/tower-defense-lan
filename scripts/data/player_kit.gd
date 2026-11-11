@@ -5,9 +5,10 @@ extends RefCounted
 ## bonus par tourelle (classe × talents), économie (primes, intérêts, or de départ, coûts, revente, dons).
 
 const STATS := ["damage", "rate", "range", "cc", "aura"]
-## Économie des talents (MatchEconomy), une valeur par rang qui s'additionne (voir DataSchema.TALENT).
+## Économie des talents (MatchEconomy), une valeur par rang qui s'additionne (voir TalentSchema.TALENT).
 const MONEY := ["loot", "loan", "boss_bounty", "jackpot", "trophy", "contract", "rent", "compound", "ally_start",
-	"invest", "team_discount", "share_interest", "hot_hand", "early_wave", "risk", "nerve"]
+	"invest", "team_discount", "share_interest", "hot_hand", "early_wave", "risk", "nerve",
+	"floors", "moves", "scrap", "spare", "tinker"]
 const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
 	"team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"] + MONEY
 ## Auras des tourelles de soutien, toutes renforcées par la statistique « aura ».
@@ -47,11 +48,15 @@ var trophies := 0
 var contract_wave := -99  # -1 est la vague « avant la première »
 ## Économie des talents (MONEY) : valeurs cumulées des rangs.
 var money := {}
+## Pièces détachées : bonus de dégâts promis à la prochaine tourelle construite.
+var spare_pending := 0.0
+## Chef-d'œuvre : case de sa tourelle chef-d'œuvre (-1 : aucune encore).
+var masterpiece_cell := -1
 var _base := {}  # multiplicateurs de la classe
 var _bonus_towers := {}  # tourelles visées par le bonus de classe (vide : toutes)
 var _all := {}  # bonus des talents sur toutes les tourelles
 var _per := {}  # id de tourelle -> bonus des talents qui la visent
-var _grants := {}  # id de tourelle ("" : toutes) -> effets ajoutés par les talents (DataSchema.GRANT)
+var _grants := {}  # id de tourelle ("" : toutes) -> effets ajoutés par les talents (TalentSchema.GRANT)
 
 
 ## heritage : classes déjà montées au niveau maximum (index), dont le bonus d'héritage s'ajoute
@@ -162,8 +167,8 @@ func boost(stats: Dictionary, type: String) -> void:
 	for id in ["", type]:  # effets ajoutés (talents ultimes), après les multiplicateurs
 		for key in _grants.get(id, {}):
 			stats[key] += _grants[id][key]
-			if DataSchema.GRANT_CAPS.has(key):
-				stats[key] = minf(stats[key], DataSchema.GRANT_CAPS[key])
+			if TalentSchema.GRANT_CAPS.has(key):
+				stats[key] = minf(stats[key], TalentSchema.GRANT_CAPS[key])
 
 
 ## Intérêts : [taux, plafond], bonus de la classe et des talents compris.
@@ -180,7 +185,7 @@ func cost(base: int, zone := 0.0) -> int:
 ## Total payé pour une tourelle arrivée au niveau `level`, réductions comprises.
 func invested(data: GameData, type: String, level: int) -> int:
 	var total := 0
-	var levels := data.tower_levels(type)
+	var levels := data.levels_for(type, self)
 	for i in mini(level + 1, levels.size()):
 		total += cost(int(levels[i]["cost"]))
 	return total
