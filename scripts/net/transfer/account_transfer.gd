@@ -57,7 +57,7 @@ static func offer_bytes(code: String, account_text: String) -> PackedByteArray:
 	return JSON.stringify({"g": MAGIC, "code": code, "account": account_text}).to_utf8_buffer()
 
 
-## Offre reçue : le compte {name, classes, last} si le code et le compte sont bons, sinon
+## Offre reçue : le compte {name, classes, last, history} si le code et le compte sont bons, sinon
 ## "code" (mauvais code) ou "invalid" (message ou compte invalide).
 static func read_offer(data: GameData, text: String, code: String) -> Variant:
 	var d = _dict(text)
@@ -71,7 +71,7 @@ static func read_offer(data: GameData, text: String, code: String) -> Variant:
 	var parsed = ProgressFile.parse(data, account)
 	if parsed == null or parsed[2] == "":
 		return "invalid"
-	return {"name": parsed[2], "classes": parsed[0], "last": parsed[1]}
+	return {"name": parsed[2], "classes": parsed[0], "last": parsed[1], "history": parsed[3]}
 
 
 static func reply_bytes(error: String) -> PackedByteArray:

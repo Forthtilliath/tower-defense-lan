@@ -49,7 +49,7 @@ static func list(data: GameData, dir := DIR) -> Dictionary:
 	return {"accounts": out, "rejected": rejected}
 
 
-## Compte relu et vérifié ({id, name, classes, last}), ou null si absent ou invalide.
+## Compte relu et vérifié ({id, name, classes, last, history}), ou null si absent ou invalide.
 static func read(data: GameData, id: String, dir := DIR) -> Variant:
 	if not Check.is_valid_id(id):
 		return null
@@ -59,10 +59,11 @@ static func read(data: GameData, id: String, dir := DIR) -> Variant:
 	var parsed = ProgressFile.parse(data, f.get_as_text())
 	if parsed == null or parsed[2] == "":
 		return null
-	return {"id": id, "name": parsed[2], "classes": parsed[0], "last": parsed[1]}
+	return {"id": id, "name": parsed[2], "classes": parsed[0], "last": parsed[1], "history": parsed[3]}
 
 
-static func write(data: GameData, id: String, name: String, classes: Dictionary, last: int, dir := DIR) -> bool:
+## history : historique des parties (MatchHistory), vide pour un compte neuf.
+static func write(data: GameData, id: String, name: String, classes: Dictionary, last: int, dir := DIR, history := {}) -> bool:
 	if not Check.is_valid_id(id) or Check.sanitize_name(name) != name or name == "":
 		return false
 	if DirAccess.make_dir_recursive_absolute(dir) != OK:
@@ -71,7 +72,7 @@ static func write(data: GameData, id: String, name: String, classes: Dictionary,
 	var f := FileAccess.open(tmp, FileAccess.WRITE)
 	if f == null:
 		return false
-	f.store_string(ProgressFile.serialize(data, name, classes, last))
+	f.store_string(ProgressFile.serialize(data, name, classes, last, history))
 	f.close()
 	return DirAccess.rename_absolute(tmp, path(id, dir)) == OK
 
@@ -100,7 +101,7 @@ static func find(accounts: Array, name: String) -> String:
 ## Texte du fichier d'un compte, revérifié (pour l'envoyer à un autre appareil), ou "".
 static func export_text(data: GameData, id: String, dir := DIR) -> String:
 	var a = read(data, id, dir)
-	return "" if a == null else ProgressFile.serialize(data, a["name"], a["classes"], a["last"])
+	return "" if a == null else ProgressFile.serialize(data, a["name"], a["classes"], a["last"], a["history"])
 
 
 ## Ancienne sauvegarde unique (progression.json, avant les comptes) : devient un compte au
