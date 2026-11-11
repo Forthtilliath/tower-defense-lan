@@ -64,6 +64,25 @@ func test_corrupted_snapshots_are_ignored() -> void:
 	check(view.boards[0]["towers"].size() == 1, "l'état précédent est conservé")
 
 
+## Un projectile transmet la tourelle qui l'a tiré (son aspect) ; un index inconnu est refusé.
+func test_projectiles_carry_their_tower() -> void:
+	var pair := _sim_and_view(SimMatch.Mode.COOP)
+	var sim: SimMatch = pair[0]
+	var view: ViewState = pair[1]
+	var cannon := sim.data.tower_order.find("cannon")
+	var snap := sim.snapshot()
+	snap["b"][0]["p"] = [[3, 1.5, 1.5, cannon]]
+	check(view.apply(snap), "projectile accepté")
+	check(view.boards[0]["proj"][3]["kind"] == cannon, "tourelle du projectile reçue")
+	for bad_kind in [-1, sim.data.tower_order.size(), "canon"]:
+		var bad := sim.snapshot()
+		bad["b"][0]["p"] = [[3, 1.5, 1.5, bad_kind]]
+		check(not view.apply(bad), "tourelle de projectile refusée : %s" % str(bad_kind))
+	var short := sim.snapshot()
+	short["b"][0]["p"] = [[3, 1.5, 1.5]]
+	check(not view.apply(short), "projectile sans tourelle refusé")
+
+
 func test_lobby_payloads() -> void:
 	var gd := load_data()
 	var talents := {"ar_conductive": 2, "ar_pylon": 1}
