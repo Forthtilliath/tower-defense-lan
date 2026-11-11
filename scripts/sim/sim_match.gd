@@ -225,9 +225,9 @@ func leader() -> int:
 	return order[0]
 
 
-## PV des monstres selon la difficulté et la « mort subite » (hors bonus coop).
+## PV des monstres selon la difficulté, la carte et la « mort subite » (hors bonus coop).
 func monster_hp_mult() -> float:
-	return float(difficulty["hp"]) * endless_mult()
+	return float(difficulty["hp"]) * map.monster_hp * endless_mult()
 
 
 ## Multiplicateur de PV de la « mort subite » (après la dernière vague, en versus).
