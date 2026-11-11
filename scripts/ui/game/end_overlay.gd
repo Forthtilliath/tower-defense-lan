@@ -4,6 +4,7 @@ extends ColorRect
 
 var _game: GameScreen
 var _title: Label
+var _stars: CenterContainer
 var _detail: Label
 
 
@@ -25,7 +26,10 @@ func _ready() -> void:
 	panel.add_child(box)
 	_title = UiTheme.label("", 40, UiTheme.ACCENT, HORIZONTAL_ALIGNMENT_CENTER)
 	box.add_child(_title)
-	_detail = UiTheme.label("", 18, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_stars = CenterContainer.new()
+	_stars.visible = false
+	box.add_child(_stars)
+	_detail =UiTheme.label("", 18, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	box.add_child(_detail)
 	if Net.is_host():
 		box.add_child(UiTheme.button("Retour au salon", Net.return_to_lobby))
@@ -52,6 +56,11 @@ func show_result() -> void:
 			_title.text = "Défaite…"
 			_title.add_theme_color_override("font_color", UiTheme.DANGER)
 			_detail.text = "Les monstres sont passés à la vague %d." % s.wave
-	if _game.xp_summary != "":
-		_detail.text += "\n" + _game.xp_summary
+	var recap := _game.recap
+	if int(recap.get("stars", 0)) > 0:
+		_stars.add_child(StarsView.row(recap["stars"], 44))
+		_stars.visible = true
+		_detail.text += "\n%d vies sur %d%s" % [recap["lives"], recap["start"], " : nouveau record sur cette carte !" if recap["record"] else "."]
+	if recap.get("xp_text", "") != "":
+		_detail.text += "\n" + recap["xp_text"]
 	visible = true
