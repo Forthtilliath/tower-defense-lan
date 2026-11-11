@@ -197,9 +197,10 @@ const GROUP := {"monster": ["id"], "count": ["int", 1, 500], "interval": ["num",
 ## flyer_speed : ralentit les volants sur les cartes où leur ligne droite est un raccourci énorme.
 ## lanes : couloirs séparés, chacun défendu par ses propres tourelles (renforcement coop).
 ## tier : difficulté de la carte (0 facile, 1 moyenne, 2 difficile, voir MAP_TIERS), mesurée au bot.
+## hp : PV des monstres sur cette carte (une longue route laisse plus de temps pour les abattre).
 const MAP := {
 	"id": ["id"], "name": ["text", 32], "flyer_speed": ["num", 0.2, 1.0, 1.0],
 	"min_players": ["int", 1, 4, 1], "max_players": ["int", 1, 4, 4], "lanes": ["int", 1, 8, 1],
-	"tier": ["int", 0, 2, 1],
+	"tier": ["int", 0, 2, 1], "hp": ["num", 0.5, 4.0, 1.0],
 }
 const MAP_TIERS := ["facile", "moyenne", "difficile"]
