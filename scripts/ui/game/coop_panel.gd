@@ -57,6 +57,9 @@ func refresh() -> void:
 	else:
 		var mod := _game.wave_modifier(s.wave)
 		_next.text = "Prochaine vague : %d / %d" % [s.wave + 1, s.total]
+		var entries := EntryPainter.text(_game.map, s.wave)
+		if entries != "":
+			_next.text += " · " + entries
 		if not mod.is_empty():
 			_next.text += "\nVague spéciale « %s » : %s" % [mod["name"], mod["description"]]
 		var ids: Array = _game.map.waves

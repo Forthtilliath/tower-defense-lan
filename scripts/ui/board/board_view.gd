@@ -89,6 +89,8 @@ func _draw() -> void:
 	var b: Dictionary = state.boards[board_index]
 	for z in b["patches"]:
 		FxPainter.patch(self, data, z, to_px(z["pos"]), _ts)
+	if state.wave < state.total:
+		EntryPainter.draw(self, map, state.wave, _origin, _ts, get_theme_default_font())
 	_draw_selection(b)
 	for cell in b["towers"]:
 		var t: Dictionary = b["towers"][cell]

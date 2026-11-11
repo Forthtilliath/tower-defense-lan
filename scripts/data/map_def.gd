@@ -15,6 +15,8 @@ const CHARS := {
 	".": Cell.BUILD, "=": Cell.ROUTE, "S": Cell.START, "E": Cell.END,
 	"#": Cell.ROCK, "~": Cell.WATER, "T": Cell.TREE,
 }
+## Départs numérotés (entrées par vague) : réservés, comme CHARS, aux cases de base.
+const ENTRY_CHARS := "1234"
 const MIN_SIZE := 4
 const MAX_SIZE := 32
 const DIRS: Array[Vector2i] = [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]
@@ -41,8 +43,17 @@ var lanes := 1
 var tier := 1
 ## Multiplicateur des PV des monstres sur cette carte (s'ajoute à la difficulté choisie).
 var monster_hp := 1.0
+## Thème (DataSchema.THEMES) : couleurs et dessin du décor.
+var theme := "prairie"
+## Numéro d'entrée de chaque départ numéroté (index de case -> 1 à 4) ; un « S » n'en a pas.
+var start_labels := {}
+## Entrées ouvertes vague après vague, motif répété (ex. ["1", "2", "12"]) ; vide : tous les
+## départs à chaque vague. Voir MapSpawns.
+var entries: Array[String] = []
 ## Chemins au sol, un par point de départ (points de virage uniquement).
 var ground_paths: Array[PackedVector2Array] = []
+## Numéro d'entrée de chaque chemin (0 : départ « S », toujours ouvert).
+var path_labels := PackedInt32Array()
 ## Chemins des volants : ligne droite du départ à l'arrivée.
 var air_paths: Array[PackedVector2Array] = []
 var _ground_cum: Array[PackedFloat32Array] = []
@@ -77,6 +88,10 @@ static func parse(p_id: String, p_name: String, rows: Array, p_waves: Array[Stri
 			if special_chars.has(ch):
 				m.cells.append(Cell.BUILD)
 				m.specials.append(special_chars[ch])
+			elif ch.is_valid_int() and int(ch) >= 1 and int(ch) <= MapSpawns.MAX_ENTRIES:
+				m.start_labels[m.cells.size()] = int(ch)  # départ numéroté (entrées par vague)
+				m.cells.append(Cell.START)
+				m.specials.append(-1)
 			elif CHARS.has(ch):
 				m.cells.append(CHARS[ch])
 				m.specials.append(-1)
@@ -212,7 +227,8 @@ func is_decor(index: int) -> bool:
 func clone() -> MapDef:
 	var m := MapDef.new()
 	for key in ["id", "name", "width", "height", "cells", "specials", "zones", "zone_count", "waves",
-			"flyer_speed", "min_players", "max_players", "lanes", "tier", "monster_hp", "ground_paths", "air_paths", "_ground_cum", "_air_cum"]:
+			"flyer_speed", "min_players", "max_players", "lanes", "tier", "monster_hp", "ground_paths", "air_paths", "_ground_cum", "_air_cum",
+			"theme", "start_labels", "entries", "path_labels"]:
 		m.set(key, get(key))
 	m.cells = cells.duplicate()
 	m.specials = specials.duplicate()
@@ -225,43 +241,9 @@ func set_cell(index: int, kind: int, special: int) -> void:
 	specials[index] = special
 
 
-## Couloirs ouverts pour `players` joueurs sur une carte à plusieurs couloirs : un par joueur
-## (jusqu'à `lanes`), celui qui traverse la zone de chacun (zone 0 pour le 1er, etc.) ; tous les
-## départs sur une carte à un seul couloir.
+## Couloirs ouverts pour `players` joueurs (voir MapSpawns.open_paths).
 func open_paths(players: int) -> Array[int]:
-	var out: Array[int] = []
-	if lanes <= 1:
-		for p in start_count():
-			out.append(p)
-		return out
-	for z in clampi(players, 1, lanes):
-		for p in start_count():
-			if not out.has(p) and _start_zone(p) == z:
-				out.append(p)
-				break
-	for p in start_count():  # carte sans zones ou zones incomplètes : les premiers départs
-		if out.size() >= clampi(players, 1, lanes):
-			break
-		if not out.has(p):
-			out.append(p)
-	return out
-
-
-## Zone la plus présente autour du départ d'un chemin (-1 si aucune).
-func _start_zone(path: int) -> int:
-	var c := Vector2i(ground_paths[path][0].floor())
-	var counts := {}
-	for dy in range(-2, 3):
-		for dx in range(-2, 3):
-			var at := c + Vector2i(dx, dy)
-			if in_bounds(at) and zones[at.y * width + at.x] >= 0:
-				var z: int = zones[at.y * width + at.x]
-				counts[z] = int(counts.get(z, 0)) + 1
-	var best := -1
-	for z in counts:
-		if best < 0 or counts[z] > counts[best]:
-			best = z
-	return best
+	return MapSpawns.open_paths(self, players)
 
 
 func start_count() -> int:
