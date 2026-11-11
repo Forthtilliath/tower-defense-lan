@@ -1,8 +1,8 @@
 {
 	"player": { "start_gold": 150, "interest": 0.04, "interest_cap": 30, "gift_ratio": 0.5, "gift_min": 10 },
 	"coop_scaling": { "hp": 0.15, "count": 0.35 },
-	"progression": { "max_level": 15, "xp_base": 100, "xp_growth": 1.2, "xp_per_wave": 10, "win_bonus": 0.25, "defeat_steps": 4, "defeat_rate_min": 0.1, "defeat_rate_max": 0.85 },
-	"talent_tiers": [0, 2, 4, 5],
+	"progression": { "max_level": 30, "xp_base": 200, "xp_growth": 1.1, "xp_per_wave": 10, "win_bonus": 0.25, "defeat_steps": 4, "defeat_rate_min": 0.1, "defeat_rate_max": 0.85 },
+	"talent_tiers": [0, 3, 7, 11, 15],
 	"common_towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"],
 	"builders": [
 		{
@@ -11,41 +11,52 @@
 			"description": "Armes lourdes : +20 % de dégâts des tirs physiques (Arbalète, Fléchettes, Canon, Sentinelle, Baliste, Broyeur, Mortier, Rafale).",
 			"damage": 1.2, "bonus_towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"],
 			"branches": [
-				{ "id": "armory", "name": "Armurerie", "description": "Tronc commun de l'Artilleur.", "trunk": true, "talents": [
-					{ "id": "gu_drill", "name": "Discipline", "description": "+4 % de cadence par rang pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "rate": 0.04 },
-					{ "id": "gu_caliber", "name": "Gros calibre", "description": "+5 % de dégâts (Arbalète, Canon, Sentinelle).", "tier": 1, "max_rank": 1, "towers": ["crossbow", "cannon", "sentinel"], "damage": 0.05 }
+				{ "id": "armory", "name": "Armurerie", "description": "Tronc commun de l'Artilleur : ses tourelles physiques.", "trunk": true, "talents": [
+					{ "id": "gu_caliber", "name": "Calibre", "description": "+6 % de dégâts par rang (tourelles de l'Artilleur).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "crusher", "ballista", "mortar", "gatling"], "damage": 0.06 },
+					{ "id": "gu_reload", "name": "Rechargement", "description": "+5 % de cadence par rang (tourelles de l'Artilleur).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "crusher", "ballista", "mortar", "gatling"], "rate": 0.05 },
+					{ "id": "gu_weakspot", "name": "Point faible", "description": "+4 % de chance de coup critique (×2) par rang.", "tier": 2, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "crusher", "ballista", "mortar", "gatling"], "grant": { "crit_chance": 0.04 } },
+					{ "id": "gu_piercing", "name": "Munitions perforantes", "description": "Ignore 15 % de l'armure par rang.", "tier": 2, "max_rank": 2, "towers": ["crossbow", "sentinel", "dart", "cannon", "crusher", "ballista", "mortar", "gatling"], "grant": { "armor_pierce": 0.15 } },
+					{ "id": "gu_last", "name": "Dernier rempart", "description": "À 5 vies ou moins : +30 % de cadence.", "tier": 2, "towers": ["crossbow", "sentinel", "dart", "cannon", "crusher", "ballista", "mortar", "gatling"], "grant": { "last_stand": 0.3 } }
 				] },
-				{ "id": "brute", "name": "Brute", "description": "Courte portée, gros coups, contre l'armure.", "talents": [
-					{ "id": "gu_heavy", "name": "Coups lourds", "description": "+5 % de dégâts par rang (Arbalète, Broyeur).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "crusher"], "damage": 0.05 },
+				{ "id": "brute", "name": "Brute", "description": "Le cogneur qui recule l'ennemi et achève.", "talents": [
+					{ "id": "gu_heavy", "name": "Coups lourds", "description": "+7 % de dégâts par rang (Arbalète, Canon, Broyeur).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "cannon", "crusher"], "damage": 0.07 },
+					{ "id": "gu_ram", "name": "Bélier", "description": "6 % de chance par rang de repousser le monstre d'une demi-case (Arbalète, Canon, Broyeur).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "cannon", "crusher"], "grant": { "knockback": 0.06 } },
 					{ "id": "gu_crusher", "name": "Broyeur", "description": "Débloque le Broyeur.", "tier": 2, "unlock": "crusher" },
-					{ "id": "gu_smash", "name": "Fracas", "description": "+8 % de dégâts par rang (Broyeur).", "tier": 2, "max_rank": 2, "towers": ["crusher"], "damage": 0.08 },
-					{ "id": "gu_grip", "name": "Poigne", "description": "+5 % de cadence par rang (Arbalète, Broyeur).", "tier": 3, "max_rank": 2, "towers": ["crossbow", "crusher"], "rate": 0.05 },
-					{ "id": "gu_crush", "name": "Écrasement", "description": "+10 % de dégâts par rang (Arbalète, Broyeur).", "tier": 4, "max_rank": 2, "towers": ["crossbow", "crusher"], "damage": 0.1 },
-					{ "id": "gu_quake", "name": "Séisme", "description": "Le Broyeur frappe en zone et étourdit 15 % du temps (0,6 s), +25 % de dégâts.", "tier": 4, "ultimate": true, "towers": ["crusher"], "damage": 0.25, "grant": {"splash": 0.7, "stun_chance": 0.15, "stun_duration": 0.6} }
+					{ "id": "gu_shatter", "name": "Fracasse-armure", "description": "Chaque coup du Broyeur retire 1 d'armure (jusqu'à 2 par rang).", "tier": 2, "max_rank": 3, "towers": ["crusher"], "grant": { "armor_break": 2 } },
+					{ "id": "gu_shockwave", "name": "Onde de choc", "description": "Un coup qui tue inflige 20 % par rang de ses dégâts autour.", "tier": 3, "max_rank": 3, "towers": ["crossbow", "cannon", "crusher"], "grant": { "kill_splash": 0.2 } },
+					{ "id": "gu_executioner", "name": "Exécuteur", "description": "Achève les monstres sous 3,5 % de PV par rang (moitié contre les gros).", "tier": 4, "max_rank": 3, "towers": ["crossbow", "cannon", "crusher"], "grant": { "execute": 0.035 } },
+					{ "id": "gu_colossus", "name": "Colosse", "description": "Le Broyeur frappe en zone (rayon d'une case).", "tier": 5, "towers": ["crusher"], "grant": { "splash": 1.0 } },
+					{ "id": "gu_quake", "name": "Séisme", "description": "Pouvoir : les monstres à portée de tes Broyeurs sont étourdis 2 s et perdent 10 % de leurs PV.", "tier": 5, "ultimate": true, "power": "quake" }
 				] },
-				{ "id": "marksman", "name": "Tireur d'élite", "description": "Longue portée, une cible à la fois.", "talents": [
-					{ "id": "gu_steady", "name": "Main sûre", "description": "+5 % de dégâts par rang (Sentinelle, Baliste).", "tier": 1, "max_rank": 3, "towers": ["sentinel", "ballista"], "damage": 0.05 },
+				{ "id": "marksman", "name": "Tireur d'élite", "description": "Un tir, un mort.", "talents": [
+					{ "id": "gu_steady", "name": "Main sûre", "description": "+5 % de critique par rang (Arbalète, Sentinelle, Baliste).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "ballista"], "grant": { "crit_chance": 0.05 } },
+					{ "id": "gu_hawkeye", "name": "Œil de faucon", "description": "+6 % de portée par rang (Arbalète, Sentinelle, Baliste).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "ballista"], "range": 0.06 },
 					{ "id": "gu_ballista", "name": "Baliste", "description": "Débloque la Baliste.", "tier": 2, "unlock": "ballista" },
-					{ "id": "gu_hawk", "name": "Œil de faucon", "description": "+6 % de portée par rang (Sentinelle, Baliste).", "tier": 2, "max_rank": 2, "towers": ["sentinel", "ballista"], "range": 0.06 },
-					{ "id": "gu_aim", "name": "Visée", "description": "+5 % de cadence par rang (Sentinelle, Baliste).", "tier": 3, "max_rank": 2, "towers": ["sentinel", "ballista"], "rate": 0.05 },
-					{ "id": "gu_headshot", "name": "En plein cœur", "description": "+10 % de dégâts par rang (Baliste).", "tier": 4, "max_rank": 2, "towers": ["ballista"], "damage": 0.1 },
-					{ "id": "gu_pierce", "name": "Tir perçant", "description": "Ignore 50 % de l'armure, +25 % de dégâts (Sentinelle, Baliste).", "tier": 4, "ultimate": true, "towers": ["sentinel", "ballista"], "damage": 0.25, "grant": {"armor_pierce": 0.5} }
+					{ "id": "gu_pierce", "name": "Carreau perçant", "description": "La Baliste traverse 1 monstre de plus par rang.", "tier": 2, "max_rank": 2, "towers": ["ballista"], "grant": { "pierce": 1 } },
+					{ "id": "gu_mark", "name": "Marquage", "description": "Un monstre touché subit +6 % par rang de toutes les tourelles (alliés compris) pendant 3 s.", "tier": 3, "max_rank": 3, "towers": ["sentinel", "ballista"], "grant": { "mark": 0.06 } },
+					{ "id": "gu_giant", "name": "Chasseur de géants", "description": "+12 % de dégâts par rang contre les boss et les gros monstres.", "tier": 4, "max_rank": 3, "towers": ["crossbow", "sentinel", "ballista"], "grant": { "vs_big": 0.12 } },
+					{ "id": "gu_silver", "name": "Balle d'argent", "description": "Les critiques font ×3 au lieu de ×2.", "tier": 5, "towers": ["crossbow", "sentinel", "ballista"], "grant": { "crit_bonus": 1.0 } },
+					{ "id": "gu_perfect", "name": "Tir parfait", "description": "Pouvoir à viser : un carreau géant part de ta Baliste et traverse toute la carte.", "tier": 5, "ultimate": true, "power": "perfect_shot" }
 				] },
-				{ "id": "blaster", "name": "Artificier", "description": "Dégâts de zone.", "talents": [
-					{ "id": "gu_powder", "name": "Poudre fine", "description": "+5 % de dégâts par rang (Canon, Mortier).", "tier": 1, "max_rank": 3, "towers": ["cannon", "mortar"], "damage": 0.05 },
+				{ "id": "blaster", "name": "Artificier", "description": "Le terrain qui explose.", "talents": [
+					{ "id": "gu_powder", "name": "Poudre fine", "description": "+0,12 case de rayon de zone par rang (Canon, Mortier).", "tier": 1, "max_rank": 3, "towers": ["cannon", "mortar"], "grant": { "splash": 0.12 } },
+					{ "id": "gu_incendiary", "name": "Obus incendiaires", "description": "Les obus laissent une nappe de feu, plus grande et plus forte à chaque rang.", "tier": 1, "max_rank": 3, "towers": ["cannon", "mortar"], "grant": { "patch_radius": 0.3, "patch_duration": 1.0, "patch_dps": 2.0 } },
 					{ "id": "gu_mortar", "name": "Mortier", "description": "Débloque le Mortier.", "tier": 2, "unlock": "mortar" },
-					{ "id": "gu_spyglass", "name": "Longue-vue", "description": "+6 % de portée par rang (Canon, Mortier).", "tier": 2, "max_rank": 2, "towers": ["cannon", "mortar"], "range": 0.06 },
-					{ "id": "gu_shrapnel", "name": "Éclats", "description": "+8 % de dégâts par rang (Canon, Mortier).", "tier": 3, "max_rank": 2, "towers": ["cannon", "mortar"], "damage": 0.08 },
-					{ "id": "gu_barrage", "name": "Barrage", "description": "+6 % de cadence par rang (Canon, Mortier).", "tier": 4, "max_rank": 2, "towers": ["cannon", "mortar"], "rate": 0.06 },
-					{ "id": "gu_carpet", "name": "Tapis de bombes", "description": "Chaque obus laisse une nappe de feu (12 dégâts/s, 3 s) ; zone +0,3 (Canon, Mortier).", "tier": 4, "ultimate": true, "towers": ["cannon", "mortar"], "grant": {"splash": 0.3, "patch_radius": 0.8, "patch_duration": 3, "patch_dps": 12} }
+					{ "id": "gu_frag", "name": "Fragmentation", "description": "Un monstre tué projette 3 éclats (15 % des dégâts par rang).", "tier": 2, "max_rank": 3, "towers": ["cannon", "mortar"], "grant": { "frag": 0.15 } },
+					{ "id": "gu_concussion", "name": "Commotion", "description": "5 % de chance par rang d'étourdir dans la zone.", "tier": 3, "max_rank": 3, "towers": ["cannon", "mortar"], "grant": { "stun_chance": 0.05, "stun_duration": 0.17 } },
+					{ "id": "gu_craters", "name": "Cratères", "description": "Les coups et leurs nappes ralentissent de 15 % par rang.", "tier": 4, "max_rank": 2, "towers": ["cannon", "mortar"], "grant": { "slow": 0.15 } },
+					{ "id": "gu_salvo", "name": "Salve", "description": "Le Mortier tire 2 obus.", "tier": 5, "towers": ["mortar"], "grant": { "multishot": 1 } },
+					{ "id": "gu_carpet", "name": "Tapis de bombes", "description": "Pouvoir à viser : 12 obus s'abattent autour du point visé.", "tier": 5, "ultimate": true, "power": "carpet" }
 				] },
-				{ "id": "gatling", "name": "Mitrailleur", "description": "Cadence de tir et tirs multiples.", "talents": [
-					{ "id": "gu_volley", "name": "Volée", "description": "+5 % de cadence par rang (Fléchettes, Rafale).", "tier": 1, "max_rank": 3, "towers": ["dart", "gatling"], "rate": 0.05 },
+				{ "id": "gatling", "name": "Mitrailleur", "description": "Plus il tire, plus il tire.", "talents": [
+					{ "id": "gu_volley", "name": "Volée", "description": "+6 % de cadence par rang (Fléchettes, Rafale).", "tier": 1, "max_rank": 3, "towers": ["dart", "gatling"], "rate": 0.06 },
+					{ "id": "gu_warmup", "name": "Échauffement", "description": "+4 % de cadence par seconde de tir continu, jusqu'à +10 % par rang.", "tier": 1, "max_rank": 3, "towers": ["dart", "gatling"], "grant": { "warmup": 0.04, "warmup_cap": 0.1 } },
 					{ "id": "gu_gatling", "name": "Rafale", "description": "Débloque la Rafale.", "tier": 2, "unlock": "gatling" },
-					{ "id": "gu_frenzy", "name": "Cadence infernale", "description": "+4 % de cadence par rang pour toutes tes tourelles.", "tier": 2, "max_rank": 2, "rate": 0.04 },
-					{ "id": "gu_points", "name": "Pointes", "description": "+8 % de dégâts par rang (Fléchettes, Rafale).", "tier": 3, "max_rank": 2, "towers": ["dart", "gatling"], "damage": 0.08 },
-					{ "id": "gu_hail", "name": "Mitraille", "description": "+8 % de cadence par rang (Fléchettes, Rafale).", "tier": 4, "max_rank": 2, "towers": ["dart", "gatling"], "rate": 0.08 },
-					{ "id": "gu_deluge", "name": "Déluge", "description": "+1 cible à chaque tir, +20 % de cadence (Fléchettes, Rafale).", "tier": 4, "ultimate": true, "towers": ["dart", "gatling"], "rate": 0.2, "grant": {"multishot": 1} }
+					{ "id": "gu_ricochet", "name": "Ricochet", "description": "10 % de chance par rang qu'une balle rebondisse sur un 2e monstre.", "tier": 2, "max_rank": 3, "towers": ["dart", "gatling"], "grant": { "ricochet": 0.1 } },
+					{ "id": "gu_suppress", "name": "Tir de suppression", "description": "Chaque coup ralentit de 6 % par rang.", "tier": 3, "max_rank": 3, "towers": ["dart", "gatling"], "grant": { "slow": 0.06 } },
+					{ "id": "gu_belt", "name": "Bande de munitions", "description": "+1 cible par rang (Fléchettes, Rafale).", "tier": 4, "max_rank": 2, "towers": ["dart", "gatling"], "grant": { "multishot": 1 } },
+					{ "id": "gu_streak", "name": "Série meurtrière", "description": "+1 % de dégâts par monstre tué depuis que la carte était vide (jusqu'à +40 %).", "tier": 5, "towers": ["dart", "gatling"], "grant": { "streak": 0.01, "streak_cap": 0.4 } },
+					{ "id": "gu_leadrain", "name": "Pluie de plomb", "description": "Pouvoir : pendant 6 s, Fléchettes et Rafales tirent 3 fois plus vite.", "tier": 5, "ultimate": true, "power": "lead_rain" }
 				] }
 			]
 		},
@@ -55,44 +66,56 @@
 			"description": "Magie élémentaire : +10 % de dégâts des tourelles de feu, de foudre, de glace et de vent.",
 			"damage": 1.1, "bonus_towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"],
 			"branches": [
-				{ "id": "arcana", "name": "Arcanes", "description": "Tronc commun de l'Arcaniste.", "trunk": true, "talents": [
-					{ "id": "ar_focus", "name": "Concentration", "description": "+4 % de dégâts par rang (tourelles de feu, de foudre et de glace).", "tier": 1, "max_rank": 3, "towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker"], "damage": 0.04 },
-					{ "id": "ar_flow", "name": "Flux", "description": "+4 % de portée (Brasier, Salamandre, Tesla, Givre).", "tier": 1, "max_rank": 1, "towers": ["brazier", "salamander", "tesla", "frost"], "range": 0.04 }
+				{ "id": "arcana", "name": "Arcanes", "description": "Tronc commun de l'Arcaniste : ses tourelles élémentaires.", "trunk": true, "talents": [
+					{ "id": "ar_power", "name": "Puissance arcanique", "description": "+6 % de dégâts par rang (tourelles élémentaires).", "tier": 1, "max_rank": 3, "towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"], "damage": 0.06 },
+					{ "id": "ar_focus", "name": "Concentration", "description": "+5 % de cadence par rang (tourelles élémentaires).", "tier": 1, "max_rank": 3, "towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"], "rate": 0.05 },
+					{ "id": "ar_reactions", "name": "Réactions", "description": "Feu sur un ralenti ou gelé : +50 % par rang ; foudre sur un brûlé : explosion ; glace sur un brûlé : étourdi.", "tier": 2, "max_rank": 2, "towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"], "grant": { "reaction": 0.5 } },
+					{ "id": "ar_resonance", "name": "Résonance", "description": "Les résistances aux éléments sont réduites de 15 % par rang.", "tier": 2, "max_rank": 2, "towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"], "grant": { "resonance": 0.15 } },
+					{ "id": "ar_harmony", "name": "Harmonie", "description": "+4 % de dégâts par rang et par élément différent parmi tes tourelles voisines.", "tier": 2, "max_rank": 2, "towers": ["brazier", "salamander", "lens", "greek_fire", "tesla", "pylon", "railgun", "frost", "obelisk", "icebreaker", "whirlwind"], "grant": { "harmony": 0.04 } }
 				] },
-				{ "id": "fire", "name": "Mage de feu", "description": "Brûlure, rayon et nappes de feu.", "talents": [
-					{ "id": "ar_embers", "name": "Braises", "description": "+5 % de dégâts par rang (tourelles de feu).", "tier": 1, "max_rank": 3, "towers": ["brazier", "salamander", "lens", "greek_fire"], "damage": 0.05 },
+				{ "id": "fire", "name": "Mage de feu", "description": "Brûlure, rayon, nappes et flammes qui se propagent.", "talents": [
+					{ "id": "ar_embers", "name": "Braises", "description": "Brûlure +20 % de durée par rang.", "tier": 1, "max_rank": 3, "towers": ["brazier", "salamander", "lens", "greek_fire"], "grant": { "dot_duration": 0.2 } },
+					{ "id": "ar_combustion", "name": "Combustion", "description": "+1 charge de brûlure et +5 % de dégâts par rang (tourelles de feu).", "tier": 1, "max_rank": 3, "towers": ["brazier", "salamander", "lens", "greek_fire"], "damage": 0.05, "grant": { "burn_stacks": 1 } },
 					{ "id": "ar_lens", "name": "Lentille ardente", "description": "Débloque la Lentille ardente.", "tier": 2, "unlock": "lens" },
-					{ "id": "ar_combustion", "name": "Combustion", "description": "+6 % de cadence par rang (tourelles de feu).", "tier": 2, "max_rank": 2, "towers": ["brazier", "salamander", "lens", "greek_fire"], "rate": 0.06 },
-					{ "id": "ar_furnace", "name": "Fournaise", "description": "+8 % de dégâts par rang (tourelles de feu).", "tier": 3, "max_rank": 2, "towers": ["brazier", "salamander", "lens", "greek_fire"], "damage": 0.08 },
-					{ "id": "ar_greek_fire", "name": "Feu grégeois", "description": "Débloque le Feu grégeois.", "tier": 4, "unlock": "greek_fire" },
-					{ "id": "ar_inferno", "name": "Brasier ardent", "description": "+10 % de dégâts (tourelles de feu).", "tier": 4, "towers": ["brazier", "salamander", "lens", "greek_fire"], "damage": 0.1 },
-					{ "id": "ar_hellfire", "name": "Enfer", "description": "+2 charges de brûlure maximum, +25 % de dégâts (tourelles de feu).", "tier": 4, "ultimate": true, "towers": ["brazier", "salamander", "lens", "greek_fire"], "damage": 0.25, "grant": {"burn_stacks": 2} }
+					{ "id": "ar_spread", "name": "Propagation", "description": "Un monstre qui meurt en brûlant enflamme 1 voisin par rang.", "tier": 2, "max_rank": 3, "towers": ["brazier", "salamander", "lens", "greek_fire"], "grant": { "death_burn": 1 } },
+					{ "id": "ar_greek", "name": "Feu grégeois", "description": "Débloque le Feu grégeois.", "tier": 3, "unlock": "greek_fire" },
+					{ "id": "ar_furnace", "name": "Fournaise", "description": "Le rayon de la Lentille monte plus haut sur la même cible (jusqu'à ×3).", "tier": 3, "max_rank": 3, "towers": ["lens"], "grant": { "ramp_max": 0.67 } },
+					{ "id": "ar_scorched", "name": "Terre brûlée", "description": "Nappes de feu +0,75 s par rang.", "tier": 4, "max_rank": 3, "towers": ["greek_fire", "salamander", "brazier"], "grant": { "patch_duration": 0.75 } },
+					{ "id": "ar_phoenix", "name": "Phénix", "description": "Chaque vague sans fuite : +3 % de dégâts de feu jusqu'à la fin de la partie.", "tier": 5, "towers": ["brazier", "salamander", "lens", "greek_fire"], "grant": { "growth": 0.03 } },
+					{ "id": "ar_meteor", "name": "Météore", "description": "Pouvoir à viser : un météore s'abat et laisse une nappe de feu 6 s.", "tier": 5, "ultimate": true, "power": "meteor" }
 				] },
-				{ "id": "storm", "name": "Mage de foudre", "description": "Arcs, ondes et traits perçants.", "talents": [
-					{ "id": "ar_conductive", "name": "Conductivité", "description": "+5 % de dégâts par rang (tourelles de foudre).", "tier": 1, "max_rank": 3, "towers": ["tesla", "pylon", "railgun"], "damage": 0.05 },
+				{ "id": "storm", "name": "Mage de foudre", "description": "Arcs, charges et orages.", "talents": [
+					{ "id": "ar_conduction", "name": "Conduction", "description": "+1 rebond par rang (Tesla, Pylône).", "tier": 1, "max_rank": 3, "towers": ["tesla", "pylon"], "grant": { "chain": 1 } },
+					{ "id": "ar_stable", "name": "Arc stable", "description": "Les rebonds perdent 5 % de dégâts de moins par rang.", "tier": 1, "max_rank": 3, "towers": ["tesla", "pylon", "railgun"], "grant": { "chain_keep": 0.05 } },
 					{ "id": "ar_pylon", "name": "Pylône", "description": "Débloque le Pylône.", "tier": 2, "unlock": "pylon" },
-					{ "id": "ar_overload", "name": "Surcharge", "description": "+6 % de cadence par rang (tourelles de foudre).", "tier": 2, "max_rank": 2, "towers": ["tesla", "pylon", "railgun"], "rate": 0.06 },
-					{ "id": "ar_tempest", "name": "Tempête", "description": "+8 % de dégâts par rang (tourelles de foudre).", "tier": 3, "max_rank": 2, "towers": ["tesla", "pylon", "railgun"], "damage": 0.08 },
-					{ "id": "ar_railgun", "name": "Lance-foudre", "description": "Débloque le Lance-foudre.", "tier": 4, "unlock": "railgun" },
-					{ "id": "ar_voltage", "name": "Haute tension", "description": "+10 % de dégâts (tourelles de foudre).", "tier": 4, "towers": ["tesla", "pylon", "railgun"], "damage": 0.1 },
-					{ "id": "ar_storm_eternal", "name": "Tempête éternelle", "description": "La Tesla rebondit 2 fois de plus ; +25 % de dégâts (tourelles de foudre).", "tier": 4, "ultimate": true, "towers": ["tesla", "pylon", "railgun"], "damage": 0.25, "grant": {"chain": 2} }
+					{ "id": "ar_static", "name": "Charge statique", "description": "Au 5e coup de foudre reçu, le monstre se décharge autour (30 % par rang).", "tier": 2, "max_rank": 3, "towers": ["tesla", "pylon", "railgun"], "grant": { "static_charge": 0.3 } },
+					{ "id": "ar_railgun", "name": "Lance-foudre", "description": "Débloque le Lance-foudre.", "tier": 3, "unlock": "railgun" },
+					{ "id": "ar_short", "name": "Court-circuit", "description": "4 % de chance par rang d'étourdir 0,4 s.", "tier": 3, "max_rank": 3, "towers": ["tesla", "pylon", "railgun"], "grant": { "stun_chance": 0.04, "stun_duration": 0.13 } },
+					{ "id": "ar_surge", "name": "Surtension", "description": "+8 % de dégâts par rang contre les véhicules et les blindés.", "tier": 4, "max_rank": 3, "towers": ["tesla", "pylon", "railgun"], "grant": { "vs_armored": 0.08 } },
+					{ "id": "ar_storm", "name": "Orage", "description": "Toutes les 8 s, chaque tourelle de foudre lance un éclair gratuit.", "tier": 5, "towers": ["tesla", "pylon", "railgun"], "grant": { "storm": 1.0 } },
+					{ "id": "ar_tempest", "name": "Tempête", "description": "Pouvoir : pendant 8 s, les rebonds continuent jusqu'à 15 monstres.", "tier": 5, "ultimate": true, "power": "tempest" }
 				] },
-				{ "id": "ice", "name": "Mage de glace", "description": "Ralentir et geler.", "talents": [
-					{ "id": "ar_chill", "name": "Gel", "description": "+5 % de dégâts par rang (Givre, Brise-glace).", "tier": 1, "max_rank": 3, "towers": ["frost", "icebreaker"], "damage": 0.05 },
+				{ "id": "ice", "name": "Mage de glace", "description": "Ralentir, geler, briser.", "talents": [
+					{ "id": "ar_bite", "name": "Froid mordant", "description": "Ralentissement 5 % plus fort par rang.", "tier": 1, "max_rank": 3, "towers": ["frost", "obelisk", "icebreaker"], "grant": { "slow": 0.05 } },
+					{ "id": "ar_winter", "name": "Hiver long", "description": "Ralentissements +0,3 s par rang.", "tier": 1, "max_rank": 3, "towers": ["frost", "obelisk", "icebreaker"], "grant": { "slow_duration": 0.3 } },
 					{ "id": "ar_obelisk", "name": "Obélisque de glace", "description": "Débloque l'Obélisque de glace.", "tier": 2, "unlock": "obelisk" },
-					{ "id": "ar_bite", "name": "Froid mordant", "description": "+8 % de chances et de durée de contrôle par rang (Givre, Obélisque).", "tier": 2, "max_rank": 2, "towers": ["frost", "obelisk"], "cc": 0.08 },
-					{ "id": "ar_permafrost", "name": "Givre éternel", "description": "+6 % de portée par rang (tourelles de glace).", "tier": 3, "max_rank": 2, "towers": ["frost", "obelisk", "icebreaker"], "range": 0.06 },
-					{ "id": "ar_icebreaker", "name": "Brise-glace", "description": "Débloque le Brise-glace.", "tier": 4, "unlock": "icebreaker" },
-					{ "id": "ar_shatter", "name": "Éclats de glace", "description": "+10 % de dégâts (Givre, Brise-glace).", "tier": 4, "towers": ["frost", "icebreaker"], "damage": 0.1 },
-					{ "id": "ar_absolute_zero", "name": "Zéro absolu", "description": "Gèle 15 % du temps (0,5 s) et +100 % de dégâts contre un gelé (Givre, Brise-glace).", "tier": 4, "ultimate": true, "towers": ["frost", "icebreaker"], "grant": {"stun_chance": 0.15, "stun_duration": 0.5, "vs_stunned": 1} }
+					{ "id": "ar_freeze", "name": "Gel", "description": "3 % de chance par rang de geler 1 s.", "tier": 2, "max_rank": 3, "towers": ["frost", "obelisk", "icebreaker"], "grant": { "stun_chance": 0.03, "stun_duration": 0.33 } },
+					{ "id": "ar_icebreaker", "name": "Brise-glace", "description": "Débloque le Brise-glace.", "tier": 3, "unlock": "icebreaker" },
+					{ "id": "ar_shards", "name": "Éclats de givre", "description": "Un monstre tué par ta glace projette 3 éclats (20 % des dégâts par rang).", "tier": 3, "max_rank": 3, "towers": ["frost", "obelisk", "icebreaker"], "grant": { "frag": 0.2 } },
+					{ "id": "ar_brittle", "name": "Fragilité", "description": "Un monstre touché par ta glace subit +5 % par rang de toutes les tourelles pendant 3 s.", "tier": 4, "max_rank": 3, "towers": ["frost", "obelisk", "icebreaker"], "grant": { "mark": 0.05 } },
+					{ "id": "ar_heart", "name": "Cœur de glace", "description": "Le Brise-glace fait ×3 contre un monstre gelé.", "tier": 5, "towers": ["icebreaker"], "grant": { "vs_stunned": 2.0 } },
+					{ "id": "ar_zero", "name": "Zéro absolu", "description": "Pouvoir : gèle 2,5 s tous les monstres à portée de tes tourelles de glace.", "tier": 5, "ultimate": true, "power": "absolute_zero" }
 				] },
-				{ "id": "wind", "name": "Mage du vent", "description": "Anti-aérien : clouer les volants au sol.", "talents": [
-					{ "id": "ar_currents", "name": "Courants", "description": "+5 % de dégâts par rang (Sentinelle).", "tier": 1, "max_rank": 3, "towers": ["sentinel"], "damage": 0.05 },
+				{ "id": "wind", "name": "Mage du vent", "description": "Maître du ciel et du terrain.", "talents": [
+					{ "id": "ar_gusts", "name": "Bourrasques", "description": "Volants cloués au sol 0,3 s de plus par rang.", "tier": 1, "max_rank": 3, "towers": ["whirlwind"], "grant": { "ground_duration": 0.3 } },
+					{ "id": "ar_headwind", "name": "Vent contraire", "description": "5 % de chance par rang de repousser le monstre touché.", "tier": 1, "max_rank": 3, "towers": ["whirlwind"], "grant": { "knockback": 0.05 } },
 					{ "id": "ar_whirlwind", "name": "Tourbillon", "description": "Débloque le Tourbillon.", "tier": 2, "unlock": "whirlwind" },
-					{ "id": "ar_gusts", "name": "Bourrasques", "description": "+6 % de portée par rang (Sentinelle, Tourbillon).", "tier": 2, "max_rank": 2, "towers": ["sentinel", "whirlwind"], "range": 0.06 },
-					{ "id": "ar_eye", "name": "Œil du cyclone", "description": "+6 % de cadence par rang (Sentinelle, Tourbillon).", "tier": 3, "max_rank": 2, "towers": ["sentinel", "whirlwind"], "rate": 0.06 },
-					{ "id": "ar_hurricane", "name": "Ouragan", "description": "+10 % de dégâts par rang (Sentinelle, Tourbillon).", "tier": 4, "max_rank": 2, "towers": ["sentinel", "whirlwind"], "damage": 0.1 },
-					{ "id": "ar_eye_storm", "name": "Œil de la tempête", "description": "Sentinelle et Tourbillon clouent les volants au sol 2 s de plus, ignorent 50 % de l'armure, +20 % de dégâts.", "tier": 4, "ultimate": true, "towers": ["sentinel", "whirlwind"], "damage": 0.2, "grant": {"ground_duration": 2, "armor_pierce": 0.5} }
+					{ "id": "ar_fall", "name": "Chute", "description": "Un volant touché subit +8 % par rang de toutes les tourelles pendant 3 s.", "tier": 2, "max_rank": 3, "towers": ["whirlwind"], "grant": { "mark": 0.08 } },
+					{ "id": "ar_suction", "name": "Aspiration", "description": "Le Tourbillon ralentit de 5 % par rang.", "tier": 3, "max_rank": 3, "towers": ["whirlwind"], "grant": { "slow": 0.05 } },
+					{ "id": "ar_eye", "name": "Œil du cyclone", "description": "Le Tourbillon frappe aussi au sol.", "tier": 4, "towers": ["whirlwind"], "grant": { "all_targets": 1 } },
+					{ "id": "ar_sandstorm", "name": "Tempête de sable", "description": "+8 % de dégâts par rang (Tourbillon).", "tier": 4, "max_rank": 2, "towers": ["whirlwind"], "damage": 0.08 },
+					{ "id": "ar_carrier", "name": "Vents porteurs", "description": "+20 % de portée du Tourbillon.", "tier": 5, "towers": ["whirlwind"], "range": 0.2 },
+					{ "id": "ar_tornado", "name": "Tornade", "description": "Pouvoir : une tornade repousse tous les monstres de 3 cases.", "tier": 5, "ultimate": true, "power": "tornado" }
 				] }
 			]
 		},
@@ -102,44 +125,55 @@
 			"description": "Effets continus : +25 % de dégâts du Venin, de la Peste, des Miasmes, des Épines et de la Faux.",
 			"damage": 1.25, "bonus_towers": ["venom", "plague", "miasma", "thorns", "scythe"],
 			"branches": [
-				{ "id": "blight", "name": "Pourriture", "description": "Tronc commun du Fléau.", "trunk": true, "talents": [
-					{ "id": "fl_rot", "name": "Putréfaction", "description": "+4 % de dégâts par rang (Venin, Épines).", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns"], "damage": 0.04 },
-					{ "id": "fl_reach", "name": "Miasme lointain", "description": "+5 % de portée (Venin, Épines).", "tier": 1, "max_rank": 1, "towers": ["venom", "thorns"], "range": 0.05 }
+				{ "id": "blight", "name": "Contagion", "description": "Tronc commun du Fléau : ses tourelles d'effets continus.", "trunk": true, "talents": [
+					{ "id": "sc_virulence", "name": "Virulence", "description": "+7 % de dégâts par rang (tourelles du Fléau).", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "damage": 0.07 },
+					{ "id": "sc_persistence", "name": "Persistance", "description": "Effets continus +12 % de durée par rang.", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "dot_duration": 0.12 } },
+					{ "id": "sc_agony", "name": "Agonie", "description": "+10 % de dégâts par rang contre un monstre sous 2 effets ou plus.", "tier": 2, "max_rank": 2, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "vs_afflicted": 0.1 } },
+					{ "id": "sc_corpses", "name": "Cadavres", "description": "Un monstre mort sous un effet laisse une flaque toxique 2 s (plus forte à chaque rang).", "tier": 2, "max_rank": 2, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "death_puddle": 0.01 } },
+					{ "id": "sc_incubation", "name": "Incubation", "description": "+1 cumul de poison et de saignement par rang.", "tier": 2, "max_rank": 2, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "poison_stacks": 1, "bleed_stacks": 1 } }
 				] },
-				{ "id": "poison", "name": "Poison", "description": "Renforce tous les poisons.", "talents": [
-					{ "id": "fl_toxins", "name": "Toxines", "description": "+5 % de dégâts par rang (Venin, Peste, Miasmes).", "tier": 1, "max_rank": 3, "towers": ["venom", "plague", "miasma"], "damage": 0.05 },
-					{ "id": "fl_plague", "name": "Peste", "description": "Débloque la Peste.", "tier": 2, "unlock": "plague" },
-					{ "id": "fl_virulence", "name": "Virulence", "description": "Tes poisons se cumulent : +1 charge par rang (Venin, Peste, Miasmes).", "tier": 2, "max_rank": 2, "towers": ["venom", "plague", "miasma"], "grant": {"poison_stacks": 1} },
-					{ "id": "fl_blight", "name": "Fièvre", "description": "+8 % de dégâts par rang (Venin, Peste, Miasmes).", "tier": 3, "max_rank": 2, "towers": ["venom", "plague", "miasma"], "damage": 0.08 },
-					{ "id": "fl_miasma", "name": "Miasmes", "description": "Débloque les Miasmes.", "tier": 4, "unlock": "miasma" },
-					{ "id": "fl_pandemic", "name": "Pandémie", "description": "+10 % de dégâts (Venin, Peste, Miasmes).", "tier": 4, "towers": ["venom", "plague", "miasma"], "damage": 0.1 },
-					{ "id": "fl_epidemic", "name": "Épidémie", "description": "Tous tes poisons deviennent contagieux (1,5 case) et gagnent une charge, +20 % de dégâts (Venin, Peste, Miasmes).", "tier": 4, "ultimate": true, "towers": ["venom", "plague", "miasma"], "damage": 0.2, "grant": {"poison_spread": 1.5, "poison_stacks": 1} }
+				{ "id": "poison", "name": "Poison", "description": "Des poisons qui ne lâchent plus et se propagent.", "talents": [
+					{ "id": "sc_concentrated", "name": "Venin concentré", "description": "+6 % de poison par rang.", "tier": 1, "max_rank": 3, "towers": ["venom", "plague", "miasma"], "damage": 0.06 },
+					{ "id": "sc_paralysis", "name": "Toxine paralysante", "description": "Un monstre empoisonné ralentit de 4 % par rang.", "tier": 1, "max_rank": 3, "towers": ["venom", "plague", "miasma"], "grant": { "slow": 0.04 } },
+					{ "id": "sc_plague", "name": "Peste", "description": "Débloque la Peste.", "tier": 2, "unlock": "plague" },
+					{ "id": "sc_pandemic", "name": "Pandémie", "description": "Un monstre qui meurt empoisonné contamine 1 voisin par rang.", "tier": 2, "max_rank": 3, "towers": ["venom", "plague", "miasma"], "grant": { "death_poison": 1 } },
+					{ "id": "sc_miasma", "name": "Miasmes", "description": "Débloque les Miasmes.", "tier": 3, "unlock": "miasma" },
+					{ "id": "sc_corrosion", "name": "Corrosion", "description": "Chaque coup retire 1 d'armure (jusqu'à 1 par rang).", "tier": 3, "max_rank": 3, "towers": ["venom", "plague", "miasma"], "grant": { "armor_break": 1 } },
+					{ "id": "sc_immunity", "name": "Immunité brisée", "description": "Coupe 33 % des soins et de la régénération par rang.", "tier": 4, "max_rank": 3, "towers": ["venom", "plague", "miasma"], "grant": { "heal_block": 0.33, "heal_block_duration": 1.0 } },
+					{ "id": "sc_carrier", "name": "Porteur sain", "description": "Le poison passe aux monstres voisins.", "tier": 5, "towers": ["venom", "plague", "miasma"], "grant": { "poison_spread": 1.0 } },
+					{ "id": "sc_primal", "name": "Fléau originel", "description": "Pouvoir : pendant 10 s, tes poisons ne s'arrêtent plus.", "tier": 5, "ultimate": true, "power": "plague" }
 				] },
-				{ "id": "bleed", "name": "Saignement", "description": "Renforce tous les saignements.", "talents": [
-					{ "id": "fl_barbs", "name": "Barbelures", "description": "+5 % de dégâts par rang (Épines, Faux).", "tier": 1, "max_rank": 3, "towers": ["thorns", "scythe"], "damage": 0.05 },
-					{ "id": "fl_scythe", "name": "Faux", "description": "Débloque la Faux.", "tier": 2, "unlock": "scythe" },
-					{ "id": "fl_lacerate", "name": "Lacérations", "description": "Tes saignements se cumulent : +1 charge par rang (Épines, Faux).", "tier": 2, "max_rank": 2, "towers": ["thorns", "scythe"], "grant": {"bleed_stacks": 1} },
-					{ "id": "fl_wounds", "name": "Plaies", "description": "+12 % de dégâts par rang (Épines, Faux).", "tier": 3, "max_rank": 2, "towers": ["thorns", "scythe"], "damage": 0.12 },
-					{ "id": "fl_haemorrhage", "name": "Hémorragie", "description": "+10 % de dégâts par rang (Épines, Faux).", "tier": 4, "max_rank": 2, "towers": ["thorns", "scythe"], "damage": 0.1 },
-					{ "id": "fl_bloodbath", "name": "Bain de sang", "description": "Saignement +2 % des PV max/s et une charge de plus, +20 % de dégâts (Épines, Faux).", "tier": 4, "ultimate": true, "towers": ["thorns", "scythe"], "damage": 0.2, "grant": {"bleed": 0.02, "bleed_stacks": 1} }
+				{ "id": "bleed", "name": "Saignement", "description": "Des plaies qui s'ouvrent et achèvent.", "talents": [
+					{ "id": "sc_blades", "name": "Lames", "description": "+6 % de saignement par rang.", "tier": 1, "max_rank": 3, "towers": ["thorns", "scythe"], "damage": 0.06 },
+					{ "id": "sc_hemorrhage", "name": "Hémorragie", "description": "Saignement +5 % par rang et par point de vitesse du monstre.", "tier": 1, "max_rank": 3, "towers": ["thorns", "scythe"], "grant": { "vs_fast": 0.05 } },
+					{ "id": "sc_scythe", "name": "Faux", "description": "Débloque la Faux.", "tier": 2, "unlock": "scythe" },
+					{ "id": "sc_wounds", "name": "Plaies ouvertes", "description": "+1 cumul de saignement par rang.", "tier": 2, "max_rank": 3, "towers": ["thorns", "scythe"], "grant": { "bleed_stacks": 1 } },
+					{ "id": "sc_bloodlet", "name": "Saignée", "description": "Sous 25 % de PV : +20 % de dégâts et de saignement par rang.", "tier": 3, "max_rank": 3, "towers": ["thorns", "scythe"], "grant": { "vs_wounded": 0.2 } },
+					{ "id": "sc_exsanguination", "name": "Exsanguination", "description": "Achève un monstre sous 3 % de PV par rang (moitié contre les gros).", "tier": 4, "max_rank": 3, "towers": ["thorns", "scythe"], "grant": { "execute": 0.03 } },
+					{ "id": "sc_frenzy", "name": "Frénésie", "description": "+1 % de dégâts par monstre tué depuis que la carte était vide (jusqu'à +50 %).", "tier": 5, "towers": ["thorns", "scythe"], "grant": { "streak": 0.01, "streak_cap": 0.5 } },
+					{ "id": "sc_feast", "name": "Curée", "description": "Pouvoir : les monstres qui saignent perdent d'un coup 15 % de leurs PV (5 % les gros).", "tier": 5, "ultimate": true, "power": "feast" }
 				] },
-				{ "id": "frostbite", "name": "Gelure", "description": "Dégâts de gel dans la durée, plus forts sur les monstres ralentis ou gelés.", "talents": [
-					{ "id": "fl_numb", "name": "Engourdissement", "description": "+5 % de dégâts par rang (Givre).", "tier": 1, "max_rank": 3, "towers": ["frost"], "damage": 0.05 },
-					{ "id": "fl_frost_stele", "name": "Stèle de gelure", "description": "Débloque la Stèle de gelure.", "tier": 2, "unlock": "frost_stele" },
-					{ "id": "fl_chilblains", "name": "Engelures", "description": "+10 % de gelure par rang (Stèle).", "tier": 2, "max_rank": 2, "towers": ["frost_stele"], "aura": 0.1 },
-					{ "id": "fl_black_frost", "name": "Froid noir", "description": "+10 % de gelure par rang (Stèle).", "tier": 3, "max_rank": 2, "towers": ["frost_stele"], "aura": 0.1 },
-					{ "id": "fl_spread_frost", "name": "Gel envahissant", "description": "Tes Stèles imprègnent toutes les tourelles voisines, pas seulement celles de glace.", "tier": 4, "imbue_all": true },
-					{ "id": "fl_necrosis", "name": "Nécrose", "description": "+15 % de gelure (Stèle).", "tier": 4, "towers": ["frost_stele"], "aura": 0.15 },
-					{ "id": "fl_eternal_winter", "name": "Hiver éternel", "description": "+50 % de gelure (Stèle) et le Givre gèle 10 % du temps (0,5 s).", "tier": 4, "ultimate": true, "towers": ["frost_stele", "frost"], "aura": 0.5, "grant": {"stun_chance": 0.1, "stun_duration": 0.5} }
+				{ "id": "frostbite", "name": "Gelure", "description": "Le froid qui ronge, posé par la Stèle sur ses voisines.", "talents": [
+					{ "id": "sc_chilblains", "name": "Engelures", "description": "+8 % de gelure par rang (Stèle de gelure).", "tier": 1, "max_rank": 3, "towers": ["frost_stele"], "aura": 0.08 },
+					{ "id": "sc_bite", "name": "Morsure", "description": "+15 % de dégâts par rang contre un monstre ralenti (tourelles du Fléau).", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "vs_slowed": 0.15 } },
+					{ "id": "sc_stele", "name": "Stèle de gelure", "description": "Débloque la Stèle de gelure.", "tier": 2, "unlock": "frost_stele" },
+					{ "id": "sc_crystal", "name": "Cristallisation", "description": "3 % de chance par rang de geler 0,3 s (tourelles du Fléau).", "tier": 2, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "stun_chance": 0.03, "stun_duration": 0.1 } },
+					{ "id": "sc_imbue_frost", "name": "Imprégnation totale", "description": "La Stèle renforce toutes les tourelles voisines, pas seulement la glace.", "tier": 3, "imbue_all": true },
+					{ "id": "sc_blackfrost", "name": "Givre noir", "description": "Tes tourelles du Fléau ignorent 25 % des résistances par rang.", "tier": 3, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "resonance": 0.25 } },
+					{ "id": "sc_glaze", "name": "Verglas", "description": "Les monstres touchés ralentissent de 10 % par rang.", "tier": 4, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "slow": 0.1 } },
+					{ "id": "sc_gnaw", "name": "Froid qui ronge", "description": "Chaque coup retire 1 d'armure, jusqu'à 5.", "tier": 5, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "armor_break": 5 } },
+					{ "id": "sc_iceage", "name": "Ère glaciaire", "description": "Pouvoir : pendant 8 s, les monstres sous gelure ralentissent de 50 % et ne guérissent plus.", "tier": 5, "ultimate": true, "power": "ice_age" }
 				] },
-				{ "id": "shock", "name": "Électrocution", "description": "Monstres électrifiés : ils subissent plus de dégâts de toutes les tourelles.", "talents": [
-					{ "id": "fl_static", "name": "Électricité statique", "description": "+5 % de dégâts par rang (Tesla).", "tier": 1, "max_rank": 3, "towers": ["tesla"], "damage": 0.05 },
-					{ "id": "fl_rod", "name": "Paratonnerre", "description": "Débloque le Paratonnerre.", "tier": 2, "unlock": "lightning_rod" },
-					{ "id": "fl_arcs", "name": "Arcs", "description": "+10 % d'électrification par rang (Paratonnerre).", "tier": 2, "max_rank": 2, "towers": ["lightning_rod"], "aura": 0.1 },
-					{ "id": "fl_jolt", "name": "Secousse", "description": "+10 % d'électrification par rang (Paratonnerre).", "tier": 3, "max_rank": 2, "towers": ["lightning_rod"], "aura": 0.1 },
-					{ "id": "fl_grid", "name": "Réseau", "description": "Tes Paratonnerres imprègnent toutes les tourelles voisines, pas seulement celles de foudre.", "tier": 4, "imbue_all": true },
-					{ "id": "fl_surge", "name": "Surtension", "description": "+15 % d'électrification (Paratonnerre).", "tier": 4, "towers": ["lightning_rod"], "aura": 0.15 },
-					{ "id": "fl_ball_lightning", "name": "Foudre en boule", "description": "+50 % d'électrification (Paratonnerre) ; la Tesla rebondit 1 fois de plus.", "tier": 4, "ultimate": true, "towers": ["lightning_rod", "tesla"], "aura": 0.5, "grant": {"chain": 1} }
+				{ "id": "shock", "name": "Électrocution", "description": "Électrifier, puis faire payer chaque coup.", "talents": [
+					{ "id": "sc_voltage", "name": "Haute tension", "description": "+12 % de puissance du Paratonnerre par rang.", "tier": 1, "max_rank": 3, "towers": ["lightning_rod"], "aura": 0.12 },
+					{ "id": "sc_superconductor", "name": "Supraconducteur", "description": "+10 % de portée du Paratonnerre par rang.", "tier": 1, "max_rank": 3, "towers": ["lightning_rod"], "range": 0.1 },
+					{ "id": "sc_rod", "name": "Paratonnerre", "description": "Débloque le Paratonnerre.", "tier": 2, "unlock": "lightning_rod" },
+					{ "id": "sc_arc", "name": "Arc de fuite", "description": "Un électrifié qui meurt électrifie 1 voisin par rang.", "tier": 2, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe", "tesla", "pylon", "railgun"], "grant": { "death_shock": 1 } },
+					{ "id": "sc_imbue_shock", "name": "Imprégnation totale", "description": "Le Paratonnerre renforce toutes les tourelles voisines, pas seulement la foudre.", "tier": 3, "imbue_all": true },
+					{ "id": "sc_discharge", "name": "Décharge", "description": "+6 % de dégâts par rang (tourelles du Fléau).", "tier": 3, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "damage": 0.06 },
+					{ "id": "sc_overload", "name": "Surcharge", "description": "4 % de chance par rang d'étourdir 0,5 s (tourelles du Fléau).", "tier": 4, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "stun_chance": 0.04, "stun_duration": 0.17 } },
+					{ "id": "sc_faraday", "name": "Cage de Faraday", "description": "Les monstres touchés ne guérissent plus et leurs capacités reviennent deux fois moins vite.", "tier": 5, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "heal_block": 1.0, "heal_block_duration": 1.0, "hex": 0.5 } },
+					{ "id": "sc_chain", "name": "Foudre en chaîne", "description": "Pouvoir : pendant 8 s, les électrifiés partagent 25 % des dégâts que l'un d'eux reçoit.", "tier": 5, "ultimate": true, "power": "chain_lightning" }
 				] }
 			]
 		},
@@ -149,44 +183,55 @@
 			"description": "Renforce l'équipe : +15 % de contrôles et +15 % de puissance d'aura. Gagne sa part des primes en aidant.",
 			"cc": 1.15, "aura": 1.15,
 			"branches": [
-				{ "id": "command", "name": "Commandement", "description": "Tronc commun du Support.", "trunk": true, "talents": [
-					{ "id": "su_presence", "name": "Présence", "description": "+5 % de puissance d'aura par rang.", "tier": 1, "max_rank": 3, "aura": 0.05 },
-					{ "id": "su_will", "name": "Formation", "description": "+8 % de dégâts pour toutes tes tourelles.", "tier": 1, "max_rank": 1, "damage": 0.08 }
+				{ "id": "command", "name": "Commandement", "description": "Tronc commun du Support : ses tourelles de contrôle et de soutien.", "trunk": true, "talents": [
+					{ "id": "su_presence", "name": "Présence", "description": "+6 % de puissance d'aura par rang.", "tier": 1, "max_rank": 3, "towers": ["gong", "scarecrow", "flute", "alembic", "drum", "banner", "totem", "beacon"], "aura": 0.06 },
+					{ "id": "su_grip", "name": "Emprise", "description": "+6 % de chances et de durées de contrôle par rang.", "tier": 1, "max_rank": 3, "towers": ["gong", "scarecrow", "flute", "alembic", "drum", "banner", "totem", "beacon"], "cc": 0.06 },
+					{ "id": "su_radiance", "name": "Rayonnement", "description": "+10 % de portée par rang (auras et contrôles).", "tier": 2, "max_rank": 2, "towers": ["gong", "scarecrow", "flute", "alembic", "drum", "banner", "totem", "beacon"], "range": 0.1 },
+					{ "id": "su_team", "name": "Esprit d'équipe", "description": "+4 % de puissance d'aura par rang et par allié dans la partie.", "tier": 2, "max_rank": 2, "team_aura": 0.04 },
+					{ "id": "su_hand", "name": "Coup de main", "description": "Tes auras donnent aussi +3 % de critique par rang.", "tier": 2, "max_rank": 2, "towers": ["drum", "banner", "totem", "beacon"], "grant": { "aura_crit": 0.03 } }
 				] },
-				{ "id": "tamer", "name": "Dompteur", "description": "Étourdir, effrayer, charmer.", "talents": [
-					{ "id": "su_ring", "name": "Coup de grâce", "description": "+25 % de dégâts par rang contre les monstres étourdis, pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "grant": {"vs_stunned": 0.25} },
+				{ "id": "tamer", "name": "Dompteur", "description": "Effrayer, charmer, achever les étourdis.", "talents": [
+					{ "id": "su_grace", "name": "Coup de grâce", "description": "+15 % de dégâts par rang contre les étourdis (toutes tes tourelles).", "tier": 1, "max_rank": 3, "grant": { "vs_stunned": 0.15 } },
+					{ "id": "su_panic", "name": "Panique", "description": "Peur +0,2 s par rang.", "tier": 1, "max_rank": 3, "towers": ["gong", "scarecrow", "flute"], "grant": { "fear_duration": 0.2 } },
 					{ "id": "su_scarecrow", "name": "Épouvantail", "description": "Débloque l'Épouvantail.", "tier": 2, "unlock": "scarecrow" },
-					{ "id": "su_dread", "name": "Effroi", "description": "+8 % de chances et de durée de contrôle par rang (Gong, Épouvantail, Flûte).", "tier": 2, "max_rank": 2, "towers": ["gong", "scarecrow", "flute"], "cc": 0.08 },
-					{ "id": "su_puppets", "name": "Marionnettiste", "description": "+8 % de chances et de durée de contrôle par rang.", "tier": 3, "max_rank": 2, "cc": 0.08 },
-					{ "id": "su_flute", "name": "Flûte enchantée", "description": "Débloque la Flûte enchantée.", "tier": 4, "unlock": "flute" },
-					{ "id": "su_lasting", "name": "Charme durable", "description": "+10 % de chances et de durée de contrôle (Flûte).", "tier": 4, "towers": ["flute"], "cc": 0.1 },
-					{ "id": "su_beastmaster", "name": "Maître des bêtes", "description": "+30 % de chances et de durée de contrôle pour toutes tes tourelles.", "tier": 4, "ultimate": true, "cc": 0.3 }
+					{ "id": "su_fearspread", "name": "Contagion de la peur", "description": "La peur gagne 1 voisin par rang.", "tier": 2, "max_rank": 3, "towers": ["gong", "scarecrow", "flute"], "grant": { "fear_spread": 1 } },
+					{ "id": "su_flute", "name": "Flûte enchantée", "description": "Débloque la Flûte enchantée.", "tier": 3, "unlock": "flute" },
+					{ "id": "su_training", "name": "Dressage", "description": "Un monstre charmé frappe 20 % plus fort par rang.", "tier": 3, "max_rank": 3, "towers": ["flute"], "grant": { "charm_power": 0.2 } },
+					{ "id": "su_memories", "name": "Mauvais souvenirs", "description": "+10 % de chance par rang de contrôler un monstre déjà contrôlé.", "tier": 4, "max_rank": 3, "towers": ["gong", "scarecrow", "flute"], "grant": { "vs_controlled": 0.1 } },
+					{ "id": "su_menagerie", "name": "Ménagerie", "description": "La Flûte charme 2 monstres à la fois.", "tier": 5, "towers": ["flute"], "grant": { "multishot": 1 } },
+					{ "id": "su_parade", "name": "Grande parade", "description": "Pouvoir : charme 4 s les 5 monstres les plus avancés (hors gros) ; ils reculent et frappent les autres.", "tier": 5, "ultimate": true, "power": "parade" }
 				] },
-				{ "id": "corruptor", "name": "Corrupteur", "description": "Ronger l'armure et couper les soins.", "talents": [
-					{ "id": "su_acid", "name": "Acide", "description": "+6 % de dégâts par rang pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "damage": 0.06 },
+				{ "id": "corruptor", "name": "Corrupteur", "description": "Ronger l'armure, couper les soins, affaiblir.", "talents": [
+					{ "id": "su_rust", "name": "Rouille", "description": "Chaque coup de l'Alambic retire 1 d'armure (jusqu'à 2 par rang).", "tier": 1, "max_rank": 3, "towers": ["alembic"], "grant": { "armor_break": 2 } },
+					{ "id": "su_weaken", "name": "Affaiblissement", "description": "Un monstre touché par l'Alambic coûte 1 vie de moins s'il fuit (au moins 1).", "tier": 1, "max_rank": 3, "towers": ["alembic"], "grant": { "weaken": 0.34 } },
 					{ "id": "su_alembic", "name": "Alambic", "description": "Débloque l'Alambic.", "tier": 2, "unlock": "alembic" },
-					{ "id": "su_corrosion", "name": "Corrosion", "description": "+6 % de cadence par rang (Alambic).", "tier": 2, "max_rank": 2, "towers": ["alembic"], "rate": 0.06 },
-					{ "id": "su_rust", "name": "Rouille", "description": "+8 % de dégâts par rang (Alambic).", "tier": 3, "max_rank": 2, "towers": ["alembic"], "damage": 0.08 },
-					{ "id": "su_dissolve", "name": "Dissolution", "description": "+6 % de portée par rang (Venin, Alambic).", "tier": 4, "max_rank": 2, "towers": ["venom", "alembic"], "range": 0.06 },
-					{ "id": "su_dissolution", "name": "Dissolution", "description": "Ronge 25 % d'armure de plus et coupe 30 % de soins de plus ; +20 % de dégâts (Alambic).", "tier": 4, "ultimate": true, "towers": ["alembic"], "damage": 0.2, "grant": {"shred": 0.25, "heal_block": 0.3} }
+					{ "id": "su_vulnerability", "name": "Vulnérabilité", "description": "Les monstres touchés perdent 10 % de leurs résistances par rang, pour toutes les tourelles.", "tier": 2, "max_rank": 3, "towers": ["alembic"], "grant": { "resist_down": 0.1 } },
+					{ "id": "su_anathema", "name": "Anathème", "description": "Les capacités des monstres touchés reviennent 20 % moins vite par rang.", "tier": 3, "max_rank": 3, "towers": ["alembic"], "grant": { "hex": 0.2 } },
+					{ "id": "su_rot", "name": "Pourriture", "description": "Coupe 20 % de soins de plus par rang.", "tier": 4, "max_rank": 3, "towers": ["alembic"], "grant": { "heal_block": 0.2, "heal_block_duration": 1.0 } },
+					{ "id": "su_salt", "name": "Sel de la terre", "description": "+20 % de dégâts contre les monstres des vagues spéciales (toutes tes tourelles).", "tier": 5, "grant": { "vs_elite": 0.2 } },
+					{ "id": "su_dissolution", "name": "Dissolution", "description": "Pouvoir : pendant 10 s, armure rongée et soins coupés pour tous les monstres.", "tier": 5, "ultimate": true, "power": "dissolution" }
 				] },
-				{ "id": "warlord", "name": "Chef de guerre", "description": "Auras de cadence et de dégâts.", "talents": [
-					{ "id": "su_orders", "name": "Ordres", "description": "+3 % de dégâts par rang pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "damage": 0.03 },
+				{ "id": "warlord", "name": "Chef de guerre", "description": "Cadence, ralliement, vétérans.", "talents": [
+					{ "id": "su_orders", "name": "Ordres", "description": "+5 % de cadence par rang dans tes auras.", "tier": 1, "max_rank": 3, "towers": ["drum", "banner"], "grant": { "aura_rate": 0.05 } },
+					{ "id": "su_charge", "name": "Charge", "description": "5 s après le départ d'une vague : +10 % de cadence par rang dans tes auras.", "tier": 1, "max_rank": 3, "towers": ["drum", "banner"], "grant": { "aura_charge": 0.1 } },
 					{ "id": "su_drum", "name": "Tambour de guerre", "description": "Débloque le Tambour de guerre.", "tier": 2, "unlock": "drum" },
-					{ "id": "su_fanfare", "name": "Fanfare", "description": "+8 % de puissance d'aura par rang (Tambour, Étendard).", "tier": 2, "max_rank": 2, "towers": ["drum", "banner"], "aura": 0.08 },
-					{ "id": "su_bugle", "name": "Clairon", "description": "+8 % de portée par rang (Tambour, Étendard).", "tier": 3, "max_rank": 2, "towers": ["drum", "banner"], "range": 0.08 },
-					{ "id": "su_banner", "name": "Étendard", "description": "Débloque l'Étendard.", "tier": 4, "unlock": "banner" },
-					{ "id": "su_war_cry", "name": "Cri de guerre", "description": "+10 % de puissance d'aura (Tambour, Étendard).", "tier": 4, "towers": ["drum", "banner"], "aura": 0.1 },
-					{ "id": "su_high_chief", "name": "Grand chef", "description": "+40 % de puissance d'aura et +20 % de portée (Tambour, Étendard).", "tier": 4, "ultimate": true, "towers": ["drum", "banner"], "aura": 0.4, "range": 0.2 }
+					{ "id": "su_rally", "name": "Ralliement", "description": "À chaque vie perdue : +8 % de dégâts par rang dans tes auras pendant 8 s.", "tier": 2, "max_rank": 3, "towers": ["drum", "banner"], "grant": { "aura_rally": 0.08 } },
+					{ "id": "su_banner", "name": "Étendard", "description": "Débloque l'Étendard.", "tier": 3, "unlock": "banner" },
+					{ "id": "su_veterans", "name": "Vétérans", "description": "Les tourelles dans tes auras : +0,5 % de dégâts par rang et par monstre tué (jusqu'à +30 %).", "tier": 3, "max_rank": 3, "towers": ["drum", "banner"], "grant": { "aura_veteran": 0.005 } },
+					{ "id": "su_discipline", "name": "Discipline", "description": "+4 % de portée par rang dans tes auras.", "tier": 4, "max_rank": 3, "towers": ["drum", "banner"], "grant": { "aura_range": 0.04 } },
+					{ "id": "su_fanfare", "name": "Fanfare", "description": "Les tourelles dans tes auras ne peuvent plus être brouillées.", "tier": 5, "towers": ["drum", "banner"], "grant": { "aura_nojam": 1.0 } },
+					{ "id": "su_heroism", "name": "Héroïsme", "description": "Pouvoir : pendant 6 s, les tourelles dans tes auras tirent deux fois plus vite.", "tier": 5, "ultimate": true, "power": "heroism" }
 				] },
-				{ "id": "warden", "name": "Gardien", "description": "Auras de contrôle et de portée.", "talents": [
-					{ "id": "su_watch", "name": "Veille", "description": "+4 % de portée par rang pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "range": 0.04 },
+				{ "id": "warden", "name": "Gardien", "description": "Le protecteur de la base.", "talents": [
+					{ "id": "su_watch", "name": "Veille", "description": "+5 % de portée par rang dans tes auras.", "tier": 1, "max_rank": 3, "towers": ["totem", "beacon"], "grant": { "aura_range": 0.05 } },
+					{ "id": "su_guard", "name": "Garde rapprochée", "description": "Dans tes auras : +8 % par rang contre les monstres passés à la moitié de la route.", "tier": 1, "max_rank": 3, "towers": ["totem", "beacon"], "grant": { "aura_late": 0.08 } },
 					{ "id": "su_totem", "name": "Totem des esprits", "description": "Débloque le Totem des esprits.", "tier": 2, "unlock": "totem" },
-					{ "id": "su_spirits", "name": "Esprits", "description": "+8 % de puissance d'aura par rang (Totem, Phare).", "tier": 2, "max_rank": 2, "towers": ["totem", "beacon"], "aura": 0.08 },
-					{ "id": "su_horizon", "name": "Horizon", "description": "+4 % de portée par rang pour toutes tes tourelles.", "tier": 3, "max_rank": 2, "range": 0.04 },
-					{ "id": "su_beacon", "name": "Phare", "description": "Débloque le Phare.", "tier": 4, "unlock": "beacon" },
-					{ "id": "su_ancestors", "name": "Ancêtres", "description": "+10 % de puissance d'aura (Totem, Phare).", "tier": 4, "towers": ["totem", "beacon"], "aura": 0.1 },
-					{ "id": "su_ancient_light", "name": "Lumière des anciens", "description": "+40 % de puissance d'aura et +30 % de portée (Totem, Phare).", "tier": 4, "ultimate": true, "towers": ["totem", "beacon"], "aura": 0.4, "range": 0.3 }
+					{ "id": "su_spirits", "name": "Esprits gardiens", "description": "Les tourelles dans l'aura du Totem : +3 % de chance d'étourdir par rang.", "tier": 2, "max_rank": 3, "towers": ["totem"], "grant": { "aura_stun": 0.03 } },
+					{ "id": "su_beacon", "name": "Phare", "description": "Débloque le Phare.", "tier": 3, "unlock": "beacon" },
+					{ "id": "su_horizon", "name": "Horizon", "description": "+8 % de portée du Phare par rang.", "tier": 3, "max_rank": 3, "towers": ["beacon"], "range": 0.08 },
+					{ "id": "su_sanctuary", "name": "Sanctuaire", "description": "Dans tes auras : les monstres sur le dernier quart de la route ralentissent de 10 % par rang.", "tier": 4, "max_rank": 3, "towers": ["totem", "beacon"], "grant": { "aura_sanct": 0.1 } },
+					{ "id": "su_light", "name": "Lumière", "description": "Dans tes auras, les tourelles touchent les monstres insensibles à leurs coups (moitié des dégâts).", "tier": 5, "towers": ["totem", "beacon"], "grant": { "aura_light": 0.5 } },
+					{ "id": "su_retreat", "name": "Repli", "description": "Pouvoir (recharge 5 vagues) : tous les monstres reculent de 4 cases.", "tier": 5, "ultimate": true, "power": "retreat" }
 				] }
 			]
 		},
@@ -196,79 +241,104 @@
 			"description": "Vit pour l'or : +15 % sur ses parts de primes.",
 			"bounty": 1.15,
 			"branches": [
-				{ "id": "hoard", "name": "Magot", "description": "Tronc commun du Gobelin.", "trunk": true, "talents": [
-					{ "id": "go_purse", "name": "Bourse", "description": "+20 or de départ par rang.", "tier": 1, "max_rank": 3, "start_gold": 20 },
-					{ "id": "go_thrift", "name": "Pingrerie", "description": "+3 % sur ses parts de primes.", "tier": 1, "max_rank": 1, "bounty": 0.03 }
+				{ "id": "hoard", "name": "Bourse", "description": "Tronc commun du Gobelin : son or.", "trunk": true, "talents": [
+					{ "id": "go_greed", "name": "Avarice", "description": "+6 % sur tes primes par rang.", "tier": 1, "max_rank": 3, "bounty": 0.06 },
+					{ "id": "go_stocking", "name": "Bas de laine", "description": "+10 au plafond d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest_cap": 10 },
+					{ "id": "go_loot", "name": "Pillage", "description": "3 % de chance par rang qu'un monstre tué rapporte 5 or de plus.", "tier": 2, "max_rank": 2, "loot": 0.03 },
+					{ "id": "go_smuggle", "name": "Contrebande", "description": "+40 or de départ par rang.", "tier": 2, "max_rank": 2, "start_gold": 40 },
+					{ "id": "go_loan", "name": "Prêt", "description": "Emprunt de 150 or par rang au départ, rendu ×1,2 à partir de la vague 10.", "tier": 2, "max_rank": 2, "loan": 150 }
 				] },
-				{ "id": "hunter", "name": "Chasseur de primes", "description": "Gains sur les monstres tués.", "talents": [
-					{ "id": "go_greed", "name": "Âpreté", "description": "+4 % sur ses parts de primes par rang.", "tier": 1, "max_rank": 3, "bounty": 0.04 },
+				{ "id": "hunter", "name": "Chasseur de primes", "description": "Chaque tête a un prix.", "talents": [
+					{ "id": "go_headprice", "name": "Prime de tête", "description": "+20 % de prime par rang sur les boss et gros monstres.", "tier": 1, "max_rank": 3, "boss_bounty": 0.2 },
+					{ "id": "go_flair", "name": "Flair", "description": "+10 % de rayon du Comptoir par rang.", "tier": 1, "max_rank": 3, "towers": ["counter"], "range": 0.1 },
 					{ "id": "go_counter", "name": "Comptoir", "description": "Débloque le Comptoir.", "tier": 2, "unlock": "counter" },
-					{ "id": "go_trophies", "name": "Trophées", "description": "+4 % sur ses parts de primes par rang.", "tier": 2, "max_rank": 2, "bounty": 0.04 },
-					{ "id": "go_quarry", "name": "Curée", "description": "+10 % de prime en plus par rang (Comptoir).", "tier": 3, "max_rank": 2, "towers": ["counter"], "aura": 0.1 },
-					{ "id": "go_bounty", "name": "Grand chasseur", "description": "+6 % sur ses parts de primes par rang.", "tier": 4, "max_rank": 2, "bounty": 0.06 },
-					{ "id": "go_loot_king", "name": "Roi du butin", "description": "+20 % sur ses parts de primes ; Comptoir +50 % de bonus.", "tier": 4, "ultimate": true, "towers": ["counter"], "bounty": 0.2, "aura": 0.5 }
+					{ "id": "go_jackpot", "name": "Jackpot", "description": "1 % de chance par rang qu'un monstre rapporte ×10.", "tier": 2, "max_rank": 3, "jackpot": 0.01 },
+					{ "id": "go_trophies", "name": "Trophées", "description": "Chaque gros monstre tué : +2 % de primes par rang pour la partie.", "tier": 3, "max_rank": 3, "trophy": 0.02 },
+					{ "id": "go_contract", "name": "Contrat", "description": "Le premier monstre tué de chaque vague rapporte ×2, ×3 puis ×4.", "tier": 4, "max_rank": 3, "contract": 1.0 },
+					{ "id": "go_shared", "name": "Butin partagé", "description": "Tes jackpots paient aussi tes alliés (moitié du gain).", "tier": 5, "jackpot_share": 0.5 },
+					{ "id": "go_rush", "name": "Ruée vers l'or", "description": "Pouvoir : pendant 12 s, tout monstre tué rapporte le double (alliés compris).", "tier": 5, "ultimate": true, "power": "gold_rush" }
 				] },
-				{ "id": "usurer", "name": "Usurier", "description": "Intérêts.", "talents": [
-					{ "id": "go_stocking", "name": "Bas de laine", "description": "+0,5 % d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest": 0.005 },
-					{ "id": "go_chest", "name": "Coffre", "description": "Plafond des intérêts +10 par rang.", "tier": 2, "max_rank": 3, "interest_cap": 10 },
-					{ "id": "go_loan", "name": "Placement", "description": "+0,5 % d'intérêts par rang.", "tier": 3, "max_rank": 2, "interest": 0.005 },
-					{ "id": "go_bank", "name": "Banque", "description": "Plafond des intérêts +20 par rang.", "tier": 4, "max_rank": 2, "interest_cap": 20 },
-					{ "id": "go_banker", "name": "Banquier", "description": "+2 % d'intérêts et plafond +50.", "tier": 4, "ultimate": true, "interest": 0.02, "interest_cap": 50 }
+				{ "id": "usurer", "name": "Usurier", "description": "L'or qui dort rapporte.", "talents": [
+					{ "id": "go_rate", "name": "Taux", "description": "+1 % d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest": 0.01 },
+					{ "id": "go_vault", "name": "Coffre-fort", "description": "+20 au plafond d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest_cap": 20 },
+					{ "id": "go_rent", "name": "Rente", "description": "+5 or fixes par vague et par rang.", "tier": 2, "max_rank": 3, "rent": 5 },
+					{ "id": "go_compound", "name": "Intérêts composés", "description": "Tes intérêts comptent aussi 10 % par rang de l'or investi dans tes tourelles.", "tier": 3, "max_rank": 3, "compound": 0.1 },
+					{ "id": "go_bigloan", "name": "Gros emprunt", "description": "Emprunt de 233 or par rang au départ, rendu ×1,2 à partir de la vague 10.", "tier": 4, "max_rank": 3, "loan": 233 },
+					{ "id": "go_saver", "name": "Épargnant", "description": "Une victoire rapporte +2 % d'expérience par 100 or gardés.", "tier": 5, "saver": 0.02 },
+					{ "id": "go_cashin", "name": "Encaissement", "description": "Pouvoir : touche tout de suite 3 vagues d'intérêts, sans plafond.", "tier": 5, "ultimate": true, "power": "cash_in" }
 				] },
-				{ "id": "patron", "name": "Mécène", "description": "Primes pour toute l'équipe, dons moins chers.", "talents": [
-					{ "id": "go_generous", "name": "Générosité", "description": "Tes dons perdent 10 points de moins par rang.", "tier": 1, "max_rank": 3, "gift_bonus": 0.1 },
-					{ "id": "go_patronage", "name": "Patronage", "description": "+3 % sur les parts de primes de toute l'équipe (toi compris) par rang.", "tier": 2, "max_rank": 3, "team_bounty": 0.03 },
-					{ "id": "go_donor", "name": "Donateur", "description": "Tes dons perdent 10 points de moins par rang.", "tier": 3, "max_rank": 2, "gift_bonus": 0.1 },
-					{ "id": "go_endowment", "name": "Fondation", "description": "+40 or de départ par rang.", "tier": 4, "max_rank": 2, "start_gold": 40 },
-					{ "id": "go_grand_patron", "name": "Grand mécène", "description": "+10 % sur les parts de primes de toute l'équipe.", "tier": 4, "ultimate": true, "team_bounty": 0.1 }
+				{ "id": "patron", "name": "Mécène", "description": "L'or de l'équipe.", "talents": [
+					{ "id": "go_generosity", "name": "Générosité", "description": "Dons : l'allié reçoit 8 % de plus par rang.", "tier": 1, "max_rank": 3, "gift_bonus": 0.08 },
+					{ "id": "go_fund", "name": "Fonds commun", "description": "+3 % de primes par rang pour toute l'équipe.", "tier": 1, "max_rank": 3, "team_bounty": 0.03 },
+					{ "id": "go_scholarship", "name": "Bourse d'études", "description": "Chaque allié commence avec +30 or par rang.", "tier": 2, "max_rank": 3, "ally_start": 30 },
+					{ "id": "go_invest", "name": "Investissement", "description": "Un don te rend 10 % par rang de son montant 3 vagues plus tard.", "tier": 3, "max_rank": 3, "invest": 0.1 },
+					{ "id": "go_procurement", "name": "Commande publique", "description": "Tes alliés paient leurs améliorations 3 % moins cher par rang.", "tier": 4, "max_rank": 3, "team_discount": 0.03 },
+					{ "id": "go_patronage", "name": "Mécénat d'art", "description": "Tes alliés touchent aussi la moitié de tes intérêts.", "tier": 5, "share_interest": 0.5 },
+					{ "id": "go_golden", "name": "Âge d'or", "description": "Pouvoir : chaque allié reçoit tout de suite 100 or, +10 par vague passée.", "tier": 5, "ultimate": true, "power": "golden_age" }
 				] },
-				{ "id": "gambler", "name": "Parieur", "description": "Lancer les vagues en avance et n'en laisser passer aucune.", "talents": [
-					{ "id": "go_stake", "name": "Mise", "description": "+30 or de départ par rang.", "tier": 1, "max_rank": 3, "start_gold": 30 },
-					{ "id": "go_bet", "name": "Pari", "description": "+50 % d'or par rang quand une vague est lancée en avance.", "tier": 2, "max_rank": 3, "early_bonus": 0.5 },
-					{ "id": "go_double", "name": "Sans fausse note", "description": "+6 or par rang à chaque vague passée sans perdre de vie.", "tier": 3, "max_rank": 2, "clean_gold": 6 },
-					{ "id": "go_jackpot", "name": "Jackpot", "description": "+50 % d'or par rang quand une vague est lancée en avance.", "tier": 4, "max_rank": 2, "early_bonus": 0.5 },
-					{ "id": "go_all_in", "name": "Tout ou rien", "description": "Or des vagues lancées en avance +100 %, +15 or par vague sans perte de vie.", "tier": 4, "ultimate": true, "early_bonus": 1, "clean_gold": 15 }
+				{ "id": "gambler", "name": "Parieur", "description": "Le risque paie.", "talents": [
+					{ "id": "go_daring", "name": "Audace", "description": "Or des vagues lancées en avance +50 % par rang.", "tier": 1, "max_rank": 3, "early_bonus": 0.5 },
+					{ "id": "go_flawless", "name": "Sans faute", "description": "+10 or par rang pour une vague franchie sans fuite.", "tier": 1, "max_rank": 3, "clean_gold": 10 },
+					{ "id": "go_hothand", "name": "Main chaude", "description": "Chaque vague sans fuite d'affilée : +3 or de plus par rang.", "tier": 2, "max_rank": 3, "hot_hand": 3 },
+					{ "id": "go_double", "name": "Double ou rien", "description": "Une vague lancée en avance rapporte +34 % de son or par rang.", "tier": 3, "max_rank": 3, "early_wave": 0.34 },
+					{ "id": "go_risk", "name": "Prise de risque", "description": "+2 % de primes par rang et par vie perdue (jusqu'à +30 %).", "tier": 4, "max_rank": 3, "risk": 0.02 },
+					{ "id": "go_nerve", "name": "Nerfs d'acier", "description": "À 5 vies ou moins, tes primes sont ×1,5.", "tier": 5, "nerve": 0.5 },
+					{ "id": "go_allin", "name": "Va-tout", "description": "Pouvoir : pendant 15 s, chaque monstre tué rapporte ×3, mais chaque fuite coûte 1 vie de plus.", "tier": 5, "ultimate": true, "power": "all_in" }
 				] }
 			]
 		},
 		{
 			"id": "mason", "name": "Bâtisseur", "color": "#c9a27a",
 			"heritage": { "id": "he_mason", "name": "Héritage du Bâtisseur", "description": "Construire et améliorer coûte 10 % de moins, la revente rend 10 % de plus.", "tier": 1, "build_cost": 0.1, "sell_bonus": 0.1 },
-			"description": "Construit mieux et moins cher : +50 or de départ. Seulement les tourelles du tronc commun.",
+			"description": "Construit mieux : +50 or de départ. Seulement les tourelles du tronc commun.",
 			"start_gold": 50,
 			"branches": [
-				{ "id": "workshop", "name": "Atelier", "description": "Tronc commun du Bâtisseur.", "trunk": true, "talents": [
-					{ "id": "bu_tools", "name": "Outils", "description": "Construire et améliorer coûte 2 % de moins par rang.", "tier": 1, "max_rank": 3, "build_cost": 0.02 },
-					{ "id": "bu_plans", "name": "Plans", "description": "+3 % de dégâts pour toutes tes tourelles.", "tier": 1, "max_rank": 1, "damage": 0.03 }
+				{ "id": "workshop", "name": "Chantier", "description": "Tronc commun du Bâtisseur : les 11 tourelles du tronc commun.", "trunk": true, "talents": [
+					{ "id": "ma_foundations", "name": "Fondations", "description": "+6 % de dégâts par rang (tronc commun).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "damage": 0.06 },
+					{ "id": "ma_masonry", "name": "Maçonnerie", "description": "+5 % de cadence par rang (tronc commun).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "rate": 0.05 },
+					{ "id": "ma_wall", "name": "Mur porteur", "description": "+4 % de dégâts par rang et par tourelle à toi qui touche celle-ci.", "tier": 2, "max_rank": 2, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "grant": { "wall": 0.04 } },
+					{ "id": "ma_plans", "name": "Plans soignés", "description": "Tes tourelles niveau 5 et plus : +8 % de portée par rang.", "tier": 2, "max_rank": 2, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "grant": { "plans": 0.08 } },
+					{ "id": "ma_thrifty", "name": "Économe", "description": "Construire et améliorer coûte 5 % de moins par rang.", "tier": 2, "max_rank": 2, "build_cost": 0.05 }
 				] },
-				{ "id": "architect", "name": "Architecte", "description": "Construire et améliorer moins cher.", "talents": [
-					{ "id": "bu_quote", "name": "Devis", "description": "Construire et améliorer coûte 3 % de moins par rang.", "tier": 1, "max_rank": 3, "build_cost": 0.03 },
-					{ "id": "bu_materials", "name": "Matériaux", "description": "Construire et améliorer coûte 3 % de moins par rang.", "tier": 2, "max_rank": 3, "build_cost": 0.03 },
-					{ "id": "bu_engineering", "name": "Ingénierie", "description": "+4 % de dégâts par rang pour toutes tes tourelles.", "tier": 3, "max_rank": 2, "damage": 0.04 },
-					{ "id": "bu_masterpiece", "name": "Chef-d'œuvre", "description": "Construire et améliorer coûte 4 % de moins par rang.", "tier": 4, "max_rank": 2, "build_cost": 0.04 },
-					{ "id": "bu_master_builder", "name": "Maître d'œuvre", "description": "Construire et améliorer coûte encore 10 % de moins.", "tier": 4, "ultimate": true, "build_cost": 0.1 }
+				{ "id": "architect", "name": "Architecte", "description": "Les grandes œuvres : étages, voisinage, chef-d'œuvre.", "talents": [
+					{ "id": "ma_keystone", "name": "Pierre angulaire", "description": "Une tourelle entourée de 3 des tiennes : +10 % de dégâts par rang.", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "grant": { "keystone": 0.1 } },
+					{ "id": "ma_symmetry", "name": "Symétrie", "description": "À côté d'une tourelle identique : +6 % de dégâts par rang.", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "grant": { "twin": 0.06 } },
+					{ "id": "ma_floor", "name": "Étage", "description": "Débloque le niveau 6 des tourelles du tronc commun.", "tier": 2, "floors": 1 },
+					{ "id": "ma_belvedere", "name": "Belvédère", "description": "+5 % de portée par rang (tronc commun).", "tier": 3, "max_rank": 2, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "range": 0.05 },
+					{ "id": "ma_buttress", "name": "Contreforts", "description": "Tes tourelles niveau 6 et plus : +8 % de cadence par rang.", "tier": 3, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "grant": { "buttress": 0.08 } },
+					{ "id": "ma_floor2", "name": "Second étage", "description": "Débloque le niveau 7 des tourelles du tronc commun.", "tier": 4, "floors": 1 },
+					{ "id": "ma_crown", "name": "Clé de voûte", "description": "Ta tourelle la plus chère : +10 % de dégâts par rang.", "tier": 4, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "grant": { "crown": 0.1 } },
+					{ "id": "ma_masterpiece", "name": "Chef-d'œuvre", "description": "Ta première tourelle niveau 7 devient un chef-d'œuvre : dégâts ×2.", "tier": 5, "towers": ["crossbow", "sentinel", "dart", "cannon", "frost", "tesla", "brazier", "salamander", "venom", "thorns", "gong"], "grant": { "masterpiece": 1.0 } },
+					{ "id": "ma_genius", "name": "Coup de génie", "description": "Pouvoir à viser : la tourelle visée gagne un niveau gratuitement.", "tier": 5, "ultimate": true, "power": "genius" }
 				] },
-				{ "id": "scrapper", "name": "Ferrailleur", "description": "Revendre rapporte plus.", "talents": [
-					{ "id": "bu_salvage", "name": "Récupération", "description": "La revente rend 3 % de plus par rang.", "tier": 1, "max_rank": 3, "sell_bonus": 0.03 },
-					{ "id": "bu_dismantle", "name": "Démontage", "description": "La revente rend 3 % de plus par rang.", "tier": 2, "max_rank": 3, "sell_bonus": 0.03 },
-					{ "id": "bu_reuse", "name": "Réemploi", "description": "Construire et améliorer coûte 3 % de moins par rang.", "tier": 3, "max_rank": 2, "build_cost": 0.03 },
-					{ "id": "bu_recycle", "name": "Recyclage", "description": "La revente rend 1 % de plus par rang.", "tier": 4, "max_rank": 2, "sell_bonus": 0.01 },
-					{ "id": "bu_full_recycling", "name": "Recyclage total", "description": "La revente rend 10 % de plus, construire coûte 5 % de moins.", "tier": 4, "ultimate": true, "sell_bonus": 0.1, "build_cost": 0.05 }
+				{ "id": "scrapper", "name": "Ferrailleur", "description": "Recycler et déplacer.", "talents": [
+					{ "id": "ma_resale", "name": "Revente", "description": "+5 % de revente par rang (plafond 90 %).", "tier": 1, "max_rank": 3, "sell_bonus": 0.05 },
+					{ "id": "ma_mover", "name": "Déménageur", "description": "Déplace une tourelle gratuitement une fois par vague.", "tier": 1, "moves": 1 },
+					{ "id": "ma_parts", "name": "Pièces détachées", "description": "Vendre une tourelle donne +5 % de dégâts par rang à la prochaine construite.", "tier": 2, "max_rank": 3, "spare": 0.05 },
+					{ "id": "ma_scrap", "name": "Ferraille", "description": "Les véhicules tués rapportent +30 % par rang.", "tier": 3, "max_rank": 3, "scrap": 0.3 },
+					{ "id": "ma_salvage", "name": "Récupération", "description": "+4 % de cadence par rang (toutes tes tourelles).", "tier": 3, "max_rank": 2, "rate": 0.04 },
+					{ "id": "ma_tinker", "name": "Bricolage", "description": "Une tourelle déplacée tire 10 % plus vite par rang pendant 30 s.", "tier": 4, "max_rank": 3, "tinker": 0.1 },
+					{ "id": "ma_express", "name": "Démontage express", "description": "Un déplacement de plus par vague.", "tier": 5, "moves": 1 },
+					{ "id": "ma_remount", "name": "Remontage", "description": "Pouvoir : pendant 15 s, déplace et revends (à 100 %) autant de tourelles que tu veux.", "tier": 5, "ultimate": true, "power": "remount" }
 				] },
-				{ "id": "foreman", "name": "Contremaître", "description": "Faire baisser les coûts autour de lui, alliés compris.", "talents": [
-					{ "id": "bu_scaffold", "name": "Échafaudages", "description": "+4 % de portée par rang pour toutes tes tourelles.", "tier": 1, "max_rank": 3, "range": 0.04 },
-					{ "id": "bu_worksite", "name": "Chantier", "description": "Débloque le Chantier.", "tier": 2, "unlock": "worksite" },
-					{ "id": "bu_crew", "name": "Équipe", "description": "+3 % de cadence par rang pour toutes tes tourelles.", "tier": 2, "max_rank": 2, "rate": 0.03 },
-					{ "id": "bu_bulk", "name": "Achats groupés", "description": "Construire et améliorer coûte 3 % de moins par rang.", "tier": 3, "max_rank": 2, "build_cost": 0.03 },
-					{ "id": "bu_finish", "name": "Grands travaux", "description": "+15 % de réduction et de portée par rang (Chantier).", "tier": 4, "max_rank": 2, "towers": ["worksite"], "aura": 0.15, "range": 0.15 },
-					{ "id": "bu_grand_works", "name": "Chantier du siècle", "description": "+50 % de réduction et +30 % de portée (Chantier).", "tier": 4, "ultimate": true, "towers": ["worksite"], "aura": 0.5, "range": 0.3 }
+				{ "id": "foreman", "name": "Contremaître", "description": "Le Chantier qui fait tourner l'équipe.", "talents": [
+					{ "id": "ma_pace", "name": "Cadence de chantier", "description": "Les tourelles près du Chantier : +5 % de cadence par rang (alliés compris).", "tier": 1, "max_rank": 3, "towers": ["worksite"], "grant": { "aura_rate": 0.05 } },
+					{ "id": "ma_quote", "name": "Devis", "description": "Le Chantier réduit les prix de 3 % de plus par rang.", "tier": 1, "max_rank": 3, "towers": ["worksite"], "grant": { "aura_discount": 0.03 } },
+					{ "id": "ma_worksite", "name": "Chantier", "description": "Débloque le Chantier.", "tier": 2, "unlock": "worksite" },
+					{ "id": "ma_overtime", "name": "Heures sup", "description": "10 premières secondes de chaque vague : +10 % de dégâts par rang près du Chantier.", "tier": 2, "max_rank": 3, "towers": ["worksite"], "grant": { "aura_rush": 0.1 } },
+					{ "id": "ma_crane", "name": "Grue", "description": "+15 % de rayon du Chantier par rang.", "tier": 3, "max_rank": 3, "towers": ["worksite"], "range": 0.15 },
+					{ "id": "ma_nightshift", "name": "Équipe de nuit", "description": "Les tourelles près du Chantier tirent aussi sur les volants.", "tier": 4, "towers": ["worksite"], "grant": { "aura_air": 1.0 } },
+					{ "id": "ma_mates", "name": "Compagnons", "description": "Les tourelles près du Chantier : +5 % de dégâts par rang.", "tier": 4, "max_rank": 2, "towers": ["worksite"], "grant": { "aura_damage": 0.05 } },
+					{ "id": "ma_elbow", "name": "Coup de collier", "description": "Pouvoir : pendant 10 s, les tourelles près du Chantier : +50 % de dégâts et de cadence.", "tier": 5, "ultimate": true, "power": "elbow_grease" }
 				] },
-				{ "id": "digger", "name": "Terrassier", "description": "Raser arbres et rochers pour y construire, poser des cases bonus.", "talents": [
-					{ "id": "bu_survey", "name": "Défrichage", "description": "Raser 2 arbres ou rochers par partie, par rang (la case devient constructible).", "tier": 1, "max_rank": 3, "raze_charges": 2 },
-					{ "id": "bu_foundations", "name": "Fondations", "description": "+3 % de dégâts par rang pour toutes tes tourelles.", "tier": 2, "max_rank": 3, "damage": 0.03 },
-					{ "id": "bu_terrace", "name": "Géomancie", "description": "Poser 1 case bonus (Colline, Cristal ou Rune) par partie, par rang.", "tier": 3, "max_rank": 2, "tile_charges": 1 },
-					{ "id": "bu_bedrock", "name": "Grands terrassements", "description": "1 case bonus et 2 arbres ou rochers de plus par partie, par rang.", "tier": 4, "max_rank": 2, "tile_charges": 1, "raze_charges": 2 },
-					{ "id": "bu_cartographer", "name": "Cartographe", "description": "3 cases bonus et 4 arbres ou rochers de plus par partie.", "tier": 4, "ultimate": true, "tile_charges": 3, "raze_charges": 4 }
+				{ "id": "digger", "name": "Terrassier", "description": "Façonner la carte.", "talents": [
+					{ "id": "ma_clearing", "name": "Défrichage", "description": "Raser 2 arbres ou rochers par rang et par partie.", "tier": 1, "max_rank": 3, "raze_charges": 2 },
+					{ "id": "ma_geomancy", "name": "Géomancie", "description": "Poser 1 Colline, Cristal ou Rune par rang et par partie.", "tier": 1, "max_rank": 3, "tile_charges": 1 },
+					{ "id": "ma_ditch", "name": "Fossé", "description": "Creuser 1 fossé par rang : les monstres qui passent à côté ralentissent de 25 %.", "tier": 2, "max_rank": 3, "ditch_tiles": 1 },
+					{ "id": "ma_vein", "name": "Filon", "description": "Poser 1 Filon d'or par rang et par partie.", "tier": 3, "max_rank": 3, "vein_tiles": 1 },
+					{ "id": "ma_mound", "name": "Remblai", "description": "Poser 1 Butte par rang (+40 % de portée).", "tier": 4, "max_rank": 3, "mound_tiles": 1 },
+					{ "id": "ma_fertile", "name": "Terre fertile", "description": "Tes tourelles profitent deux fois plus des cases spéciales.", "tier": 5, "fertile": 1.0 },
+					{ "id": "ma_reshape", "name": "Remodelage", "description": "Pouvoir : toutes tes charges (raser, poser, creuser) se rechargent.", "tier": 5, "ultimate": true, "power": "reshape" }
 				] }
 			]
 		}
@@ -282,8 +352,8 @@
 	"difficulties": [
 		{ "id": "easy", "name": "Facile", "hp": 1.0, "lives": 30, "gold": 1.2, "reward": 1.15, "xp": 0.8 },
 		{ "id": "normal", "name": "Normal", "hp": 1.3, "lives": 20, "gold": 1.0, "reward": 1.0, "xp": 1.0 },
-		{ "id": "hard", "name": "Difficile", "hp": 1.45, "lives": 15, "gold": 1.05, "reward": 1.0, "xp": 1.3 },
-		{ "id": "nightmare", "name": "Cauchemar", "hp": 1.65, "lives": 12, "gold": 1.0, "reward": 0.9, "xp": 1.6, "armor": 2 }
+		{ "id": "hard", "name": "Difficile", "hp": 1.45, "lives": 15, "gold": 1.05, "reward": 1.0, "xp": 1.5 },
+		{ "id": "nightmare", "name": "Cauchemar", "hp": 1.65, "lives": 12, "gold": 1.0, "reward": 0.9, "xp": 2.0, "armor": 2 }
 	],
 	"special_tiles": [
 		{ "char": "^", "id": "hill", "name": "Colline", "color": "#d8c27a", "description": "+25 % de portée", "range": 1.25 },
