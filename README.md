@@ -22,6 +22,14 @@ Au lancement : **Continuer** (liste des comptes de l'appareil, avec le pseudo et
 chaque classe, dans `user://accounts/<id>.json`. Un fichier illisible n'est jamais effacé : il est mis de côté
 (`<id>.invalid.json`) et signalé. Supprimer un compte demande confirmation.
 
+**Historique et étoiles** : chaque partie terminée s'ajoute à l'historique du compte (100 dernières : date, carte,
+difficulté, résultat, vies, classe et niveau, XP, coéquipiers et leur classe). « Historique des parties » (menu)
+les liste avec des filtres (ta classe, coéquipier ou seul, classe d'un coéquipier, carte), le bilan des victoires
+et un tableau des étoiles par carte et par difficulté. Une victoire en coopération rapporte des étoiles selon les
+vies gardées : ★★★ à 90 % ou plus des vies de départ (18 sur 20 en Normal seul), ★★ à la moitié, ★ sinon ; le
+record est gardé même quand la partie sort de l'historique. Dans le salon, chaque carte affiche les étoiles du compte
+à la difficulté votée. L'historique fait partie du compte (envoyé avec lui d'un appareil à l'autre).
+
 **Passer d'un appareil à l'autre** (ex. du PC au téléphone), sur le même Wi-Fi : sur l'appareil qui reçoit,
 « Recevoir un compte » (accueil ou « Continuer ») affiche un code à 4 chiffres ; sur l'autre, « Continuer » →
 « Envoyer » sur le compte, choisir l'appareil et taper le code. Le compte reçu est vérifié, montré (pseudo et niveaux),
@@ -181,6 +189,7 @@ ainsi que `version/name` **et** `version/code` dans `export_presets.cfg`.
 data/game_data.json      Tourelles, monstres, vagues et cartes (modifiable sans toucher au code)
 scenes/main.tscn         Scène de départ
 scripts/core/            Validation partagée (Check), réglages, comptes et progression
+scripts/core/history/    Historique des parties et étoiles des cartes, validation à la relecture
 scripts/data/            Chargement et validation des données, cartes et chemins
 scripts/data/talents/    Talents : schéma, règles, validation des arbres, bonus d'un joueur
 scripts/sim/match/       Simulation (hôte) : déroulé de la partie, commandes, or, pouvoirs
@@ -190,6 +199,7 @@ scripts/net/             Réseau local : session ENet, RPC, découverte UDP, bou
 scripts/net/transfer/    Transfert d'un compte entre deux appareils
 scripts/ui/main.gd       Racine de l'application : un écran à la fois
 scripts/ui/screens/      Accueil, comptes, menu, rejoindre, envoyer / recevoir un compte
+scripts/ui/screens/history/  Écran de l'historique : filtres, parties, étoiles par carte
 scripts/ui/lobby/        Salon d'attente et arbre de talents
 scripts/ui/game/         Écran de partie : barre du haut, panneaux, fin de partie, textes
 scripts/ui/state/        État affiché, reconstruit à partir des instantanés de l'hôte
