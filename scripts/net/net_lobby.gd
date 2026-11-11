@@ -6,7 +6,7 @@ extends RefCounted
 ## l'arbre et au niveau annoncé) et limitée en fréquence.
 ## Limite connue : le niveau annoncé n'est pas vérifiable (progression locale à chaque appareil).
 
-const DEFAULT_SETTINGS := {"mode": 0, "map": 0, "rhythm": 0, "launch": 0}
+const DEFAULT_SETTINGS := {"mode": 0, "map": 0, "rhythm": 0, "launch": 0, "heritage": SimMatch.Heritage.ON}
 const CHOICE_INTERVAL_MS := 150
 
 var net: Node
@@ -41,11 +41,12 @@ func admit(id: int, raw_name: Variant, raw_version: Variant) -> String:
 	return ""
 
 
-## Option de partie choisie par l'hôte (mode, carte, rythme, lancement).
+## Option de partie choisie par l'hôte (mode, carte, rythme, lancement, héritage).
 func set_option(key: String, value: int) -> void:
 	var limits := {
 		"mode": net.MODE_NAMES.size(), "map": Data.db.maps.size(),
 		"rhythm": SimMatch.RHYTHM_NAMES.size(), "launch": SimMatch.LAUNCH_NAMES.size(),
+		"heritage": SimMatch.HERITAGE_NAMES.size(),
 	}
 	if not limits.has(key) or value < 0 or value >= limits[key]:
 		return
@@ -103,11 +104,7 @@ func forget(id: int) -> void:
 
 ## Liste des joueurs pour la partie : [[id, nom, couleur, bâtisseur, talents, héritage], ...]
 func roster() -> Array:
-	var out := []
-	for id in net.ordered_ids():
-		var p: Dictionary = net.players[id]
-		out.append([id, p["name"], p["color"], p["builder"], p["talents"], p["heritage"]])
-	return out
+	return NetPayloads.match_roster(net.players, net.ordered_ids(), net.settings)
 
 
 func sync() -> void:

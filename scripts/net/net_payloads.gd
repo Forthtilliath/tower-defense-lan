@@ -65,20 +65,38 @@ static func parse_config(raw: Variant, data: GameData, mode_count: int, max_play
 	var difficulty = Check.as_int(d.get("difficulty"), 0, data.difficulties.size() - 1)
 	if roster == null or options == null or difficulty == null:
 		return null
+	if not heritage_on(options) and roster.any(func(e: Array) -> bool: return not e[5].is_empty()):
+		return null  # héritage désactivé : aucun joueur ne doit en recevoir
 	options["roster"] = roster
 	options["difficulty"] = difficulty
 	return options
 
 
-## Mode, carte, rythme et lancement : indices bornés.
+## Mode, carte, rythme, lancement et héritage : indices bornés.
 static func _parse_options(d: Dictionary, data: GameData, mode_count: int) -> Variant:
 	var mode = Check.as_int(d.get("mode"), 0, mode_count - 1)
 	var map = Check.as_int(d.get("map"), 0, data.maps.size() - 1)
 	var rhythm = Check.as_int(d.get("rhythm"), 0, SimMatch.RHYTHM_NAMES.size() - 1)
 	var launch = Check.as_int(d.get("launch"), 0, SimMatch.LAUNCH_NAMES.size() - 1)
-	if mode == null or map == null or rhythm == null or launch == null:
+	var heritage = Check.as_int(d.get("heritage"), 0, SimMatch.HERITAGE_NAMES.size() - 1)
+	if mode == null or map == null or rhythm == null or launch == null or heritage == null:
 		return null
-	return {"mode": mode, "map": map, "rhythm": rhythm, "launch": launch}
+	return {"mode": mode, "map": map, "rhythm": rhythm, "launch": launch, "heritage": heritage}
+
+
+## Roster de la partie : [[id, nom, couleur, bâtisseur, talents, héritage], ...] ; héritage
+## désactivé par l'hôte : listes vides, la simulation n'en applique aucun.
+static func match_roster(players: Dictionary, ids: Array, settings: Dictionary) -> Array:
+	var out := []
+	for id in ids:
+		var p: Dictionary = players[id]
+		out.append([id, p["name"], p["color"], p["builder"], p["talents"], p["heritage"] if heritage_on(settings) else []])
+	return out
+
+
+## Options du salon ou de la partie : l'héritage est-il actif ?
+static func heritage_on(settings: Dictionary) -> bool:
+	return int(settings.get("heritage", SimMatch.Heritage.ON)) == SimMatch.Heritage.ON
 
 
 ## Difficulté retenue : la plus votée ; en cas d'égalité, la plus facile des ex æquo.

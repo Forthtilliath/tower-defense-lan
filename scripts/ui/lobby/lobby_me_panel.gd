@@ -44,4 +44,4 @@ func refresh(my: Dictionary) -> void:
 	if free > 0:
 		_talents.text += " (%d libre%s)" % [free, "s" if free > 1 else ""]
 	_talents.add_theme_color_override("font_color", UiTheme.GOLD if free > 0 else UiTheme.TEXT)
-	_summary.text = LobbyTexts.builder_text(builder)
+	_summary.text = LobbyTexts.builder_text(builder, NetPayloads.heritage_on(Net.settings))
