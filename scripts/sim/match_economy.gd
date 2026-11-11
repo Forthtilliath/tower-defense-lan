@@ -21,6 +21,7 @@ static func pay_wave(sim: SimMatch, wave: Dictionary, early: int, clean: Diction
 		p["gold"] += roundi(int(wave["gold"]) * float(p["gold_mult"])) + roundi(early * (1.0 + kit.early_bonus))
 		if clean.has(int(p["board"])):
 			p["gold"] += kit.clean_gold
+			kit.clean_waves += 1
 		if sim.mode == SimMatch.Mode.VERSUS:
 			p["gold"] += SimMatch.VERSUS_BASE_INCOME + int(p["income"])
 

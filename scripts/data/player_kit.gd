@@ -36,6 +36,8 @@ var raze_charges := 0
 var tile_charges := 0
 ## Ses tourelles d'imprégnation renforcent toutes leurs voisines (pas seulement leur élément).
 var imbue_all := false
+## En partie : vagues franchies sans fuite par son plateau (Phénix : croissance, BoardFeats).
+var clean_waves := 0
 var _base := {}  # multiplicateurs de la classe
 var _bonus_towers := {}  # tourelles visées par le bonus de classe (vide : toutes)
 var _all := {}  # bonus des talents sur toutes les tourelles

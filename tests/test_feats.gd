@@ -146,3 +146,76 @@ func test_warmup_and_streak() -> void:
 	_monster(b)
 	BoardFeats.reset_streaks(b)
 	check(t.kills == 10, "série gardée tant que la carte n'est pas vide")
+
+
+func test_slow_and_longer_effects() -> void:
+	var b := _board()
+	var m := _monster(b)
+	_hit(b, m, _shot(b, {"damage": 1.0, "slow": 0.3, "poison_dps": 1.0, "poison_duration": 2.0, "dot_duration": 1.0}))
+	check(m.is_slowed() and is_equal_approx(m.slow_factor, 0.7), "ralenti de 30 %% : %f" % m.slow_factor)
+	check(m.poison_timer > 3.9, "poison deux fois plus long : %f" % m.poison_timer)
+
+
+func test_last_stand_growth_and_harmony() -> void:
+	var b := _board()
+	var w := b.map.width
+	var kit := PlayerKit.make(b.data, 0)
+	var t := b.add_tower(2 * w + 2, "crossbow", 7, 50, kit)
+	t.stats["last_stand"] = 1.0
+	check(is_equal_approx(BoardFeats.next_delay(t, 1.0, 20), 1.0) and is_equal_approx(BoardFeats.next_delay(t, 1.0, 3), 0.5), "dernier rempart : cadence ×2 à 3 vies")
+	b.add_tower(2 * w + 3, "brazier", 7, 50, kit)
+	b.add_tower(3 * w + 2, "frost", 7, 50, kit)
+	b.add_tower(3 * w + 3, "tesla", 8, 50)
+	check(BoardFeats.elements_around(b, t) == 2, "harmonie : feu et glace voisins, pas la Tesla d'un allié")
+	t.stats["growth"] = 0.1
+	t.stats["harmony"] = 0.1
+	kit.clean_waves = 5
+	var p := BoardCombat.shot(b, t, b.data.towers["crossbow"])
+	check(is_equal_approx(p.stats["damage"], float(t.stats["damage"]) * 1.5 * 1.2), "croissance ×1,5 et harmonie ×1,2")
+
+
+func test_static_charge_and_storm() -> void:
+	var b := _board()
+	var m := _monster(b, 10.0, 1000.0)
+	var next := _monster(b, 10.4, 1000.0)
+	for i in BoardFeats.STATIC_HITS:
+		_hit(b, m, _shot(b, {"damage": 10.0, "static_charge": 1.0}, "lightning"))
+	check(is_equal_approx(next.hp, 990.0), "décharge sur le voisin au 5e coup : %f" % next.hp)
+	var t := b.add_tower(2 * b.map.width + 2, "tesla", 7, 90)
+	t.stats["storm"] = 2.0
+	var target := _monster(b, 1.0, 1000.0)
+	target.pos = t.center + Vector2(0.5, 0.0)
+	t.storm_clock = BoardFeats.STORM_PERIOD
+	BoardFeats.storm(b, t, b.data.towers["tesla"], 0.01, [])
+	check(target.hp < 1000.0 and t.storm_clock == 0.0, "éclair gratuit de l'Orage : %f" % target.hp)
+
+
+func test_conditional_bonuses() -> void:
+	var b := _board()
+	var tank := _monster(b, 10.0, 1000.0, 3.0)
+	_hit(b, tank, _shot(b, {"damage": 13.0, "vs_armored": 1.0, "armor_pierce": 1.0}))
+	check(is_equal_approx(tank.hp, 974.0), "blindé : ×2 (%f)" % tank.hp)
+	var sick := _monster(b, 14.0)
+	sick.apply_poison(1.0, 5.0, 7)
+	sick.apply_slow(0.5, 5.0)
+	_hit(b, sick, _shot(b, {"damage": 10.0, "vs_afflicted": 1.0}))
+	check(is_equal_approx(sick.hp, 80.0), "sous deux effets : ×2 (%f)" % sick.hp)
+	var weak := _monster(b, 18.0)
+	weak.hp = 20.0
+	_hit(b, weak, _shot(b, {"damage": 5.0, "vs_wounded": 1.0}))
+	check(is_equal_approx(weak.hp, 10.0), "blessé : ×2 (%f)" % weak.hp)
+	var fast := _monster(b, 22.0)
+	fast.speed = 2.0
+	check(is_equal_approx(BoardFeats.bleed_of(fast, _shot(b, {"bleed": 0.01, "vs_fast": 0.5})), 0.02), "saignement ×2 sur un monstre de vitesse 2")
+
+
+func test_puddle_and_all_targets() -> void:
+	var b := _board()
+	var m := _monster(b, 10.0, 5.0)
+	m.apply_poison(1.0, 5.0, 7)
+	_hit(b, m, _shot(b, {"damage": 10.0, "death_puddle": 0.1}))
+	check(b.patches.size() == 1, "flaque laissée à la mort d'un empoisonné")
+	var t := b.add_tower(2 * b.map.width + 2, "cannon", 7, 90)
+	t.stats["all_targets"] = 1
+	var p := BoardCombat.shot(b, t, b.data.towers["cannon"])
+	check(p.hits_air and p.hits_ground, "le Canon vise aussi l'air")
