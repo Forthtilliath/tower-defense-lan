@@ -82,6 +82,7 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 			"board": boards.size() - 1, "ready": false, "alive": true, "connected": true,
 		}
 		order.append(id)
+	MatchEconomy.setup(self)
 
 
 func step(dt: float) -> void:
@@ -94,7 +95,7 @@ func step(dt: float) -> void:
 		if not b.alive:
 			continue
 		for reward in b.step(dt):
-			MatchEconomy.credit_bounty(self, reward[0], reward[1])
+			MatchEconomy.credit_bounty(self, reward[0], reward[1], reward.size() > 2 and reward[2])
 		if not b.alive:
 			_on_board_lost(i)
 	_check_end()

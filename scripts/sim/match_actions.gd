@@ -58,7 +58,7 @@ static func upgrade(sim: SimMatch, id: int, p: Dictionary, board: SimBoard, cell
 	var levels := sim.data.tower_levels(t.type)
 	if t.level + 1 >= levels.size():
 		return "Niveau maximum atteint"
-	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"], zone_discount(board, cell))
+	var cost: int = p["kit"].cost(levels[t.level + 1]["cost"], zone_discount(board, cell) + MatchEconomy.team_discount(sim, id))
 	if p["gold"] < cost:
 		return "Or insuffisant"
 	p["gold"] -= cost
@@ -166,6 +166,7 @@ static func give(sim: SimMatch, id: int, p: Dictionary, to_index: int, amount: i
 	var received := gift_received(sim.data, amount, p["kit"])
 	p["gold"] -= amount
 	target["gold"] += received
+	MatchEconomy.invest(sim, p, amount)
 	sim.notices.append([to, "%s t'a donné %d or" % [p["name"], received]])
 	return ""
 
