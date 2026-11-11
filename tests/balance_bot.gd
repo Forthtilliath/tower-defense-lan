@@ -9,6 +9,9 @@ const PLAN := [
 	"crossbow", "crossbow", "cannon", "frost", "sentinel", "venom", "tesla", "ballista",
 	"mortar", "crossbow", "venom", "sentinel", "cannon", "tesla", "mortar", "ballista",
 ]
+## Plan concentré, joué par l'utilisateur : une Arbalète (sur le Filon d'or), puis Tesla, Givre,
+## Venin, Brasier, chacune montée au maximum avant la suivante (le Givre ralentit, les autres en profitent).
+const FOCUS_PLAN := ["crossbow", "tesla", "frost", "venom", "brazier", "tesla", "frost", "venom", "brazier"]
 const MAX_TOWERS := 16
 const FIRST_WAVE_AFTER := 20.0
 ## Niveau des bots : un joueur qui a déjà quelques parties.
@@ -25,6 +28,8 @@ const WEAK_RATIO := 0.6
 
 ## Appelle la vague suivante en avance tant qu'il ne perd pas de vie (désactivable pour comparer).
 var calls_early := true
+## Stratégie concentrée (> 0) : au plus `focus` tourelles, chacune montée au maximum avant la suivante.
+var focus := 0
 var _lanes := {}  # cache de lane_key
 var _foes := {}  # cache : vague -> [[monstre type, poids], ...]
 
@@ -107,7 +112,10 @@ func act(sim: SimMatch, id: int, cells: Array[int], air_cells: Array[int]) -> vo
 	mine.sort_custom(func(a: SimTower, b: SimTower) -> bool: return a.level < b.level)
 	var lowest := mine[0].level if not mine.is_empty() else 0
 	var want_build := mine.size() < 5 or (mine.size() < MAX_TOWERS and lowest >= mini(4, mine.size() / 4))
-	var counter := counter_pick(sim, id, mine) if mine.size() >= 3 else ""
+	if focus > 0:
+		var top := sim.data.tower_levels(mine[0].type).size() - 1 if not mine.is_empty() else 0
+		want_build = mine.size() < 3 or (mine.size() < focus and lowest >= top)
+	var counter := counter_pick(sim, id, mine) if mine.size() >= 3 and focus == 0 else ""
 	if want_build or counter != "":
 		var type := counter
 		if type == "":
@@ -259,6 +267,8 @@ func lane_key(m: MapDef, cell: int, paths: Array[int]) -> int:
 func builder_plan(sim: SimMatch, id: int) -> Array:
 	var kit: PlayerKit = sim.players[id]["kit"]
 	var data := sim.data
+	if focus > 0:
+		return FOCUS_PLAN.filter(func(type: String) -> bool: return kit.allows(type))
 	var hits := func(type: String) -> bool:
 		return kit.allows(type) and not data.towers[type]["support"] and float(data.tower_levels(type)[0]["damage"]) > 0.0
 	var boosted := data.tower_order.filter(func(type: String) -> bool:
