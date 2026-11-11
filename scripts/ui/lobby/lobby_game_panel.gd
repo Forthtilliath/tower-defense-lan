@@ -1,7 +1,8 @@
 class_name LobbyGamePanel
 extends VBoxContainer
 ## Bloc « Partie » du salon : options réglées par l'hôte (mode, carte, rythme, lancement),
-## résumé de ces choix et aperçu de la carte (zones des joueurs comprises).
+## résumé de ces choix et aperçu de la carte (zones des joueurs comprises). Chaque carte montre
+## les étoiles que ce compte y a gagnées à la difficulté votée (records : MatchHistory).
 
 var _mode: OptionButton
 var _map: OptionButton
@@ -10,6 +11,7 @@ var _launch: OptionButton
 var _help: Label
 var _preview: BoardView
 var _map_text: Label
+var _record: Label
 
 
 func _ready() -> void:
@@ -43,6 +45,8 @@ func _ready() -> void:
 	right.add_child(_preview)
 	_map_text = UiTheme.label("", 14, UiTheme.MUTED)
 	right.add_child(_map_text)
+	_record = UiTheme.label("", 14, UiTheme.GOLD)
+	right.add_child(_record)
 
 
 func _host_option(parent: Control, heading: String, items: Array, key: String) -> OptionButton:
@@ -58,16 +62,26 @@ func _map_option(parent: Control) -> OptionButton:
 	var ob := UiTheme.option(parent, "Carte", [])
 	ob.disabled = not Net.is_host()
 	for i in MapDef.by_tier(Data.db.maps):
-		var m: MapDef = Data.db.maps[i]
-		ob.add_item("%s (%s)" % [m.name, DataSchema.MAP_TIERS[m.tier]], i)
+		ob.add_item(_map_label(i, -1), i)
 	ob.item_selected.connect(func(i: int) -> void: Net.set_option("map", ob.get_item_id(i)))
 	return ob
+
+
+## « Prairie (facile)  ★★ » : étoiles gagnées à cette difficulté (aucune si -1 ou jamais gagnée).
+func _map_label(index: int, difficulty: int) -> String:
+	var m: MapDef = Data.db.maps[index]
+	var text := "%s (%s)" % [m.name, DataSchema.MAP_TIERS[m.tier]]
+	var stars := Progress.best_stars(index, difficulty)
+	return text + ("  " + StarsView.text(stars) if stars > 0 else "")
 
 
 func refresh(colors: Array[Color]) -> void:
 	var s := Net.settings
 	var coop: bool = s["mode"] == SimMatch.Mode.COOP
 	_mode.select(s["mode"])
+	var difficulty := Net.voted_difficulty()
+	for i in _map.item_count:
+		_map.set_item_text(i, _map_label(_map.get_item_id(i), difficulty))
 	_map.select(_map.get_item_index(s["map"]))
 	_rhythm.select(s["rhythm"])
 	_launch.select(s["launch"])
@@ -85,3 +99,5 @@ func refresh(colors: Array[Color]) -> void:
 		zones = BoardPainter.zone_colors(map, colors)
 	_preview.zone_colors = zones
 	_map_text.text = LobbyTexts.map_text(map, s["mode"], Net.players.size())
+	_record.text = LobbyTexts.record_text(s["map"])
+	_record.add_theme_color_override("font_color", UiTheme.GOLD if _record.text.contains(StarsView.STAR) else UiTheme.MUTED)

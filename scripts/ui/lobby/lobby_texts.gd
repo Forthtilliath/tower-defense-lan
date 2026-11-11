@@ -63,6 +63,18 @@ static func map_text(map: MapDef, mode: int, player_count: int) -> String:
 	return text
 
 
+## « Tes étoiles : Facile ★★★ · Normal ★ » (records de ce compte sur la carte, par difficulté).
+static func record_text(map_index: int) -> String:
+	var parts := []
+	for d in Data.db.difficulties.size():
+		var stars := Progress.best_stars(map_index, d)
+		if stars > 0:
+			parts.append("%s %s" % [Data.db.difficulties[d]["name"], StarsView.text(stars)])
+	if parts.is_empty():
+		return "Carte pas encore gagnée avec ce compte."
+	return "Tes étoiles : " + " · ".join(parts)
+
+
 ## [« Normal · 2 votes (Difficile : 1) », « 20 vies · PV des monstres x1 · or de départ x1 »].
 static func vote_lines(players: Dictionary) -> Array[String]:
 	var count := Data.db.difficulties.size()
