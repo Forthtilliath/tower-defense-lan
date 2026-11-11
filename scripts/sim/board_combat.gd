@@ -26,17 +26,18 @@ static func fire_towers(b: SimBoard, dt: float, rewards: Array) -> void:
 		if t.is_jammed():  # brouillée : elle lâche sa cible et attend
 			t.beam_target = 0
 			continue
+		var def: Dictionary = b.data.towers[t.type]
+		BoardFeats.storm(b, t, def, dt, rewards)
 		t.cooldown -= dt
 		if t.cooldown > 0.0:
 			continue
-		var def: Dictionary = b.data.towers[t.type]
 		var target := find_target(b, t, def)
 		if target == null:
 			t.cooldown = 0.0
 			t.beam_target = 0
 			t.warm = 0.0
 			continue
-		t.cooldown += BoardFeats.next_delay(t, BoardAuras.fire_delay(t))
+		t.cooldown += BoardFeats.next_delay(t, BoardAuras.fire_delay(t), b.lives)
 		if def["attack"] != "shot":
 			BoardAttacks.fire(b, t, def, target, rewards)
 			continue
@@ -56,8 +57,9 @@ static func find_target(b: SimBoard, t: SimTower, def: Dictionary, skip := {}) -
 	var best_score := -INF
 	var reach := BoardAuras.reach(t)
 	var r2 := reach * reach
+	var all := int(t.stats.get("all_targets", 0)) > 0
 	for m in b.monsters:
-		if skip.has(m.id) or not can_hit(def["air"], def["ground"], m) or t.center.distance_squared_to(m.pos) > r2 \
+		if skip.has(m.id) or not can_hit(def["air"] or all, def["ground"] or all, m) or t.center.distance_squared_to(m.pos) > r2 \
 				or m.taken(def["element"]) <= 0.0:  # insensible à ses coups (fantôme, squelette…)
 			continue
 		var score := m.ratio()
@@ -89,7 +91,7 @@ static func shot(b: SimBoard, t: SimTower, def: Dictionary) -> SimProjectile:
 	var every := int(p.stat("crit_every"))
 	if every > 0 and t.shots % every == 0:
 		p.stats["damage"] *= p.stat("crit_mult")
-	BoardFeats.on_shot(t, p)
+	BoardFeats.on_shot(b, t, p)
 	return p
 
 
@@ -169,7 +171,7 @@ static func _chain(b: SimBoard, p: SimProjectile, first: SimMonster, rewards: Ar
 	var current_pos := first.pos
 	var dmg := p.stat("damage")
 	for k in int(p.stat("chain")):
-		dmg *= CHAIN_FALLOFF
+		dmg *= CHAIN_FALLOFF + p.stat("chain_keep")
 		var next: SimMonster = null
 		var best := CHAIN_RANGE * CHAIN_RANGE
 		for m in b.monsters:
@@ -204,13 +206,14 @@ static func hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: float, rew
 ## l'élément du tir), poison, brûlure, saignement, armure rongée, et contrôles (tirés au
 ## hasard selon leur chance).
 static func afflict(b: SimBoard, m: SimMonster, p: SimProjectile) -> void:
-	var factor := p.stat("slow_factor") if p.stats.has("slow_factor") else 1.0
-	factor = 1.0 - (1.0 - factor) * m.taken(p.element)
-	var slowed := m.apply_slow(factor, p.stat("slow_duration"))
+	var slow := BoardFeats.slow_of(p)
+	var factor: float = 1.0 - (1.0 - slow[0]) * m.taken(p.element)
+	var slowed := m.apply_slow(factor, slow[1])
 	m.add_contrib(p.credit, slowed * (1.0 - factor) * m.max_hp * SimMonster.SLOW_POINTS)
-	m.apply_poison(p.stat("poison_dps"), p.stat("poison_duration"), p.owner, p.stat("poison_spread"), int(p.stat("poison_stacks")))
-	m.apply_burn(p.stat("burn_dps"), p.stat("burn_duration"), int(p.stat("burn_stacks")), p.owner)
-	m.apply_bleed(p.stat("bleed"), p.stat("bleed_duration"), p.owner, int(p.stat("bleed_stacks")))
+	var span := 1.0 + p.stat("dot_duration")
+	m.apply_poison(p.stat("poison_dps"), p.stat("poison_duration") * span, p.owner, p.stat("poison_spread"), int(p.stat("poison_stacks")))
+	m.apply_burn(p.stat("burn_dps"), p.stat("burn_duration") * span, int(p.stat("burn_stacks")), p.owner)
+	m.apply_bleed(BoardFeats.bleed_of(m, p), p.stat("bleed_duration") * span, p.owner, int(p.stat("bleed_stacks")))
 	m.apply_shred(p.stat("shred"), p.stat("shred_duration"))
 	_mark(m, p)
 	for kind in CONTROLS:

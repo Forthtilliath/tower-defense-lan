@@ -67,10 +67,18 @@ const GRANT := {
 	"armor_break": ["int", 0, 20, 0], "kill_splash": ["num", 0.0, 3.0, 0.0], "vs_big": ["num", 0.0, 5.0, 0.0],
 	"reaction": ["num", 0.0, 3.0, 0.0], "resonance": ["num", 0.0, 1.0, 0.0],
 	"death_burn": ["int", 0, 5, 0], "death_poison": ["int", 0, 5, 0], "death_shock": ["int", 0, 5, 0],
+	"slow": ["num", 0.0, 0.9, 0.0], "dot_duration": ["num", 0.0, 3.0, 0.0], "last_stand": ["num", 0.0, 3.0, 0.0],
+	"growth": ["num", 0.0, 0.2, 0.0], "harmony": ["num", 0.0, 0.5, 0.0], "static_charge": ["num", 0.0, 3.0, 0.0],
+	"storm": ["num", 0.0, 5.0, 0.0], "chain_keep": ["num", 0.0, 0.2, 0.0], "vs_armored": ["num", 0.0, 5.0, 0.0],
+	"all_targets": ["int", 0, 1, 0], "vs_afflicted": ["num", 0.0, 5.0, 0.0], "death_puddle": ["num", 0.0, 0.2, 0.0],
+	"vs_fast": ["num", 0.0, 2.0, 0.0], "vs_wounded": ["num", 0.0, 5.0, 0.0],
+	"vs_slowed": ["num", 0.0, 5.0, 0.0], "ramp_max": ["num", 0.0, 5.0, 0.0], "slow_duration": ["num", 0.0, 5.0, 0.0],
+	"heal_block_duration": ["num", 0.0, 10.0, 0.0],
 }
 ## Plafonds des statistiques après les effets ajoutés (une part au-delà de 1 n'a pas de sens).
 const GRANT_CAPS := {"armor_pierce": 1.0, "stun_chance": 1.0, "shred": 0.9, "heal_block": 1.0, "crit_chance": 1.0,
-	"execute": 0.5, "ricochet": 1.0, "knockback": 1.0, "resonance": 1.0, "mark": 1.0}
+	"execute": 0.5, "ricochet": 1.0, "knockback": 1.0, "resonance": 1.0, "mark": 1.0, "slow": 0.9, "all_targets": 1,
+	"chain_keep": 0.2}
 ## raze_charges : arbres ou rochers qu'il peut raser par partie ; tile_charges : cases spéciales
 ## (Colline, Cristal, Rune) qu'il peut poser par partie (Terrassier).
 ## team_bounty : part de prime en plus pour toute l'équipe (le joueur compris). early_bonus : or
@@ -182,7 +190,23 @@ const TOWER_LEVEL := {
 	"armor_break": ["int", 0, 20, 0], "kill_splash": ["num", 0.0, 3.0, 0.0], "vs_big": ["num", 0.0, 5.0, 0.0],
 	"reaction": ["num", 0.0, 3.0, 0.0], "resonance": ["num", 0.0, 1.0, 0.0],
 	"death_burn": ["int", 0, 5, 0], "death_poison": ["int", 0, 5, 0], "death_shock": ["int", 0, 5, 0],
+	"slow": ["num", 0.0, 0.9, 0.0], "dot_duration": ["num", 0.0, 3.0, 0.0], "last_stand": ["num", 0.0, 3.0, 0.0],
+	"growth": ["num", 0.0, 0.2, 0.0], "harmony": ["num", 0.0, 0.5, 0.0], "static_charge": ["num", 0.0, 3.0, 0.0],
+	"storm": ["num", 0.0, 5.0, 0.0], "chain_keep": ["num", 0.0, 0.2, 0.0], "vs_armored": ["num", 0.0, 5.0, 0.0],
+	"all_targets": ["int", 0, 1, 0], "vs_afflicted": ["num", 0.0, 5.0, 0.0], "death_puddle": ["num", 0.0, 0.2, 0.0],
+	"vs_fast": ["num", 0.0, 2.0, 0.0], "vs_wounded": ["num", 0.0, 5.0, 0.0],
 }
+## Suite (BoardFeats, BoardFeatsExtra) : slow (ralentissement en plus, part de la vitesse, 1 s au
+## moins), dot_duration (durées du poison, de la brûlure et du saignement en plus, en part),
+## last_stand (cadence en plus à LAST_STAND vies ou moins), growth (dégâts en plus par vague
+## franchie sans fuite dans la partie), harmony (dégâts en plus par élément différent parmi ses
+## tourelles voisines), static_charge (tous les STATIC_HITS coups de foudre reçus, le monstre se
+## décharge autour : cette part des dégâts), storm (dégâts d'un éclair gratuit toutes les
+## STORM_PERIOD s, en part des dégâts du tir), chain_keep (les rebonds perdent moins), vs_armored
+## (contre un véhicule ou une armure de 3 et plus), all_targets (vise l'air et le sol), vs_afflicted
+## (contre un monstre sous 2 effets ou plus), death_puddle (un monstre mort sous un effet laisse
+## une flaque : part de ses PV max par seconde), vs_fast (saignement en plus par point de vitesse),
+## vs_wounded (dégâts et saignement en plus sous WOUNDED de PV).
 ## Effets des talents sur les coups (BoardFeats) : crit_chance (coup critique : dégâts × (2 +
 ## crit_bonus)), execute (achève un monstre sous cette part de PV, moitié contre un boss),
 ## pierce (le projectile touche ce nombre de monstres en plus derrière sa cible), ricochet
@@ -198,7 +222,9 @@ const TOWER_LEVEL := {
 ## l'effet à ce nombre de voisins).
 const FEATS := ["crit_chance", "crit_bonus", "execute", "pierce", "ricochet", "streak", "streak_cap", "mark",
 	"warmup", "warmup_cap", "frag", "knockback", "armor_break", "kill_splash", "vs_big", "reaction", "resonance",
-	"death_burn", "death_poison", "death_shock"]
+	"death_burn", "death_poison", "death_shock", "slow", "dot_duration", "last_stand", "growth", "harmony",
+	"static_charge", "storm", "chain_keep", "vs_armored", "all_targets", "vs_afflicted", "death_puddle", "vs_fast",
+	"vs_wounded"]
 const MONSTER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"],
 	"hp": ["num", 1.0, 1000000.0], "speed": ["num", 0.1, 10.0],

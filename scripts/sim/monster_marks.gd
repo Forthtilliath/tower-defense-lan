@@ -26,6 +26,10 @@ var mark := 0.0
 var mark_timer := 0.0
 var armor_down := 0
 var death_spread := {}  # "burn" / "poison" / "shock" -> nombre de voisins
+## Flaque laissée à la mort (part des PV max par seconde, et qui la pose), coups de foudre reçus.
+var puddle := 0.0
+var puddle_owner := 0
+var static_hits := 0
 
 
 func apply_mark(part: float, duration: float) -> void:

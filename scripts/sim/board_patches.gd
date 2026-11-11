@@ -23,7 +23,9 @@ static func add(b: SimBoard, p: SimProjectile) -> void:
 
 static func update(b: SimBoard, dt: float, rewards: Array) -> void:
 	var keep: Array[Dictionary] = []
-	for z in b.patches:
+	var current := b.patches
+	b.patches = []  # reçoit les nappes posées pendant la boucle (flaque d'un monstre tué)
+	for z in current:
 		z["ttl"] -= dt
 		z["tick"] += dt
 		if z["tick"] >= TICK:
@@ -31,7 +33,8 @@ static func update(b: SimBoard, dt: float, rewards: Array) -> void:
 			_burn(b, z, rewards)
 		if z["ttl"] > 0.0:
 			keep.append(z)
-	b.patches = keep
+	keep.append_array(b.patches)
+	b.patches = keep.slice(maxi(0, keep.size() - MAX_PATCHES))
 
 
 static func _burn(b: SimBoard, z: Dictionary, rewards: Array) -> void:

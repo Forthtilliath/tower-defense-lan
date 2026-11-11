@@ -18,24 +18,97 @@ const BLAST_RADIUS := 1.0
 const REACTION_STUN := 0.3
 const SPREAD_DURATION := 3.0
 const SPREADS := ["burn", "poison", "shock"]
+const LAST_STAND := 5
+const STATIC_HITS := 5
+const STORM_PERIOD := 8.0
+## Voisines (Harmonie) : tourelles du même joueur à cette distance au plus (diagonales comprises).
+const NEIGHBOUR := 1.5
+const ARMORED := 3.0
+const WOUNDED := 0.25
+const PUDDLE_RADIUS := 0.8
+const PUDDLE_DURATION := 2.0
 
 
-## Au tir : la tourelle signe le coup ; série : +streak par monstre tué depuis que la carte était vide.
-static func on_shot(t: SimTower, p: SimProjectile) -> void:
+## Au tir : la tourelle signe le coup ; série (+streak par monstre tué depuis que la carte était
+## vide), croissance (+growth par vague franchie sans fuite), harmonie (+harmony par élément
+## différent parmi ses voisines).
+static func on_shot(b: SimBoard, t: SimTower, p: SimProjectile) -> void:
 	p.cell = t.cell
-	var s := p.stat("streak")
-	if s > 0.0 and t.kills > 0:
-		GameData.scale_damage(p.stats, 1.0 + minf(p.stat("streak_cap"), s * t.kills))
+	var mult := 1.0
+	if p.stat("streak") > 0.0 and t.kills > 0:
+		mult *= 1.0 + minf(p.stat("streak_cap"), p.stat("streak") * t.kills)
+	if p.stat("growth") > 0.0 and t.kit != null:
+		mult *= 1.0 + p.stat("growth") * t.kit.clean_waves
+	if p.stat("harmony") > 0.0:
+		mult *= 1.0 + p.stat("harmony") * elements_around(b, t)
+	if mult != 1.0:
+		GameData.scale_damage(p.stats, mult)
+	if int(p.stat("all_targets")) > 0:
+		p.hits_air = true
+		p.hits_ground = true
 
 
-## Délai jusqu'au tir suivant, échauffement compris (+warmup de cadence par seconde de tir continu).
-static func next_delay(t: SimTower, base: float) -> float:
+## Éléments différents parmi les tourelles voisines du même joueur (elle exceptée).
+static func elements_around(b: SimBoard, t: SimTower) -> int:
+	var seen := {}
+	for cell in b.towers:
+		var o: SimTower = b.towers[cell]
+		if o != t and o.owner == t.owner and o.center.distance_to(t.center) <= NEIGHBOUR:
+			var e: String = b.data.towers[o.type]["element"]
+			if DataSchema.ELEMENTS.has(e):
+				seen[e] = true
+	return seen.size()
+
+
+## Délai jusqu'au tir suivant : échauffement (+warmup de cadence par seconde de tir continu) et
+## dernier rempart (+last_stand de cadence à LAST_STAND vies ou moins).
+static func next_delay(t: SimTower, base: float, lives := 99) -> float:
 	var w := float(t.stats.get("warmup", 0.0))
 	var delay := base
 	if w > 0.0:
-		delay = base / (1.0 + minf(float(t.stats["warmup_cap"]), w * t.warm))
+		delay /= 1.0 + minf(float(t.stats["warmup_cap"]), w * t.warm)
+	if lives <= LAST_STAND:
+		delay /= 1.0 + float(t.stats.get("last_stand", 0.0))
 	t.warm += delay
 	return delay
+
+
+## Orage : toutes les STORM_PERIOD s, un éclair gratuit sur un monstre à portée.
+static func storm(b: SimBoard, t: SimTower, def: Dictionary, dt: float, rewards: Array) -> void:
+	if float(t.stats.get("storm", 0.0)) <= 0.0:
+		return
+	t.storm_clock += dt
+	if t.storm_clock < STORM_PERIOD:
+		return
+	var target := BoardCombat.find_target(b, t, def)
+	if target == null:
+		return
+	t.storm_clock = 0.0
+	var p := BoardCombat.shot(b, t, def)
+	b.add_fx(SimBoard.Fx.BOLT, t.center, target.pos)
+	BoardCombat.damage(b, target, p.stat("damage") * p.stat("storm") * taken(target, p), false, p.credit, rewards)
+
+
+## Ralentissement d'un coup : [facteur de vitesse, durée], ralentissement en plus (slow) compris.
+static func slow_of(p: SimProjectile) -> Array:
+	var factor := p.stat("slow_factor") if p.stats.has("slow_factor") else 1.0
+	var duration := p.stat("slow_duration")
+	if p.stat("slow") > 0.0:
+		factor = minf(factor, 1.0 - p.stat("slow"))
+		duration = maxf(duration, 1.0)
+	return [factor, duration]
+
+
+## Saignement d'un coup : plus fort sur un monstre rapide (vs_fast) ou blessé (vs_wounded).
+static func bleed_of(m: SimMonster, p: SimProjectile) -> float:
+	var rate := p.stat("bleed") * (1.0 + p.stat("vs_fast") * m.speed)
+	return rate * (1.0 + p.stat("vs_wounded")) if m.hp < m.max_hp * WOUNDED else rate
+
+
+## Effets continus et états en cours (Agonie : bonus à partir de 2).
+static func afflictions(m: SimMonster) -> int:
+	var states := [m.is_poisoned(), m.is_burning(), m.is_bleeding(), m.is_slowed(), m.marks.is_frostbitten(), m.marks.is_shocked()]
+	return states.count(true)
 
 
 ## Carte vide : les séries repartent de zéro.
@@ -65,6 +138,12 @@ static func scale_hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: floa
 		amount *= 1.0 + p.stat("vs_big")
 	if p.stat("reaction") > 0.0 and p.element == "fire" and (m.is_slowed() or m.is_stunned()):
 		amount *= 1.0 + p.stat("reaction")
+	if p.stat("vs_armored") > 0.0 and (m.mechanical or m.armor >= ARMORED):
+		amount *= 1.0 + p.stat("vs_armored")
+	if p.stat("vs_afflicted") > 0.0 and afflictions(m) >= 2:
+		amount *= 1.0 + p.stat("vs_afflicted")
+	if p.stat("vs_wounded") > 0.0 and m.hp < m.max_hp * WOUNDED:
+		amount *= 1.0 + p.stat("vs_wounded")
 	return amount
 
 
@@ -76,11 +155,21 @@ static func mark(m: SimMonster, p: SimProjectile) -> void:
 	for kind in SPREADS:
 		if int(p.stat("death_" + kind)) > 0:
 			m.marks.spread_on_death(kind, int(p.stat("death_" + kind)))
+	if p.stat("death_puddle") > 0.0:
+		m.marks.puddle = maxf(m.marks.puddle, p.stat("death_puddle"))
+		m.marks.puddle_owner = p.owner
 
 
 ## Après les dégâts d'un coup : réactions de la foudre et de la glace sur un monstre qui brûle,
 ## recul, exécution ; si le coup a tué : série de la tourelle, onde et éclats.
 static func after_hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: float, rewards: Array) -> void:
+	if p.stat("static_charge") > 0.0 and p.element == "lightning":
+		m.marks.static_hits += 1
+		if m.marks.static_hits >= STATIC_HITS:
+			m.marks.static_hits = 0
+			b.add_fx(SimBoard.Fx.RING, m.pos, Vector2.ZERO, BLAST_RADIUS)
+			for o in near(b, m, BLAST_RADIUS, 99) + ([m] as Array[SimMonster]):
+				BoardCombat.damage(b, o, amount * p.stat("static_charge"), false, p.credit, rewards)
 	var reaction := p.stat("reaction")
 	if reaction > 0.0 and m.is_burning():
 		if p.element == "lightning":
@@ -123,8 +212,18 @@ static func extra_targets(b: SimBoard, p: SimProjectile, target: SimMonster, amo
 		BoardCombat.hit(b, o, p, amount, rewards)
 
 
-## Mort d'un monstre : il transmet brûlure, poison ou électrifié à ses voisins (talents de contagion).
+## Mort d'un monstre : il transmet brûlure, poison ou électrifié à ses voisins (talents de
+## contagion), et laisse une flaque s'il mourait sous un effet continu (Cadavres).
 static func on_death(b: SimBoard, m: SimMonster) -> void:
+	if m.marks.puddle > 0.0 and (m.is_poisoned() or m.is_burning() or m.is_bleeding()):
+		var p := SimProjectile.new()
+		p.pos = m.pos
+		p.stats = {"patch_radius": PUDDLE_RADIUS, "patch_duration": PUDDLE_DURATION, "patch_dps": m.max_hp * m.marks.puddle}
+		p.credit = BoardCombat.solo(m.marks.puddle_owner)
+		p.owner = m.marks.puddle_owner
+		p.kind = maxi(0, b.data.tower_order.find("venom"))
+		p.element = "poison"
+		BoardPatches.add(b, p)
 	for kind in m.marks.death_spread:
 		var count := int(m.marks.death_spread[kind])
 		if (kind == "burn" and not m.is_burning()) or (kind == "poison" and not m.is_poisoned()) \
