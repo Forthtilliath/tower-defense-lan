@@ -54,7 +54,7 @@ static func _wards(b: SimBoard) -> void:
 static func _blink(b: SimBoard, m: SimMonster, dt: float) -> void:
 	if m.is_stunned() or m.is_feared():
 		return
-	m.blink_clock += dt
+	m.blink_clock += dt * m.marks.ability_pace()
 	if m.blink_clock < m.blink_interval:
 		return
 	m.blink_clock -= m.blink_interval
@@ -68,7 +68,7 @@ static func _blink(b: SimBoard, m: SimMonster, dt: float) -> void:
 static func _jam(b: SimBoard, m: SimMonster, dt: float) -> bool:
 	if m.is_stunned():
 		return false
-	m.jam_clock += dt
+	m.jam_clock += dt * m.marks.ability_pace()
 	if m.jam_clock < m.jam_interval:
 		return false
 	m.jam_clock -= m.jam_interval
@@ -76,7 +76,7 @@ static func _jam(b: SimBoard, m: SimMonster, dt: float) -> bool:
 	var r2 := m.jam_radius * m.jam_radius
 	for cell in b.towers:
 		var t: SimTower = b.towers[cell]
-		if t.jam_guard > 0.0 or t.center.distance_squared_to(m.pos) > r2:
+		if t.jam_guard > 0.0 or t.buff("nojam") > 0.0 or t.center.distance_squared_to(m.pos) > r2:  # Fanfare
 			continue
 		support_off = support_off or t.support
 		t.jammed = m.jam_duration

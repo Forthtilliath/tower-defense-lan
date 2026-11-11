@@ -37,7 +37,7 @@ static func on_shot(b: SimBoard, t: SimTower, p: SimProjectile) -> void:
 		mult *= 1.0 + minf(p.stat("streak_cap"), p.stat("streak") * t.kills)
 	if p.stat("growth") > 0.0 and t.kit != null:
 		mult *= 1.0 + p.stat("growth") * t.kit.clean_waves
-	mult *= BoardLayout.damage_mult(b, t, p)
+	mult *= BoardLayout.damage_mult(b, t, p) * BoardSupport.on_shot(b, t, p)
 	if mult != 1.0:
 		GameData.scale_damage(p.stats, mult)
 	if int(p.stat("all_targets")) > 0:
@@ -100,6 +100,7 @@ static func afflictions(m: SimMonster) -> int:
 
 ## Carte vide : les séries repartent de zéro.
 static func reset_streaks(b: SimBoard) -> void:
+	BoardSupport.track(b)
 	if b.monsters.is_empty():
 		for cell in b.towers:
 			b.towers[cell].kills = 0
@@ -109,11 +110,15 @@ static func is_big(m: SimMonster) -> bool:
 	return m.max_hp >= BIG_HP or m.cc_resist > 0.0
 
 
-## Part des dégâts subie, résonance comprise (elle n'ouvre pas une insensibilité totale).
+## Part des dégâts subie : résonance du tireur et résistances réduites (Vulnérabilité) pour un
+## élément ; un monstre insensible n'est touché que sous la Lumière du Support, à sa part.
 static func taken(m: SimMonster, p: SimProjectile) -> float:
 	var t := m.taken(p.element)
-	var r := p.stat("resonance")
-	return t + (1.0 - t) * r if t > 0.0 and r > 0.0 and DataSchema.ELEMENTS.has(p.element) else t
+	if t <= 0.0:
+		return p.stat("light")
+	if not DataSchema.ELEMENTS.has(p.element):
+		return t
+	return 1.0 - (1.0 - t) * (1.0 - p.stat("resonance")) * m.marks.resist_left()
 
 
 ## Dégâts d'un coup : critique, gros monstre, feu sur un monstre ralenti ou gelé.
@@ -131,7 +136,7 @@ static func scale_hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: floa
 		amount *= 1.0 + p.stat("vs_afflicted")
 	if p.stat("vs_wounded") > 0.0 and m.hp < m.max_hp * WOUNDED:
 		amount *= 1.0 + p.stat("vs_wounded")
-	return amount
+	return BoardSupport.scale_hit(m, p, amount)
 
 
 ## États posés par le coup avant ses dégâts : marque, armure brisée, contagion à la mort.
@@ -145,6 +150,7 @@ static func mark(m: SimMonster, p: SimProjectile) -> void:
 	if p.stat("death_puddle") > 0.0:
 		m.marks.puddle = maxf(m.marks.puddle, p.stat("death_puddle"))
 		m.marks.puddle_owner = p.owner
+	BoardSupport.mark(m, p, MARK_DURATION)
 
 
 ## Après les dégâts d'un coup : réactions de la foudre et de la glace sur un monstre qui brûle,
@@ -165,6 +171,7 @@ static func after_hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: floa
 				BoardCombat.damage(b, o, amount * reaction, false, p.credit, rewards)
 		elif p.element == "ice" and m.is_alive():
 			m.apply_control(SimMonster.Crowd.STUN, REACTION_STUN * reaction, p.owner)
+	BoardSupport.after_hit(b, m, p)
 	if m.is_alive():
 		if p.stat("knockback") > 0.0 and m.cc_resist < 0.5 and b.rng.randf() < p.stat("knockback"):
 			m.progress = maxf(0.0, m.progress - KNOCKBACK * (1.0 - m.cc_resist))
@@ -176,6 +183,7 @@ static func after_hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: floa
 	var t: SimTower = b.towers.get(p.cell)
 	if t != null:
 		t.kills += 1
+		t.kills_total += 1
 	if p.stat("kill_splash") > 0.0:
 		b.add_fx(SimBoard.Fx.RING, m.pos, Vector2.ZERO, NEAR)
 		for o in near(b, m, NEAR, 99):

@@ -134,7 +134,26 @@ const TOWER_LEVEL := {
 	"wall": ["num", 0.0, 0.5, 0.0], "keystone": ["num", 0.0, 1.0, 0.0], "twin": ["num", 0.0, 1.0, 0.0],
 	"crown": ["num", 0.0, 1.0, 0.0], "plans": ["num", 0.0, 1.0, 0.0], "buttress": ["num", 0.0, 1.0, 0.0],
 	"masterpiece": ["num", 0.0, 3.0, 0.0],
+	"aura_crit": ["num", 0.0, 1.0, 0.0], "aura_late": ["num", 0.0, 2.0, 0.0], "aura_nojam": ["num", 0.0, 1.0, 0.0],
+	"aura_veteran": ["num", 0.0, 0.1, 0.0], "aura_charge": ["num", 0.0, 2.0, 0.0], "aura_rally": ["num", 0.0, 2.0, 0.0],
+	"aura_stun": ["num", 0.0, 1.0, 0.0], "aura_light": ["num", 0.0, 1.0, 0.0], "aura_sanct": ["num", 0.0, 0.9, 0.0],
+	"aura_rush": ["num", 0.0, 2.0, 0.0], "aura_air": ["num", 0.0, 1.0, 0.0],
+	"weaken": ["num", 0.0, 1.0, 0.0], "resist_down": ["num", 0.0, 0.9, 0.0], "hex": ["num", 0.0, 0.9, 0.0],
+	"vs_elite": ["num", 0.0, 5.0, 0.0], "vs_controlled": ["num", 0.0, 2.0, 0.0], "fear_spread": ["int", 0, 5, 0],
+	"charm_power": ["num", 0.0, 5.0, 0.0],
 }
+## Support (BoardAuras, BoardFeats) : auras reçues des tourelles de soutien voisines — aura_crit
+## (chance de critique), aura_late (dégâts contre un monstre passé à la moitié de la route),
+## aura_nojam (ne peut plus être brouillée), aura_veteran (dégâts par monstre tué depuis sa
+## construction, plafond VETERAN_CAP), aura_charge (cadence les CHARGE_TIME s après le départ
+## d'une vague), aura_rally (dégâts les RALLY_TIME s après une vie perdue), aura_stun (chance
+## d'étourdir), aura_light (touche les monstres insensibles à ses coups, à cette part), aura_sanct
+## (ralentit les monstres sur le dernier quart de la route), aura_rush (dégâts les RUSH_TIME s après
+## le départ d'une vague), aura_air (vise les volants). Coups : weaken (le monstre touché coûte 1
+## vie de moins s'il fuit, au moins 1), resist_down (résistances réduites pour toutes les tourelles,
+## MARK_DURATION s), hex (capacités des monstres plus lentes à revenir), vs_elite (dégâts contre
+## un monstre de vague spéciale), vs_controlled (chances de contrôle en plus sur un monstre déjà
+## contrôlé), fear_spread (la peur gagne ce nombre de voisins), charm_power (un charmé frappe plus fort).
 ## Bâtisseur (BoardFeats) : wall (dégâts en plus par tourelle à lui voisine), keystone (dégâts en
 ## plus entourée de KEYSTONE de ses tourelles), twin (dégâts en plus à côté d'une tourelle
 ## identique), crown (dégâts en plus pour sa tourelle la plus chère), plans (portée en plus au
@@ -168,7 +187,8 @@ const FEATS := ["crit_chance", "crit_bonus", "execute", "pierce", "ricochet", "s
 	"warmup", "warmup_cap", "frag", "knockback", "armor_break", "kill_splash", "vs_big", "reaction", "resonance",
 	"death_burn", "death_poison", "death_shock", "slow", "dot_duration", "last_stand", "growth", "harmony",
 	"static_charge", "storm", "chain_keep", "vs_armored", "all_targets", "vs_afflicted", "death_puddle", "vs_fast",
-	"vs_wounded", "wall", "keystone", "twin", "crown", "plans", "buttress", "masterpiece"]
+	"vs_wounded", "wall", "keystone", "twin", "crown", "plans", "buttress", "masterpiece", "weaken", "resist_down",
+	"hex", "vs_elite", "vs_controlled", "fear_spread", "charm_power"]
 const MONSTER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"],
 	"hp": ["num", 1.0, 1000000.0], "speed": ["num", 0.1, 10.0],

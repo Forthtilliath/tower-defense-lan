@@ -8,11 +8,12 @@ const STATS := ["damage", "rate", "range", "cc", "aura"]
 ## Économie des talents (MatchEconomy), une valeur par rang qui s'additionne (voir TalentSchema.TALENT).
 const MONEY := ["loot", "loan", "boss_bounty", "jackpot", "trophy", "contract", "rent", "compound", "ally_start",
 	"invest", "team_discount", "share_interest", "hot_hand", "early_wave", "risk", "nerve",
-	"floors", "moves", "scrap", "spare", "tinker"]
+	"floors", "moves", "scrap", "spare", "tinker", "team_aura"]
 const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
 	"team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"] + MONEY
 ## Auras des tourelles de soutien, toutes renforcées par la statistique « aura ».
-const AURAS := ["aura_rate", "aura_damage", "aura_cc", "aura_range", "aura_frostbite", "aura_shock", "aura_bounty", "aura_discount"]
+const AURAS := ["aura_rate", "aura_damage", "aura_cc", "aura_range", "aura_frostbite", "aura_shock", "aura_bounty", "aura_discount",
+	"aura_crit", "aura_late", "aura_veteran", "aura_charge", "aura_rally", "aura_stun", "aura_sanct", "aura_rush"]
 ## Plafonds : réduction des prix, part de revente, part d'un don reçue par l'allié.
 const MAX_DISCOUNT := 0.5
 const MAX_SELL := 0.9
@@ -52,6 +53,8 @@ var money := {}
 var spare_pending := 0.0
 ## Chef-d'œuvre : case de sa tourelle chef-d'œuvre (-1 : aucune encore).
 var masterpiece_cell := -1
+## Alliés dans la partie (Esprit d'équipe), fixé au départ par MatchEconomy.setup.
+var allies := 0
 var _base := {}  # multiplicateurs de la classe
 var _bonus_towers := {}  # tourelles visées par le bonus de classe (vide : toutes)
 var _all := {}  # bonus des talents sur toutes les tourelles
@@ -161,7 +164,7 @@ func boost(stats: Dictionary, type: String) -> void:
 	stats["rate"] *= mult(type, "rate")
 	GameData.scale_damage(stats, mult(type, "damage"))
 	GameData.scale_control(stats, mult(type, "cc"))
-	var aura := mult(type, "aura")
+	var aura := mult(type, "aura") * (1.0 + m("team_aura") * allies)
 	for key in AURAS:
 		stats[key] *= aura
 	for id in ["", type]:  # effets ajoutés (talents ultimes), après les multiplicateurs

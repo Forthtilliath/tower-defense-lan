@@ -21,6 +21,7 @@ static func setup(sim: SimMatch) -> void:
 		var kit: PlayerKit = p["kit"]
 		p["start_lives"] = sim.boards[int(p["board"])].lives
 		p["returns"] = []
+		kit.allies = sim.order.size() - 1 if sim.mode == SimMatch.Mode.COOP else 0
 		if kit.m("loan") > 0.0:
 			p["gold"] += int(kit.m("loan"))
 			p["loan_due"] = roundi(kit.m("loan") * LOAN_RATE)
@@ -35,6 +36,8 @@ static func setup(sim: SimMatch) -> void:
 ## aucune vie depuis la vague précédente (index -> true).
 static func pay_wave(sim: SimMatch, wave: Dictionary, early: int, clean: Dictionary) -> void:
 	_pay_gold_tiles(sim)
+	for b in sim.boards:
+		b.set_meta("wave_at", b.clock)  # départ de la vague (Charge, Heures sup)
 	var shared := {}  # id -> intérêts partagés avec les alliés (Mécénat)
 	for id in sim.order:
 		var p: Dictionary = sim.players[id]

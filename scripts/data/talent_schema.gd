@@ -27,7 +27,9 @@ const TALENT := {
 	"hot_hand": ["int", 0, 50, 0], "early_wave": ["num", 0.0, 2.0, 0.0], "risk": ["num", 0.0, 0.1, 0.0],
 	"nerve": ["num", 0.0, 2.0, 0.0], "floors": ["int", 0, 2, 0], "moves": ["int", 0, 3, 0],
 	"scrap": ["num", 0.0, 1.0, 0.0], "spare": ["num", 0.0, 0.5, 0.0], "tinker": ["num", 0.0, 1.0, 0.0],
+	"team_aura": ["num", 0.0, 0.2, 0.0],
 }
+## team_aura (Support) : puissance d'aura en plus par allié dans la partie.
 ## Bâtisseur : floors (étages : niveaux de tourelle en plus, tronc commun seulement), moves
 ## (tourelles déplacées gratuitement par vague), scrap (prime en plus des véhicules), spare
 ## (vendre une tourelle renforce d'autant la prochaine construite), tinker (cadence en plus d'une
@@ -72,6 +74,13 @@ const GRANT := {
 	"masterpiece": ["num", 0.0, 3.0, 0.0], "aura_rate": ["num", 0.0, 1.0, 0.0], "aura_damage": ["num", 0.0, 1.0, 0.0],
 	"aura_range": ["num", 0.0, 1.0, 0.0], "aura_cc": ["num", 0.0, 1.0, 0.0], "aura_discount": ["num", 0.0, 0.2, 0.0],
 	"fear_duration": ["num", 0.0, 5.0, 0.0], "charm_duration": ["num", 0.0, 5.0, 0.0],
+	"aura_crit": ["num", 0.0, 1.0, 0.0], "aura_late": ["num", 0.0, 2.0, 0.0], "aura_nojam": ["num", 0.0, 1.0, 0.0],
+	"aura_veteran": ["num", 0.0, 0.1, 0.0], "aura_charge": ["num", 0.0, 2.0, 0.0], "aura_rally": ["num", 0.0, 2.0, 0.0],
+	"aura_stun": ["num", 0.0, 1.0, 0.0], "aura_light": ["num", 0.0, 1.0, 0.0], "aura_sanct": ["num", 0.0, 0.9, 0.0],
+	"aura_rush": ["num", 0.0, 2.0, 0.0], "aura_air": ["num", 0.0, 1.0, 0.0],
+	"weaken": ["num", 0.0, 1.0, 0.0], "resist_down": ["num", 0.0, 0.9, 0.0], "hex": ["num", 0.0, 0.9, 0.0],
+	"vs_elite": ["num", 0.0, 5.0, 0.0], "vs_controlled": ["num", 0.0, 2.0, 0.0], "fear_spread": ["int", 0, 5, 0],
+	"charm_power": ["num", 0.0, 5.0, 0.0], "fear_chance": ["num", 0.0, 1.0, 0.0], "charm_chance": ["num", 0.0, 1.0, 0.0],
 }
 ## Plafonds des statistiques après les effets ajoutés (une part au-delà de 1 n'a pas de sens).
 const GRANT_CAPS := {"armor_pierce": 1.0, "stun_chance": 1.0, "shred": 0.9, "heal_block": 1.0, "crit_chance": 1.0,

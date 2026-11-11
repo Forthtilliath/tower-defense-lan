@@ -11,11 +11,14 @@ extends RefCounted
 ## Zones (Comptoir, Chantier) : pas un bonus de tourelle, mais une valeur au point visé (best_at).
 
 const KINDS := {"rate": "aura_rate", "damage": "aura_damage", "cc": "aura_cc", "range": "aura_range",
-	"frostbite": "aura_frostbite", "shock": "aura_shock"}
+	"frostbite": "aura_frostbite", "shock": "aura_shock", "crit": "aura_crit", "late": "aura_late",
+	"nojam": "aura_nojam", "veteran": "aura_veteran", "charge": "aura_charge", "rally": "aura_rally",
+	"stun": "aura_stun", "light": "aura_light", "sanct": "aura_sanct", "rush": "aura_rush", "air": "aura_air"}
 ## Élément des voisines qu'une aura d'imprégnation renforce (sans le talent imbue_all).
 const IMBUE := {"frostbite": "ice", "shock": "lightning"}
-## Auras dont le bonus n'est pas une part (gelure en dégâts/s) : hors du partage du crédit.
-const NOT_SHARES := ["frostbite"]
+## Auras comptées dans le partage du crédit (les autres ne sont pas une part simple des coups :
+## gelure en dégâts/s, auras des talents du Support).
+const SHARES := ["rate", "damage", "cc", "range", "shock"]
 
 
 ## Recalcule les auras de tout le plateau (après une construction, amélioration ou vente).
@@ -66,11 +69,11 @@ static func fire_delay(t: SimTower) -> float:
 static func credit(t: SimTower) -> Array:
 	var total := 1.0
 	for kind in t.buffs:
-		if not NOT_SHARES.has(kind):
+		if SHARES.has(kind):
 			total += float(t.buffs[kind][0])
 	var shares := {t.owner: 1.0 / total}
 	for kind in t.buffs:
-		if NOT_SHARES.has(kind):
+		if not SHARES.has(kind):
 			continue
 		var owner: int = t.buffs[kind][1]
 		shares[owner] = float(shares.get(owner, 0.0)) + float(t.buffs[kind][0]) / total
