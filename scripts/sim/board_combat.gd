@@ -18,6 +18,7 @@ static func solo(owner: int) -> Array:
 
 
 static func fire_towers(b: SimBoard, dt: float, rewards: Array) -> void:
+	BoardFeats.reset_streaks(b)
 	for cell in b.towers:
 		var t: SimTower = b.towers[cell]
 		if t.support:
@@ -33,8 +34,9 @@ static func fire_towers(b: SimBoard, dt: float, rewards: Array) -> void:
 		if target == null:
 			t.cooldown = 0.0
 			t.beam_target = 0
+			t.warm = 0.0
 			continue
-		t.cooldown += BoardAuras.fire_delay(t)
+		t.cooldown += BoardFeats.next_delay(t, BoardAuras.fire_delay(t))
 		if def["attack"] != "shot":
 			BoardAttacks.fire(b, t, def, target, rewards)
 			continue
@@ -87,6 +89,7 @@ static func shot(b: SimBoard, t: SimTower, def: Dictionary) -> SimProjectile:
 	var every := int(p.stat("crit_every"))
 	if every > 0 and t.shots % every == 0:
 		p.stats["damage"] *= p.stat("crit_mult")
+	BoardFeats.on_shot(t, p)
 	return p
 
 
@@ -122,6 +125,7 @@ static func damage(b: SimBoard, m: SimMonster, amount: float, pierce: bool, cred
 	m.hp -= amount
 	if m.hp <= 0.0:
 		m.hp = 0.0
+		BoardFeats.on_death(b, m)
 		b.kill(m, int(credit[0][0]) if not credit.is_empty() else 0, rewards)
 
 
@@ -145,6 +149,8 @@ static func _impact(b: SimBoard, p: SimProjectile, target: SimMonster, rewards: 
 		hit(b, target, p, p.stat("damage"), rewards)
 		if p.stat("chain") > 0:
 			_chain(b, p, target, rewards)
+		if p.stat("pierce") > 0 or p.stat("ricochet") > 0.0:
+			BoardFeats.extra_targets(b, p, target, p.stat("damage"), rewards)
 
 
 ## Monstres visables par le coup p (ni charmés, ni hors de sa portée air/sol) dans un disque.
@@ -187,8 +193,11 @@ static func hit(b: SimBoard, m: SimMonster, p: SimProjectile, amount: float, rew
 		amount *= 1.0 + p.stat("vs_stunned")
 	elif m.is_slowed():
 		amount *= 1.0 + p.stat("vs_slowed")
+	amount = BoardFeats.scale_hit(b, m, p, amount)
 	afflict(b, m, p)
-	damage(b, m, amount * m.taken(p.element), false, p.credit, rewards, p.stat("armor_pierce"))
+	BoardFeats.mark(m, p)
+	damage(b, m, amount * BoardFeats.taken(m, p), false, p.credit, rewards, p.stat("armor_pierce"))
+	BoardFeats.after_hit(b, m, p, amount, rewards)
 
 
 ## Effets d'un coup sans ses dégâts directs : ralentissement (affaibli par la résistance à

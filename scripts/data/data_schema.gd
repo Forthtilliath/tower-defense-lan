@@ -60,9 +60,17 @@ const GRANT := {
 	"poison_stacks": ["int", 0, 5, 0], "bleed_stacks": ["int", 0, 5, 0],
 	"vs_stunned": ["num", 0.0, 5.0, 0.0], "ground_duration": ["num", 0.0, 5.0, 0.0], "poison_spread": ["num", 0.0, 3.0, 0.0],
 	"bleed": ["num", 0.0, 0.1, 0.0], "shred": ["num", 0.0, 0.5, 0.0], "heal_block": ["num", 0.0, 1.0, 0.0],
+	"crit_chance": ["num", 0.0, 1.0, 0.0], "crit_bonus": ["num", 0.0, 5.0, 0.0], "execute": ["num", 0.0, 0.5, 0.0],
+	"pierce": ["int", 0, 10, 0], "ricochet": ["num", 0.0, 1.0, 0.0], "streak": ["num", 0.0, 0.1, 0.0],
+	"streak_cap": ["num", 0.0, 3.0, 0.0], "mark": ["num", 0.0, 1.0, 0.0], "warmup": ["num", 0.0, 1.0, 0.0],
+	"warmup_cap": ["num", 0.0, 3.0, 0.0], "frag": ["num", 0.0, 2.0, 0.0], "knockback": ["num", 0.0, 1.0, 0.0],
+	"armor_break": ["int", 0, 20, 0], "kill_splash": ["num", 0.0, 3.0, 0.0], "vs_big": ["num", 0.0, 5.0, 0.0],
+	"reaction": ["num", 0.0, 3.0, 0.0], "resonance": ["num", 0.0, 1.0, 0.0],
+	"death_burn": ["int", 0, 5, 0], "death_poison": ["int", 0, 5, 0], "death_shock": ["int", 0, 5, 0],
 }
 ## Plafonds des statistiques après les effets ajoutés (une part au-delà de 1 n'a pas de sens).
-const GRANT_CAPS := {"armor_pierce": 1.0, "stun_chance": 1.0, "shred": 0.9, "heal_block": 1.0}
+const GRANT_CAPS := {"armor_pierce": 1.0, "stun_chance": 1.0, "shred": 0.9, "heal_block": 1.0, "crit_chance": 1.0,
+	"execute": 0.5, "ricochet": 1.0, "knockback": 1.0, "resonance": 1.0, "mark": 1.0}
 ## raze_charges : arbres ou rochers qu'il peut raser par partie ; tile_charges : cases spéciales
 ## (Colline, Cristal, Rune) qu'il peut poser par partie (Terrassier).
 ## team_bounty : part de prime en plus pour toute l'équipe (le joueur compris). early_bonus : or
@@ -166,7 +174,31 @@ const TOWER_LEVEL := {
 	"ground_duration": ["num", 0.0, 10.0, 0.0],
 	"aura_range": ["num", 0.0, 1.0, 0.0], "aura_frostbite": ["num", 0.0, 100000.0, 0.0],
 	"aura_shock": ["num", 0.0, 1.0, 0.0], "aura_bounty": ["num", 0.0, 2.0, 0.0], "aura_discount": ["num", 0.0, 0.5, 0.0],
+	# Effets des talents (BoardFeats), nuls sur les tourelles de base : voir FEATS
+	"crit_chance": ["num", 0.0, 1.0, 0.0], "crit_bonus": ["num", 0.0, 5.0, 0.0], "execute": ["num", 0.0, 0.5, 0.0],
+	"pierce": ["int", 0, 10, 0], "ricochet": ["num", 0.0, 1.0, 0.0], "streak": ["num", 0.0, 0.1, 0.0],
+	"streak_cap": ["num", 0.0, 3.0, 0.0], "mark": ["num", 0.0, 1.0, 0.0], "warmup": ["num", 0.0, 1.0, 0.0],
+	"warmup_cap": ["num", 0.0, 3.0, 0.0], "frag": ["num", 0.0, 2.0, 0.0], "knockback": ["num", 0.0, 1.0, 0.0],
+	"armor_break": ["int", 0, 20, 0], "kill_splash": ["num", 0.0, 3.0, 0.0], "vs_big": ["num", 0.0, 5.0, 0.0],
+	"reaction": ["num", 0.0, 3.0, 0.0], "resonance": ["num", 0.0, 1.0, 0.0],
+	"death_burn": ["int", 0, 5, 0], "death_poison": ["int", 0, 5, 0], "death_shock": ["int", 0, 5, 0],
 }
+## Effets des talents sur les coups (BoardFeats) : crit_chance (coup critique : dégâts × (2 +
+## crit_bonus)), execute (achève un monstre sous cette part de PV, moitié contre un boss),
+## pierce (le projectile touche ce nombre de monstres en plus derrière sa cible), ricochet
+## (chance de toucher un 2e monstre), streak / streak_cap (+part de dégâts par monstre tué dans la
+## vague, plafonnée), mark (le monstre touché subit cette part en plus de toutes les tourelles
+## pendant MARK_DURATION), warmup / warmup_cap (+part de cadence par seconde de tir continu,
+## plafonnée), frag (un monstre tué projette 3 éclats de cette part des dégâts), knockback (chance
+## de repousser d'une demi-case), armor_break (chaque coup retire 1 d'armure, jusqu'à ce nombre),
+## kill_splash (un coup qui tue inflige cette part de ses dégâts autour), vs_big (dégâts en plus
+## contre un boss ou un gros monstre), reaction (feu sur un ralenti ou gelé : ×(1 + reaction) ;
+## foudre sur un brûlé : explosion ; glace sur un brûlé : étourdi), resonance (part des résistances
+## aux éléments ignorée), death_* (un monstre qui meurt brûlé, empoisonné ou électrifié transmet
+## l'effet à ce nombre de voisins).
+const FEATS := ["crit_chance", "crit_bonus", "execute", "pierce", "ricochet", "streak", "streak_cap", "mark",
+	"warmup", "warmup_cap", "frag", "knockback", "armor_break", "kill_splash", "vs_big", "reaction", "resonance",
+	"death_burn", "death_poison", "death_shock"]
 const MONSTER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"],
 	"hp": ["num", 1.0, 1000000.0], "speed": ["num", 0.1, 10.0],

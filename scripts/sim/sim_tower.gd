@@ -33,6 +33,10 @@ var shots := 0
 var jammed := 0.0
 ## Protection contre un nouveau brouillage (secondes), voir MonsterAbilities.
 var jam_guard := 0.0
+## Talents (BoardFeats) : secondes de tir sans interruption (échauffement) et monstres tués
+## depuis que la carte était vide (série).
+var warm := 0.0
+var kills := 0
 
 
 func buff(kind: String) -> float:
