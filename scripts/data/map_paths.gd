@@ -19,6 +19,7 @@ static func build(m: MapDef) -> String:
 			return "le départ (%d, %d) n'atteint aucune arrivée" % [s.x, s.y]
 		var pts := _simplify(tiles)
 		m.ground_paths.append(pts)
+		m.path_labels.append(int(m.start_labels.get(s.y * m.width + s.x, 0)))
 		m._ground_cum.append(cumulative(pts))
 		var air := PackedVector2Array([_center(tiles[0]), _center(tiles[tiles.size() - 1])])
 		m.air_paths.append(air)

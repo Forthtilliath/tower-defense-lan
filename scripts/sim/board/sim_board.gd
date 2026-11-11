@@ -60,11 +60,12 @@ func queue_wave(wave: Dictionary, hp_mult: float, count_mult := 1.0, number := 0
 	var spacing := maxf(count_mult, 1.0)
 	count_mult *= float(mod.get("count", 1.0))
 	var t := maxf(clock, _last_wave_time()) + 0.5
+	var paths := MapSpawns.wave_paths(map, number)  # entrées ouvertes à cette vague (vide : toutes)
 	for group in wave["groups"]:
 		var count := maxi(1, roundi(int(group["count"]) * count_mult))
 		var interval := float(group["interval"]) / spacing
 		for i in count:
-			_queue.append({"time": t, "type": group["monster"], "hp_mult": hp_mult, "wave": number, "mod": mod})
+			_queue.append({"time": t, "type": group["monster"], "hp_mult": hp_mult, "wave": number, "mod": mod, "paths": paths})
 			t += interval
 		t += 1.0
 
@@ -213,32 +214,7 @@ func new_id() -> int:
 
 
 func snapshot() -> Dictionary:
-	var mons := []
-	for m in monsters:
-		var hp := int(roundf(clampf(m.hp / m.max_hp, 0.0, 1.0) * 255.0))
-		var flags := (1 if m.is_slowed() else 0) | (2 if m.is_poisoned() else 0) | (4 if m.is_elite() else 0) \
-				| (8 if m.is_burning() else 0) | (16 if m.is_bleeding() else 0) | (32 if m.is_stunned() else 0) \
-				| (64 if m.is_feared() else 0) | (128 if m.is_charmed() else 0) | (256 if m.warded > 0.0 else 0) \
-				| (512 if m.marks.is_frostbitten() else 0) | (1024 if m.marks.is_shocked() else 0) \
-				| (2048 if m.marks.is_grounded() else 0)
-		mons.append([m.id, m.type_index, m.path, snappedf(m.progress, 0.01), hp, flags])
-	var tws := []
-	for cell in towers:
-		var t: SimTower = towers[cell]
-		tws.append([t.cell, data.tower_order.find(t.type), t.level, t.owner, t.target_mode, t.buff_flags(), t.invested])
-	var prs := []
-	for p in projectiles:
-		prs.append([p.id, snappedf(p.pos.x, 0.01), snappedf(p.pos.y, 0.01), p.kind])
-	var fx := []
-	for f in _fx:
-		var pos: Vector2 = f["pos"]
-		var to: Vector2 = f["to"]
-		var circle := is_round_fx(f["kind"])
-		var a: float = f["radius"] if circle else to.x
-		var b: float = float(f["tint"]) if circle else to.y
-		fx.append([f["kind"], snappedf(pos.x, 0.01), snappedf(pos.y, 0.01), snappedf(a, 0.01), snappedf(b, 0.01), snappedf(f["ttl"] / FX_DURATION, 0.01)])
-	return {"lives": lives, "alive": alive, "m": mons, "t": tws, "p": prs, "fx": fx, "z": BoardPatches.snapshot(self),
-		"e": BoardTerrain.snapshot(self)}
+	return BoardSnapshot.of(self)
 
 
 ## Effet rond (rayon et teinte), les autres vont d'un point à un autre.
@@ -259,7 +235,12 @@ func _spawn_due() -> void:
 	while i < _queue.size():
 		if _queue[i]["time"] <= clock and monsters.size() < MAX_MONSTERS:
 			var e: Dictionary = _queue[i]
-			spawn(e["type"], e["hp_mult"], -1, 0.0, true, e["mod"])
+			var paths: Array = e.get("paths", [])
+			var path := -1
+			if not paths.is_empty():  # entrées de la vague, à tour de rôle
+				path = paths[_spawn_turn % paths.size()]
+				_spawn_turn += 1
+			spawn(e["type"], e["hp_mult"], path, 0.0, true, e["mod"])
 			_queue.remove_at(i)
 		else:
 			i += 1
