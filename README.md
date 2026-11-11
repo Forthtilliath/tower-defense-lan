@@ -107,6 +107,10 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 - **Cartes partagées, en zones ou mixtes** : sur une carte en zones, chacun ne construit que dans la sienne (teintée de sa couleur) ;
   une carte mixte ajoute des cases communes. Avec moins de joueurs que de zones, chacun en tient plusieurs ;
   la zone d'un joueur qui quitte la partie devient commune.
+- **Support partout chez lui** : en coopération, le Support construit dans toutes les zones ouvertes, et ses alliés
+  construisent dans la sienne.
+- **Effets qui ne se cumulent pas** (poison, saignement sans charges en plus) : la tourelle vise d'abord un monstre qui
+  ne les a pas encore, pour ne pas gaspiller ses coups.
 - **Cartes à plusieurs couloirs séparés** (Quatre fiefs, Bastion) : un couloir s'ouvre par joueur, et la réserve de vies
   est multipliée par le nombre de couloirs ouverts. Les zones des couloirs fermés sont assombries : personne n'y construit
   (pas de pillage de leurs cases spéciales en petit comité).
