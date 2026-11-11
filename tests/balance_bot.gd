@@ -23,6 +23,8 @@ const MAX_ANSWERS := 3
 ## avec des tourelles de dégâts.
 const WEAK_RATIO := 0.6
 
+## Appelle la vague suivante en avance tant qu'il ne perd pas de vie (désactivable pour comparer).
+var calls_early := true
 var _lanes := {}  # cache de lane_key
 var _foes := {}  # cache : vague -> [[monstre type, poids], ...]
 
@@ -66,15 +68,24 @@ func play(gd: GameData, map_index: int, count: int, difficulty: int, options := 
 		var s: int = entry[1] if entry is Array else DEFAULT_SPEC
 		roster.append([i + 1, "Bot%d" % i, i, b, auto_talents(gd, b, level, s), heritage])
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster, difficulty, options)
-	var cells := ranked_cells(sim.map, false, sim.open_paths)
-	var air_cells := ranked_cells(sim.map, true, sim.open_paths)
+	var cells := ranked_cells(sim.map, false, sim.open_paths, gd.specials)
+	var air_cells := ranked_cells(sim.map, true, sim.open_paths, gd.specials)
 	var timer := 0.0
+	var wave := -1
+	var lives := 0
 	for i in int(2400.0 / DT):
 		timer -= DT
 		if timer <= 0.0:
 			timer = 0.5
 			for id in sim.order:
 				act(sim, id, cells, air_cells)
+			# Comme un joueur à l'aise, il appelle la vague suivante (or d'avance) tant qu'il ne perd pas de vie
+			if wave != sim.wave_index:
+				wave = sim.wave_index
+				lives = sim.boards[0].lives
+			if calls_early and sim.started() and sim.boards[0].lives == lives and MatchFlow.can_call(sim):
+				for id in sim.order:
+					sim.apply_command(id, {"a": "ready"})
 		# Les bots se préparent 20 s, puis lancent la première vague (elle ne part jamais seule)
 		if not sim.started() and i * DT >= FIRST_WAVE_AFTER:
 			for id in sim.order:
@@ -295,20 +306,27 @@ func builder_plan(sim: SimMatch, id: int) -> Array:
 
 ## Cases constructibles triées par longueur de chemin (au sol ou aérien) couverte à 2,5 cases,
 ## sur les seuls chemins ouverts (`paths`, tous si vide) ; les cases qui n'en couvrent aucun sont écartées.
-func ranked_cells(m: MapDef, air: bool, paths: Array[int] = []) -> Array[int]:
+## Comme un joueur, il vise les cases spéciales (`specials` : GameData.specials) : la Colline
+## allonge la portée, le Cristal et la Rune multiplient la puissance, le Filon d'or passe en tête.
+func ranked_cells(m: MapDef, air: bool, paths: Array[int] = [], specials: Array = []) -> Array[int]:
 	var scores := {}
 	for cell in m.cell_count():
 		if not m.is_buildable(cell):
 			continue
 		var c := m.cell_center(cell)
-		var score := 0
+		var tile: Dictionary = specials[m.special_at(cell)] if m.special_at(cell) >= 0 and m.special_at(cell) < specials.size() else {}
+		var reach := 2.5 * float(tile.get("range", 1.0))
+		var score := 0.0
 		for p in (paths if not paths.is_empty() else range(m.start_count())):
 			var d := 0.0
 			while d < m.path_length(p, air):
-				if c.distance_to(m.position_at(p, d, air)) <= 2.5:
-					score += 1
+				if c.distance_to(m.position_at(p, d, air)) <= reach:
+					score += 1.0
 				d += 0.25
-		if score > 0:
+		score *= float(tile.get("damage", 1.0)) * float(tile.get("rate", 1.0))
+		if score > 0.0 and int(tile.get("gold_per_wave", 0)) > 0:
+			score += 1000.0
+		if score > 0.0:
 			scores[cell] = score
 	var cells: Array[int] = []
 	cells.assign(scores.keys())
