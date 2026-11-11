@@ -24,6 +24,23 @@ static func new_player(player_name: String, color: int) -> Dictionary:
 	}
 
 
+## Accueil d'un joueur qui se présente : motif du refus (version, partie commencée, salon complet),
+## ou "" s'il entre au salon (pseudo nettoyé et rendu unique, couleur libre).
+func admit(id: int, raw_name: Variant, raw_version: Variant) -> String:
+	if typeof(raw_version) != TYPE_STRING or raw_version != net.version():
+		return "Version différente de l'hôte (%s). Mettez le jeu à jour." % net.version()
+	if net.host_loop != null:
+		return "La partie a déjà commencé."
+	if net.players.size() >= net.MAX_PLAYERS:
+		return "Le salon est complet."
+	var player_name := Check.sanitize_name(raw_name)
+	if player_name == "":
+		player_name = "Joueur"
+	net.players[id] = new_player(NetPayloads.unique_name(net.players, player_name), NetPayloads.free_color(net.players, net.MAX_PLAYERS))
+	sync()
+	return ""
+
+
 ## Option de partie choisie par l'hôte (mode, carte, rythme, lancement).
 func set_option(key: String, value: int) -> void:
 	var limits := {

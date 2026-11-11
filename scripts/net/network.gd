@@ -5,7 +5,7 @@ extends Node
 ## les autres joueurs n'envoient que des commandes, toutes revalidées par l'hôte.
 ## Les RPC venant des joueurs sont « any_peer » et vérifient l'expéditeur ;
 ## celles réservées à l'hôte sont « authority » (voir net_rpc.gd).
-## Le salon (options, choix des joueurs) est géré par NetLobby.
+## Le salon (options, choix et admission des joueurs) est géré par NetLobby.
 
 signal lobby_changed
 signal match_started(config: Dictionary)
@@ -294,15 +294,6 @@ func admit(id: int, raw_name: Variant, raw_version: Variant) -> void:
 	if players.has(id) or not _pending.has(id):
 		return
 	_pending.erase(id)
-	if typeof(raw_version) != TYPE_STRING or raw_version != version():
-		_kick(id, "Version différente de l'hôte (%s). Mettez le jeu à jour." % version())
-	elif host_loop != null:
-		_kick(id, "La partie a déjà commencé.")
-	elif players.size() >= MAX_PLAYERS:
-		_kick(id, "Le salon est complet.")
-	else:
-		var player_name := Check.sanitize_name(raw_name)
-		if player_name == "":
-			player_name = "Joueur"
-		players[id] = NetLobby.new_player(NetPayloads.unique_name(players, player_name), NetPayloads.free_color(players, MAX_PLAYERS))
-		lobby.sync()
+	var refusal := lobby.admit(id, raw_name, raw_version)
+	if refusal != "":
+		_kick(id, refusal)
