@@ -225,6 +225,7 @@ func _maps(src: Variant, waves: Dictionary, specials: Array) -> Variant:
 		parsed.max_players = head["max_players"]
 		parsed.lanes = head["lanes"]
 		parsed.tier = head["tier"]
+		parsed.monster_hp = head["hp"]
 		if parsed.lanes > parsed.start_count():
 			return _fail("%s : %d couloirs pour %d départs" % [where, parsed.lanes, parsed.start_count()])
 		out.append(parsed)

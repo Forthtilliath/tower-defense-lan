@@ -803,7 +803,7 @@
 			]
 		},
 		{
-			"id": "spirale", "name": "Spirale", "tier": 0, "flyer_speed": 0.4, "max_players": 3,
+			"id": "spirale", "name": "Spirale", "tier": 0, "hp": 1.3, "flyer_speed": 0.4, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"....T.....~~...",
@@ -820,7 +820,7 @@
 			]
 		},
 		{
-			"id": "labyrinthe", "name": "Labyrinthe", "tier": 0, "flyer_speed": 0.55, "max_players": 3,
+			"id": "labyrinthe", "name": "Labyrinthe", "tier": 0, "hp": 1.2, "flyer_speed": 0.55, "max_players": 3,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"...T.......~~~....T.",
@@ -858,7 +858,7 @@
 			]
 		},
 		{
-			"id": "quatre_fiefs", "name": "Quatre fiefs", "tier": 2, "flyer_speed": 0.5, "lanes": 4, "min_players": 1, "max_players": 4,
+			"id": "quatre_fiefs", "name": "Quatre fiefs", "tier": 2, "hp": 1.8, "flyer_speed": 0.5, "lanes": 4, "min_players": 1, "max_players": 4,
 			"waves": ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16", "w17", "w18", "w19", "w20"],
 			"rows": [
 				"..T.......^....~....^.......T..",
