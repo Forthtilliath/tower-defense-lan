@@ -4,7 +4,9 @@ extends "res://tests/unit/test_base.gd"
 
 func test_bundled_data_is_valid() -> void:
 	var gd := load_data()
-	check(gd.maps.size() == 9, "9 cartes attendues")
+	check(gd.maps.size() == 15, "15 cartes attendues : %d" % gd.maps.size())
+	for m in gd.maps:
+		check(m.theme != "prairie" or gd.maps.find(m) < 9, "%s : nouvelle carte sans thème" % m.id)
 	check(gd.builders.size() == 6 and gd.modifiers.size() == 4, "6 bâtisseurs et 4 vagues spéciales")
 	check(gd.tower_order.size() == 36, "36 tourelles attendues")
 	check(gd.difficulties.size() == 4 and gd.specials.size() == 19, "4 difficultés et 19 cases spéciales (dont Butte et Fossé) : %d" % gd.specials.size())

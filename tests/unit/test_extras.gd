@@ -68,8 +68,8 @@ func test_brood_by_steps_and_by_time() -> void:
 	check(b.monsters.filter(func(x: SimMonster) -> bool: return x.type == "hydra_head").size() == 1, "une tête par tiers de PV perdu")
 	var c := _board()
 	_still(c, "spider", 8.0)
-	_run(c, 4.1)
-	check(c.monsters.filter(func(x: SimMonster) -> bool: return x.type == "spiderling").size() == 1, "une araignée naine toutes les 4 s")
+	_run(c, float(c.data.monsters["spider"]["brood_interval"]) + 0.1)
+	check(c.monsters.filter(func(x: SimMonster) -> bool: return x.type == "spiderling").size() == 1, "une araignée naine à chaque intervalle")
 
 
 func test_necromancer_raises_the_dead() -> void:
@@ -77,7 +77,7 @@ func test_necromancer_raises_the_dead() -> void:
 	_still(b, "necromancer", 8.0)
 	var goblin := _still(b, "goblin", 8.5)
 	BoardCombat.damage(b, goblin, 100.0, true, BoardCombat.solo(1), [])
-	_run(b, 5.1)
+	_run(b, float(b.data.monsters["necromancer"]["raise_interval"]) + 0.1)
 	check(b.monsters.any(func(x: SimMonster) -> bool: return x.type == "skeleton"), "le gobelin revient en squelette")
 
 
