@@ -39,6 +39,8 @@ var max_players := 4
 var lanes := 1
 ## Difficulté de la carte (index dans DataSchema.MAP_TIERS : facile, moyenne, difficile).
 var tier := 1
+## Multiplicateur des PV des monstres sur cette carte (s'ajoute à la difficulté choisie).
+var monster_hp := 1.0
 ## Chemins au sol, un par point de départ (points de virage uniquement).
 var ground_paths: Array[PackedVector2Array] = []
 ## Chemins des volants : ligne droite du départ à l'arrivée.
@@ -82,14 +84,15 @@ static func parse(p_id: String, p_name: String, rows: Array, p_waves: Array[Stri
 				return "ligne %d : caractère « %s » inconnu" % [y, ch]
 	m.zones.resize(m.cells.size())
 	m.zones.fill(-1)
-	var err := m._build_paths()
+	var err := MapPaths.build(m)
 	if err != "":
 		return err
 	return m
 
 
 ## Zones de joueurs : mêmes dimensions que la carte, « 1 » à « 4 » pour une zone, « . » pour
-## une case commune. Seules les cases constructibles comptent. Renvoie "" ou un message d'erreur.
+## une case commune. Seules les cases constructibles et le décor (constructible une fois rasé)
+## comptent. Renvoie "" ou un message d'erreur.
 func set_zones(rows: Array) -> String:
 	if rows.size() != height:
 		return "zones : %d lignes au lieu de %d" % [rows.size(), height]
@@ -108,6 +111,8 @@ func set_zones(rows: Array) -> String:
 			if cells[index] == Cell.BUILD:
 				zones[index] = int(ch) - 1
 				used[int(ch) - 1] = true
+			elif is_decor(index):
+				zones[index] = int(ch) - 1  # un arbre rasé reste dans sa zone
 	zone_count = used.size()
 	for z in zone_count:
 		if not used.has(z):
@@ -128,18 +133,44 @@ func layout() -> int:
 	return Layout.ZONED
 
 
+## Zones ouvertes pour player_count joueurs : toutes, sauf sur une carte à plusieurs couloirs, où
+## seules les zones des couloirs ouverts (un par joueur, voir open_paths) le sont. Les autres sont
+## fermées : sans monstre à défendre, elles ne serviraient qu'à piller leurs bonus (filons…).
+func open_zone_count(player_count: int) -> int:
+	if lanes <= 1:
+		return zone_count
+	return mini(zone_count, clampi(player_count, 1, lanes))
+
+
+func zone_closed(zone: int, player_count: int) -> bool:
+	return zone >= open_zone_count(player_count)
+
+
 ## Le joueur n° player_index (0 = premier) sur player_count peut-il construire dans la zone ?
-## Avec moins de joueurs que de zones, chacun en reçoit plusieurs ; avec plus, ils se les partagent.
+## Avec moins de joueurs que de zones ouvertes, chacun en reçoit plusieurs ; avec plus, ils se les partagent.
 func zone_allows(zone: int, player_index: int, player_count: int) -> bool:
 	if zone < 0:
 		return true
-	var m := mini(maxi(player_count, 1), zone_count)
+	if zone_closed(zone, player_count):
+		return false
+	var m := mini(maxi(player_count, 1), open_zone_count(player_count))
 	return player_index % m == zone % m
 
 
-## Index du joueur dont la couleur représente la zone (le premier de ses propriétaires).
+## Index du joueur dont la couleur représente la zone (le premier de ses propriétaires), -1 si fermée.
 func zone_color_index(zone: int, player_count: int) -> int:
-	return zone % mini(maxi(player_count, 1), zone_count)
+	if zone_closed(zone, player_count):
+		return -1
+	return zone % mini(maxi(player_count, 1), open_zone_count(player_count))
+
+
+## Index des cartes de la plus facile à la plus difficile (ordre des données à difficulté égale).
+static func by_tier(maps: Array[MapDef]) -> Array[int]:
+	var out: Array[int] = []
+	out.assign(range(maps.size()))
+	out.sort_custom(func(a: int, b: int) -> bool:
+		return maps[a].tier < maps[b].tier or (maps[a].tier == maps[b].tier and a < b))
+	return out
 
 
 func in_bounds(c: Vector2i) -> bool:
@@ -181,7 +212,7 @@ func is_decor(index: int) -> bool:
 func clone() -> MapDef:
 	var m := MapDef.new()
 	for key in ["id", "name", "width", "height", "cells", "specials", "zones", "zone_count", "waves",
-			"flyer_speed", "min_players", "max_players", "lanes", "tier", "ground_paths", "air_paths", "_ground_cum", "_air_cum"]:
+			"flyer_speed", "min_players", "max_players", "lanes", "tier", "monster_hp", "ground_paths", "air_paths", "_ground_cum", "_air_cum"]:
 		m.set(key, get(key))
 	m.cells = cells.duplicate()
 	m.specials = specials.duplicate()
@@ -262,78 +293,3 @@ func find_cells(kind: int) -> Array[Vector2i]:
 		if cells[i] == kind:
 			out.append(cell_coords(i))
 	return out
-
-
-func _build_paths() -> String:
-	var starts := find_cells(Cell.START)
-	if starts.is_empty():
-		return "aucun point de départ (S)"
-	if find_cells(Cell.END).is_empty():
-		return "aucune arrivée (E)"
-	if starts.size() > 8:
-		return "trop de points de départ (8 maximum)"
-	for s in starts:
-		var tiles := _bfs(s)
-		if tiles.is_empty():
-			return "le départ (%d, %d) n'atteint aucune arrivée" % [s.x, s.y]
-		var pts := _simplify(tiles)
-		ground_paths.append(pts)
-		_ground_cum.append(_cumulative(pts))
-		var air := PackedVector2Array([_center(tiles[0]), _center(tiles[tiles.size() - 1])])
-		air_paths.append(air)
-		_air_cum.append(_cumulative(air))
-	return ""
-
-
-## Plus court chemin sur la route, du départ vers l'arrivée la plus proche.
-func _bfs(start: Vector2i) -> Array[Vector2i]:
-	var prev := {start: start}
-	var queue: Array[Vector2i] = [start]
-	var head := 0
-	while head < queue.size():
-		var cur: Vector2i = queue[head]
-		head += 1
-		if cell_at(cur) == Cell.END:
-			return _rebuild(prev, cur)
-		for d in DIRS:
-			var nxt: Vector2i = cur + d
-			if not in_bounds(nxt) or prev.has(nxt):
-				continue
-			var kind := cell_at(nxt)
-			if kind == Cell.ROUTE or kind == Cell.END:
-				prev[nxt] = cur
-				queue.append(nxt)
-	return []
-
-
-static func _rebuild(prev: Dictionary, end: Vector2i) -> Array[Vector2i]:
-	var out: Array[Vector2i] = [end]
-	var cur := end
-	while prev[cur] != cur:
-		cur = prev[cur]
-		out.append(cur)
-	out.reverse()
-	return out
-
-
-## Ne garde que le départ, l'arrivée et les virages.
-static func _simplify(tiles: Array[Vector2i]) -> PackedVector2Array:
-	var pts := PackedVector2Array()
-	for i in tiles.size():
-		if i == 0 or i == tiles.size() - 1:
-			pts.append(_center(tiles[i]))
-			continue
-		if tiles[i] - tiles[i - 1] != tiles[i + 1] - tiles[i]:
-			pts.append(_center(tiles[i]))
-	return pts
-
-
-static func _cumulative(pts: PackedVector2Array) -> PackedFloat32Array:
-	var cum := PackedFloat32Array([0.0])
-	for i in range(1, pts.size()):
-		cum.append(cum[i - 1] + pts[i].distance_to(pts[i - 1]))
-	return cum
-
-
-static func _center(c: Vector2i) -> Vector2:
-	return Vector2(c) + Vector2(0.5, 0.5)
