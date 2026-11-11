@@ -13,6 +13,8 @@ const PLAN := [
 ## Venin, Brasier, chacune montée au maximum avant la suivante (le Givre ralentit, les autres en profitent).
 const FOCUS_PLAN := ["crossbow", "tesla", "frost", "venom", "brazier", "tesla", "frost", "venom", "brazier"]
 const MAX_TOWERS := 16
+## Monstres présents à partir desquels il lance son pouvoir.
+const POWER_CROWD := 5
 const FIRST_WAVE_AFTER := 20.0
 ## Niveau des bots : un joueur qui a déjà quelques parties.
 const BOT_LEVEL := 10
@@ -60,7 +62,32 @@ func auto_talents(gd: GameData, builder: int, level: int, spec := 0) -> Dictiona
 		for t in sorted:
 			while TalentRules.add_refusal(gd, builder, talents, t["id"], points) == "":
 				talents[t["id"]] = int(talents.get(t["id"], 0)) + 1
+	_take_ultimate(gd, builder, talents, chosen, points)
 	return talents
+
+
+## Au niveau maximum, comme un joueur, il sacrifie un rang du tronc pour prendre l'ultime (son pouvoir)
+## si ses points ne suffisent pas à tout remplir.
+func _take_ultimate(gd: GameData, builder: int, talents: Dictionary, spec: Dictionary, points: int) -> void:
+	var ultimate := ""
+	for t in spec["talents"]:
+		if t["ultimate"]:
+			ultimate = t["id"]
+	if ultimate == "" or talents.has(ultimate) or points < TalentRules.max_points(gd):
+		return
+	for branch in gd.builders[builder]["branches"]:
+		if not branch["trunk"]:
+			continue
+		var trunk: Array = branch["talents"].duplicate()
+		trunk.reverse()
+		for t in trunk:
+			if int(talents.get(t["id"], 0)) > 0 and TalentRules.remove_refusal(gd, builder, talents, t["id"]) == "":
+				talents[t["id"]] -= 1
+				if talents[t["id"]] == 0:
+					talents.erase(t["id"])
+				if TalentRules.add_refusal(gd, builder, talents, ultimate, points) == "":
+					talents[ultimate] = 1
+				return
 
 
 ## builders : une classe par bot (index, ou [index, spécialisation]) ; Artilleur par défaut.
@@ -84,6 +111,7 @@ func play(gd: GameData, map_index: int, count: int, difficulty: int, options := 
 			timer = 0.5
 			for id in sim.order:
 				act(sim, id, cells, air_cells)
+				use_power(sim, id)
 			# Comme un joueur à l'aise, il appelle la vague suivante (or d'avance) tant qu'il ne perd pas de vie
 			if wave != sim.wave_index:
 				wave = sim.wave_index
@@ -130,6 +158,31 @@ func act(sim: SimMatch, id: int, cells: Array[int], air_cells: Array[int]) -> vo
 	for t in mine:
 		if sim.apply_command(id, {"a": "upgrade", "cell": t.cell}) == "":
 			return
+
+
+## Pouvoir de son talent ultime, lancé dès qu'il est prêt et que la vague est là (au moins
+## POWER_CROWD monstres) : visé sur le monstre le plus avancé, ou sur sa meilleure tourelle (Coup de génie).
+func use_power(sim: SimMatch, id: int) -> void:
+	var p: Dictionary = sim.players[id]
+	var board := sim.boards[int(p["board"])]
+	if MatchPowers.waves_left(sim, p) != 0 or board.monsters.size() < POWER_CROWD:
+		return
+	var cell := 0
+	if p["kit"].power == "genius":
+		var best: SimTower = null
+		for c in board.towers:
+			var t: SimTower = board.towers[c]
+			if t.owner == id and (best == null or t.invested > best.invested):
+				best = t
+		cell = best.cell if best != null else 0
+	else:
+		var lead := board.monsters[0]
+		for m in board.monsters:
+			if m.ratio() > lead.ratio():
+				lead = m
+		var at := Vector2i(lead.pos.floor())
+		cell = clampi(at.y, 0, board.map.height - 1) * board.map.width + clampi(at.x, 0, board.map.width - 1)
+	sim.apply_command(id, {"a": "power", "cell": maxi(0, cell)})
 
 
 ## Tourelle à construire contre la vague suivante si la plupart de sa puissance de feu ne la
