@@ -21,6 +21,8 @@ var kind := 0
 var element := ""
 var hits_air := true
 var hits_ground := true
+## Case de la tourelle qui a tiré (-1 : nappe, effet sans tourelle), pour sa série (BoardFeats).
+var cell := -1
 
 
 func stat(key: String) -> float:

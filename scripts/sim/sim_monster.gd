@@ -245,7 +245,7 @@ func apply_shred(part: float, duration: float) -> void:
 
 ## Armure restante face à un coup qui en ignore la part `pierce`.
 func armor_against(pierce: float) -> float:
-	var left := armor * (1.0 - pierce)
+	var left := maxf(0.0, armor - marks.armor_down) * (1.0 - pierce)
 	return left * (1.0 - shred) if shred_timer > 0.0 else left
 
 

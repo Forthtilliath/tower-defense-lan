@@ -20,6 +20,30 @@ var shock_timer := 0.0
 var heal_block := 0.0
 var heal_block_timer := 0.0
 var grounded := 0.0
+## Talents (BoardFeats) : marque (part de dégâts subis en plus), armure brisée (points retirés),
+## effets transmis à la mort (nombre de voisins : brûlure, poison, électrifié).
+var mark := 0.0
+var mark_timer := 0.0
+var armor_down := 0
+var death_spread := {}  # "burn" / "poison" / "shock" -> nombre de voisins
+
+
+func apply_mark(part: float, duration: float) -> void:
+	if part <= 0.0:
+		return
+	if mark_timer <= 0.0 or part > mark:
+		mark = part
+	mark_timer = maxf(mark_timer, duration)
+
+
+## Retire 1 point d'armure, jusqu'à `cap` points en tout.
+func break_armor(cap: int) -> void:
+	armor_down = maxi(armor_down, mini(cap, armor_down + 1))
+
+
+func spread_on_death(kind: String, count: int) -> void:
+	if count > int(death_spread.get(kind, 0)):
+		death_spread[kind] = count
 
 
 func apply_frostbite(dps: float, owner: int) -> void:
@@ -56,11 +80,12 @@ func update(dt: float) -> void:
 	shock_timer = maxf(0.0, shock_timer - dt)
 	heal_block_timer = maxf(0.0, heal_block_timer - dt)
 	grounded = maxf(0.0, grounded - dt)
+	mark_timer = maxf(0.0, mark_timer - dt)
 
 
-## Part de dégâts subis en plus (électrifié).
+## Part de dégâts subis en plus (électrifié, marqué).
 func vulnerability() -> float:
-	return shock if shock_timer > 0.0 else 0.0
+	return (shock if shock_timer > 0.0 else 0.0) + (mark if mark_timer > 0.0 else 0.0)
 
 
 ## Part des soins et de la régénération qui passe encore.
