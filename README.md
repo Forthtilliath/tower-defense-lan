@@ -87,6 +87,11 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   - *Entre les vagues* : une phase de construction de 20 s commence quand la carte est vide ; pendant une vague,
     impossible de construire, d'améliorer, de vendre ou d'appeler la vague suivante.
 - **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
+- **Héritage** (hôte, coopération et versus) : *Activé* ou *Désactivé*. Désactivé, personne ne reçoit de bonus
+  d'héritage : chacun joue avec sa classe et ses talents seulement, pour des parties plus équitables.
+
+En partie, le bouton **Talents** de la barre du haut montre l'arbre joué, en lecture seule (la partie continue pendant
+ce temps), avec la liste des bonus d'héritage du compte, marqués « désactivé » si l'hôte l'a coupé.
 
 Dans tous les cas, **la première vague ne part jamais seule** : on se prépare aussi longtemps qu'on veut, puis on la lance
 (« Prêt ! » de tous les joueurs, ou l'hôte seul selon le lancement choisi).
@@ -152,7 +157,7 @@ L'armure retire des dégâts fixes à chaque coup (au moins 25 % passent toujour
 1. Tous les appareils sont sur **le même réseau Wi-Fi**.
 2. Un joueur choisit **Héberger une partie**. Son adresse IP s'affiche dans le salon.
 3. Les autres choisissent **Rejoindre une partie** : la partie apparaît d'elle-même. Sinon, saisir l'IP de l'hôte.
-4. Chacun choisit son bâtisseur et vote pour la difficulté ; l'hôte choisit le mode, la carte, le rythme et le lancement, puis lance.
+4. Chacun choisit son bâtisseur et vote pour la difficulté ; l'hôte choisit le mode, la carte, le rythme, le lancement et l'héritage, puis lance.
 
 **Windows** : au premier lancement en tant qu'hôte, Windows demande d'autoriser le jeu dans le pare-feu. Accepter pour les **réseaux privés**.
 Ports utilisés (UDP) : `47800` (partie) et `47801` (découverte des parties) ; transfert de compte : `47802` (TCP)
