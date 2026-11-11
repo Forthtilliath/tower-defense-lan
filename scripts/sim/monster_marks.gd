@@ -30,6 +30,37 @@ var death_spread := {}  # "burn" / "poison" / "shock" -> nombre de voisins
 var puddle := 0.0
 var puddle_owner := 0
 var static_hits := 0
+## Support : affaibli (fuite moins chère), résistances réduites, capacités ralenties (maléfice),
+## contrôles déjà subis, force de frappe en plus une fois charmé.
+var weakened := false
+var resist_down := 0.0
+var resist_timer := 0.0
+var hex := 0.0
+var hex_timer := 0.0
+var controlled := 0
+var charm_power := 0.0
+
+
+func apply_resist_down(part: float, duration: float) -> void:
+	if part > 0.0 and (resist_timer <= 0.0 or part >= resist_down):
+		resist_down = part
+		resist_timer = duration
+
+
+func apply_hex(part: float, duration: float) -> void:
+	if part > 0.0 and (hex_timer <= 0.0 or part >= hex):
+		hex = part
+		hex_timer = duration
+
+
+## Vitesse de recharge des capacités (bond, brouillage) : ralentie par le maléfice.
+func ability_pace() -> float:
+	return 1.0 - hex if hex_timer > 0.0 else 1.0
+
+
+## Part des résistances aux éléments encore active.
+func resist_left() -> float:
+	return 1.0 - resist_down if resist_timer > 0.0 else 1.0
 
 
 func apply_mark(part: float, duration: float) -> void:
@@ -85,6 +116,8 @@ func update(dt: float) -> void:
 	heal_block_timer = maxf(0.0, heal_block_timer - dt)
 	grounded = maxf(0.0, grounded - dt)
 	mark_timer = maxf(0.0, mark_timer - dt)
+	resist_timer = maxf(0.0, resist_timer - dt)
+	hex_timer = maxf(0.0, hex_timer - dt)
 
 
 ## Part de dégâts subis en plus (électrifié, marqué).

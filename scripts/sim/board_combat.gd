@@ -37,7 +37,7 @@ static func fire_towers(b: SimBoard, dt: float, rewards: Array) -> void:
 			t.beam_target = 0
 			t.warm = 0.0
 			continue
-		t.cooldown += BoardFeats.next_delay(t, BoardAuras.fire_delay(t), b.lives)
+		t.cooldown += BoardFeats.next_delay(t, BoardAuras.fire_delay(t) / BoardSupport.rate_mult(b, t), b.lives)
 		if def["attack"] != "shot":
 			BoardAttacks.fire(b, t, def, target, rewards)
 			continue
@@ -58,9 +58,11 @@ static func find_target(b: SimBoard, t: SimTower, def: Dictionary, skip := {}) -
 	var reach := BoardAuras.reach(t)
 	var r2 := reach * reach
 	var all := int(t.stats.get("all_targets", 0)) > 0
+	var air := all or t.buff("air") > 0.0
+	var light := t.buff("light") > 0.0  # Lumière du Support : touche aussi les insensibles
 	for m in b.monsters:
-		if skip.has(m.id) or not can_hit(def["air"] or all, def["ground"] or all, m) or t.center.distance_squared_to(m.pos) > r2 \
-				or m.taken(def["element"]) <= 0.0:  # insensible à ses coups (fantôme, squelette…)
+		if skip.has(m.id) or not can_hit(def["air"] or air, def["ground"] or all, m) or t.center.distance_squared_to(m.pos) > r2 \
+				or (m.taken(def["element"]) <= 0.0 and not light):  # insensible à ses coups (fantôme, squelette…)
 			continue
 		var score := m.ratio()
 		if t.target_mode == SimTower.Target.STRONGEST:
@@ -217,9 +219,10 @@ static func afflict(b: SimBoard, m: SimMonster, p: SimProjectile) -> void:
 	m.apply_shred(p.stat("shred"), p.stat("shred_duration"))
 	_mark(m, p)
 	for kind in CONTROLS:
-		var chance := p.stat(kind + "_chance")
+		var chance := p.stat(kind + "_chance") * BoardSupport.control_mult(m, p)
 		if chance > 0.0 and b.rng.randf() < chance:
 			var applied := m.apply_control(CONTROLS[kind], p.stat(kind + "_duration"), p.owner)
+			m.marks.controlled += 1 if applied > 0.0 else 0
 			m.add_contrib(p.credit, applied * m.max_hp * SimMonster.CONTROL_POINTS)
 
 

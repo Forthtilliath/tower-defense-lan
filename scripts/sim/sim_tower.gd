@@ -43,6 +43,8 @@ var storm_clock := 0.0
 ## après un déplacement (Bricolage).
 var spare := 0.0
 var tinker := 0.0
+## Monstres tués depuis sa construction (Vétérans).
+var kills_total := 0
 
 
 func buff(kind: String) -> float:

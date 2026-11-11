@@ -100,4 +100,4 @@ static func _charmed_attacks(b: SimBoard, dt: float, rewards: Array) -> void:
 				target = m
 		if target != null:
 			# Coups continus : comptés hors armure, sinon de si petits coups seraient presque annulés
-			BoardCombat.damage(b, target, c.max_hp * CHARM_DPS * dt, true, BoardCombat.solo(c.charm_owner), rewards)
+			BoardCombat.damage(b, target, c.max_hp * CHARM_DPS * (1.0 + c.marks.charm_power) * dt, true, BoardCombat.solo(c.charm_owner), rewards)
