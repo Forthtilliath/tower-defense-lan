@@ -110,7 +110,9 @@ static func _talent(v: DataValidator, src: Variant, where: String, towers: Dicti
 	if grant == null:
 		return null
 	t["grant"] = grant
-	var effect: bool = t["unlock"] != "" or t["imbue_all"] or grant.values().any(func(x: Variant) -> bool: return x > 0)
+	if t["power"] != "" and not MatchPowers.POWERS.has(t["power"]):
+		return v._fail("%s : pouvoir « %s » inconnu" % [where, t["power"]])
+	var effect: bool = t["unlock"] != "" or t["power"] != "" or t["imbue_all"] or grant.values().any(func(x: Variant) -> bool: return x > 0)
 	for key in PlayerKit.STATS + PlayerKit.ECONOMY:
 		effect = effect or t[key] > 0
 	if not effect:

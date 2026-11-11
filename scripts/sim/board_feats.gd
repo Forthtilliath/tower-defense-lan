@@ -37,7 +37,7 @@ static func on_shot(b: SimBoard, t: SimTower, p: SimProjectile) -> void:
 		mult *= 1.0 + minf(p.stat("streak_cap"), p.stat("streak") * t.kills)
 	if p.stat("growth") > 0.0 and t.kit != null:
 		mult *= 1.0 + p.stat("growth") * t.kit.clean_waves
-	mult *= BoardLayout.damage_mult(b, t, p) * BoardSupport.on_shot(b, t, p)
+	mult *= BoardLayout.damage_mult(b, t, p) * BoardSupport.on_shot(b, t, p) * MatchPowers.damage_mult(b, t)
 	if mult != 1.0:
 		GameData.scale_damage(p.stats, mult)
 	if int(p.stat("all_targets")) > 0:

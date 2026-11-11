@@ -56,6 +56,8 @@ var spare_pending := 0.0
 var masterpiece_cell := -1
 ## Alliés dans la partie (Esprit d'équipe), fixé au départ par MatchEconomy.setup.
 var allies := 0
+## Pouvoir actif (MatchPowers.POWERS) donné par son talent ultime, "" sinon.
+var power := ""
 var _base := {}  # multiplicateurs de la classe
 var _bonus_towers := {}  # tourelles visées par le bonus de classe (vide : toutes)
 var _all := {}  # bonus des talents sur toutes les tourelles
@@ -98,6 +100,8 @@ static func make(data: GameData, p_builder: int, p_talents := {}, p_heritage: Ar
 func _apply(t: Dictionary, rank: int) -> void:
 	if t["unlock"] != "":
 		towers[t["unlock"]] = true
+	if str(t.get("power", "")) != "":
+		power = t["power"]
 	bounty += float(t["bounty"]) * rank
 	interest += float(t["interest"]) * rank
 	interest_cap += int(t["interest_cap"]) * rank

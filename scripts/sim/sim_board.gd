@@ -272,7 +272,7 @@ func _move_monsters(dt: float) -> void:
 		m.move(dt)
 		if m.reached_end():
 			m.hp = 0.0  # le monstre quitte la carte, sans prime
-			lives = maxi(0, lives - BoardSupport.leak_damage(m))
+			lives = maxi(0, lives - BoardSupport.leak_damage(m) - int(get_meta("leak_extra", 0)))  # Va-tout : +1
 		else:
 			m.pos = map.position_at(m.path, m.progress, m.flying)
 

@@ -29,8 +29,9 @@ const TALENT := {
 	"scrap": ["num", 0.0, 1.0, 0.0], "spare": ["num", 0.0, 0.5, 0.0], "tinker": ["num", 0.0, 1.0, 0.0],
 	"team_aura": ["num", 0.0, 0.2, 0.0], "vein_tiles": ["int", 0, 5, 0], "mound_tiles": ["int", 0, 5, 0],
 	"ditch_tiles": ["int", 0, 5, 0], "fertile": ["num", 0.0, 1.0, 0.0], "saver": ["num", 0.0, 0.1, 0.0],
-	"jackpot_share": ["num", 0.0, 1.0, 0.0],
+	"jackpot_share": ["num", 0.0, 1.0, 0.0], "power": ["id", ""],
 }
+## power : pouvoir actif donné par le talent (ultime), un id de MatchPowers.POWERS.
 ## team_aura (Support) : puissance d'aura en plus par allié dans la partie. vein_tiles,
 ## mound_tiles, ditch_tiles (Terrassier) : Filons, Buttes et Fossés à poser par partie. fertile :
 ## bonus des cases spéciales multiplié d'autant en plus pour ses tourelles. saver (Usurier) :
