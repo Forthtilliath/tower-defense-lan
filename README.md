@@ -135,7 +135,7 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 - **Cases spéciales** (cadre coloré) : Colline (+25 % de portée), Cristal (+30 % de dégâts), Rune (+25 % de cadence),
   Filon d'or (+15 or par vague au propriétaire de la tourelle).
 
-Les volants vont en ligne droite du départ à l'arrivée (pointillés sur le plateau) : il faut de l'anti-aérien sur leur route.
+Les volants vont en ligne droite du départ à l'arrivée : il faut de l'anti-aérien sur leur route.
 L'armure retire des dégâts fixes à chaque coup (au moins 25 % passent toujours) : préférer les gros coups ou le poison.
 
 ## Jouer en réseau local
