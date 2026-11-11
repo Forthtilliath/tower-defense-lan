@@ -1,10 +1,9 @@
 class_name MenuScreen
 extends CenterContainer
-## Menu principal : pseudo, héberger, rejoindre.
+## Menu principal du compte ouvert : héberger, rejoindre, changer de compte.
 
 var _nav: Node
 var _message := ""
-var _name_edit: LineEdit
 var _error: Label
 
 
@@ -19,42 +18,42 @@ func _ready() -> void:
 	box.custom_minimum_size.x = 460
 	add_child(box)
 	box.add_child(UiTheme.title("Tower Defense LAN", 48))
-	box.add_child(UiTheme.label("Défendez ensemble ou affrontez-vous en réseau local.", 18, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
-	box.add_child(UiTheme.label("Ton pseudo", 18, UiTheme.MUTED))
-	_name_edit = LineEdit.new()
-	_name_edit.text = Settings.player_name
-	_name_edit.max_length = Check.NAME_MAX
-	_name_edit.custom_minimum_size.y = 52
-	_name_edit.select_all_on_focus = true
-	box.add_child(_name_edit)
-	box.add_child(UiTheme.button("Héberger une partie", _on_host))
-	box.add_child(UiTheme.button("Rejoindre une partie", _on_join))
+	var who := UiTheme.vbox(2)
+	box.add_child(who)
+	who.add_child(UiTheme.label("Compte", 15, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+	who.add_child(UiTheme.label(Progress.account_name, 28, UiTheme.TEXT, HORIZONTAL_ALIGNMENT_CENTER))
+	who.add_child(UiTheme.label(_best_text(), 15, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+	var host := UiTheme.button("Héberger une partie", _on_host)
+	box.add_child(host)
+	box.add_child(UiTheme.button("Rejoindre une partie", _nav.show_join))
+	box.add_child(UiTheme.button("Changer de compte", go_back))
 	if not OS.has_feature("mobile"):
 		box.add_child(UiTheme.button("Quitter", func() -> void: get_tree().quit()))
-	if _message == "" and Progress.load_warning != "":
-		_message = Progress.load_warning
 	_error = UiTheme.label(_message, 18, UiTheme.DANGER, HORIZONTAL_ALIGNMENT_CENTER)
 	box.add_child(_error)
-	box.add_child(UiTheme.label("Version %s" % Net.version(), 14, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+	host.grab_focus.call_deferred()
 
 
+## Retour (Android ou bouton) : on revient à l'accueil, le compte est refermé.
 func go_back() -> void:
-	get_tree().quit()
+	Progress.close_account()
+	_nav.show_start()
 
 
-func _player_name() -> String:
-	Settings.set_player_name(_name_edit.text)
-	return Settings.player_name
+## « Meilleure classe : Arcaniste niv. 12 » (vide pour un compte tout neuf).
+func _best_text() -> String:
+	var best := -1
+	for b in Data.db.builders.size():
+		if Progress.xp(b) > 0 and (best < 0 or Progress.level(b) > Progress.level(best)):
+			best = b
+	if best < 0:
+		return "Nouveau compte : chaque classe commence au niveau 1."
+	return "Meilleure classe : %s niv. %d" % [Data.db.builders[best]["name"], Progress.level(best)]
 
 
 func _on_host() -> void:
-	var err := Net.host(_player_name())
+	var err := Net.host(Progress.account_name)
 	if err != "":
 		_error.text = err
 		return
 	_nav.show_lobby()
-
-
-func _on_join() -> void:
-	_player_name()
-	_nav.show_join()
