@@ -2,8 +2,10 @@ class_name MatchFlow
 extends RefCounted
 ## Enchaînement des vagues : compte à rebours, phases de construction, appel de la vague suivante.
 ##
-## Rythme libre : on construit à tout moment. Le compte à rebours démarre quand la vague a fini
-## d'apparaître, et l'on peut appeler la vague suivante même pendant une vague (une seule d'avance).
+## Rythme libre (coopération) : on construit à tout moment. Le compte à rebours de la vague
+## suivante (SimMatch.CALL_WINDOW) démarre dès qu'une vague est appelée ; on peut l'appeler tout
+## de suite (une seule vague d'avance), contre 1 or par seconde restante.
+## Versus : le compte à rebours (SimMatch.BETWEEN_WAVES) démarre quand la vague a fini d'apparaître.
 ## Rythme « entre les vagues » (coopération) : une phase de construction démarre quand la carte est
 ## vide. Construire, améliorer et vendre n'est possible que pendant cette phase, et aucune vague
 ## ne peut être appelée tant qu'une autre est en cours.
@@ -24,8 +26,13 @@ static func update(sim: SimMatch, dt: float) -> void:
 		sim.launch_next_wave()
 
 
+## Le compte à rebours part-il de l'appel de la vague précédente (coopération, rythme libre) ?
+static func timed_from_call(sim: SimMatch) -> bool:
+	return sim.mode == SimMatch.Mode.COOP and sim.rhythm == SimMatch.Rhythm.FREE
+
+
 static func _should_start_countdown(sim: SimMatch) -> bool:
-	if not sim.has_next_wave():
+	if timed_from_call(sim) or not sim.has_next_wave():
 		return false
 	for b in sim.boards:
 		if not b.alive:
@@ -48,6 +55,8 @@ static func can_call(sim: SimMatch) -> bool:
 static func call_refusal(sim: SimMatch) -> String:
 	if sim.ended or not sim.has_next_wave():
 		return "Plus aucune vague à appeler"
+	if timed_from_call(sim):
+		return "Une vague est déjà en attente" if sim.boards[0].pending_waves() > 1 else ""
 	if sim.countdown >= 0.0:
 		return ""
 	if sim.rhythm == SimMatch.Rhythm.BETWEEN:
@@ -75,8 +84,8 @@ static func call_wave(sim: SimMatch, id: int) -> String:
 	return ""
 
 
-## Or offert à chacun quand une vague part en avance : les secondes d'attente évitées.
-## Appelée pendant une vague, elle évite tout le compte à rebours qui aurait suivi.
+## Or offert à chacun quand une vague part en avance : les secondes d'attente évitées (1 or par
+## seconde). En versus, appelée pendant une vague, elle évite tout le compte à rebours qui aurait suivi.
 ## La première vague, lancée quand les joueurs le décident, ne rapporte pas de bonus.
 static func early_bonus(sim: SimMatch) -> int:
 	if not sim.started():

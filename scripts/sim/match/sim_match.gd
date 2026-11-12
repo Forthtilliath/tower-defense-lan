@@ -22,7 +22,11 @@ enum Heritage { ON, OFF }
 const RHYTHM_NAMES := ["Libre", "Entre les vagues"]
 const LAUNCH_NAMES := ["Vote de tous", "Hôte seul"]
 const HERITAGE_NAMES := ["Activé", "Désactivé"]
+## Versus : pause entre la fin d'apparition d'une vague et la suivante.
 const BETWEEN_WAVES := 12.0
+## Coopération en rythme libre : délai avant la vague suivante, compté dès l'appel de la vague
+## précédente ; l'appeler plus tôt rapporte 1 or par seconde d'avance.
+const CALL_WINDOW := 30.0
 const BUILD_PHASE := 20.0
 const SELL_RATIO := 0.7
 const VERSUS_BASE_INCOME := 10
@@ -136,7 +140,7 @@ func player_left(id: int) -> void:
 func launch_next_wave() -> void:
 	var bonus := MatchFlow.early_bonus(self)
 	wave_index += 1
-	countdown = -1.0
+	countdown = CALL_WINDOW if MatchFlow.timed_from_call(self) and has_next_wave() else -1.0
 	var total := map.waves.size()
 	var wave: Dictionary = data.waves[map.waves[mini(wave_index, total - 1)]]
 	var hp_mult := float(wave["hp"]) * monster_hp_mult()
