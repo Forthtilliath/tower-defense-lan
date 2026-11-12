@@ -84,7 +84,7 @@ static func record_text(map_index: int) -> String:
 	return "Tes étoiles : " + " · ".join(parts)
 
 
-## [« Normal · 2 votes (Difficile : 1) », « 20 vies · PV des monstres x1 · or de départ x1 »].
+## [« Difficile · 2 votes (Normal : 1) », « 20 vies · PV des monstres +20 % · monstres +5 % · intérêts : 4 % de l'or gardé, 25 or au plus (dès 625 or gardés) »].
 static func vote_lines(players: Dictionary) -> Array[String]:
 	var count := Data.db.difficulties.size()
 	var tally := NetPayloads.tally_votes(players, count)
@@ -97,9 +97,25 @@ static func vote_lines(players: Dictionary) -> Array[String]:
 	var title := "%s · %d vote%s" % [d["name"], tally[chosen], "s" if tally[chosen] > 1 else ""]
 	if not others.is_empty():
 		title += " (%s)" % ", ".join(others)
-	var detail := "%d vies · PV des monstres x%s · or de départ x%s.\nÉgalité : la plus facile l'emporte." % [
-		d["lives"], _num(d["hp"]), _num(d["gold"])]
-	return [title, detail]
+	var lives: int = d["lives"]
+	var parts := ["%d vie%s" % [lives, "s" if lives > 1 else ""], "PV des monstres " + percent_delta(d["hp"])]
+	if not is_equal_approx(float(d["count"]), 1.0):
+		parts.append("monstres " + percent_delta(d["count"]))
+	if float(d["armor"]) > 0.0:
+		parts.append("armure +%s" % _num(d["armor"]))
+	for key in ["gold", "reward"]:
+		if not is_equal_approx(float(d[key]), 1.0):
+			parts.append("%s %s" % ["or de départ" if key == "gold" else "primes", percent_delta(d[key])])
+	parts.append("intérêts : " + MatchFlow.interest_text(PlayerKit.base_interest(Data.db, d)))
+	return [title, " · ".join(parts) + ".\nÉgalité : la plus facile l'emporte."]
+
+
+## Écart à la référence 1 (Normal) : 1,2 -> « +20 % », 0,8 -> « -20 % », 1 -> « normaux ».
+static func percent_delta(mult: float) -> String:
+	var delta := roundi((mult - 1.0) * 100.0)
+	if delta == 0:
+		return "normaux"
+	return "%s%d %%" % ["+" if delta > 0 else "", delta]
 
 
 ## Bonus de la classe, spécialisation, tourelles en plus du tronc commun, héritage (listé même
