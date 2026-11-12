@@ -79,8 +79,8 @@ func test_tower_kills_reward_owner() -> void:
 	sim.apply_command(2, _cmd({"a": "build", "cell": cell, "tower": 0}, sim))
 	sim.players[2]["gold"] = 0
 	sim.launch_next_wave()
-	# 15 s : avant le lancement automatique de la vague 2
-	for i in int(15.0 / DT):
+	# 25 s : avant le lancement automatique de la vague 2 (SimMatch.CALL_WINDOW)
+	for i in int(25.0 / DT):
 		sim.step(DT)
 	check(sim.players[2]["gold"] > 15, "le propriétaire touche les primes : %d" % sim.players[2]["gold"])
 	# 6 or d'intérêts (4 % de 150) + 15 or de vague ; pas de bonus pour la première vague
