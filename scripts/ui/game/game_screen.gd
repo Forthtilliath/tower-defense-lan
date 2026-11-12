@@ -234,7 +234,11 @@ func host_launches() -> bool:
 
 
 func difficulty_name() -> String:
-	return Data.db.difficulties[int(config.get("difficulty", 1))]["name"]
+	return difficulty()["name"]
+
+
+func difficulty() -> Dictionary:
+	return Data.db.difficulties[clampi(int(config.get("difficulty", 1)), 0, Data.db.difficulties.size() - 1)]
 
 
 func player_on_board(index: int) -> int:

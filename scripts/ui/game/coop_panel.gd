@@ -66,10 +66,10 @@ func refresh() -> void:
 		_next.text += "\n" + MonsterText.wave_text(data, data.waves[ids[mini(s.wave, ids.size() - 1)]])
 		_next.add_theme_color_override("font_color", Color(mod["color"]) if not mod.is_empty() else UiTheme.MUTED)
 	var gold := int(_game.me().get("gold", 0))
-	var rule := _game.my_kit().interest_rule(data)
+	var rule := _game.my_kit().interest_rule(data, _game.difficulty())
 	if float(rule[0]) > 0.0:
-		_interest.text = "Intérêts : +%d or à la prochaine vague (%d %% de ton or, %d au plus)" % [
-			MatchFlow.interest(data, gold, _game.my_kit()), roundi(float(rule[0]) * 100.0), int(rule[1])]
+		_interest.text = "Intérêts : +%d or à la prochaine vague (%s)" % [
+			MatchFlow.interest(data, gold, _game.my_kit(), _game.difficulty()), MatchFlow.interest_text(rule)]
 	for entry in _allies:
 		var id: int = entry[0]
 		var builder := int(_game.builders.get(id, 0))
