@@ -65,7 +65,7 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   du Parieur, Terrassier qui rase arbres et rochers pour construire dessus et pose des cases bonus (Colline, Cristal,
   Rune, et avec ses talents Tableau de chasse, Butte et Fossé), avec un nombre de charges par partie selon ses talents.
 - **Talents et progression** (bouton « Talents » du salon, un onglet par spécialisation) : chaque classe gagne de
-  l'expérience à chaque partie (victoire : 10 XP par vague × difficulté — Difficile ×1,5, Cauchemar ×2 —, + 25 % ;
+  l'expérience à chaque partie (victoire : 10 XP par vague × difficulté — Difficile ×1,5, Cauchemar ×2, Infernal ×3 —, + 25 % ;
   défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 % de ses 10 XP selon le quart de la partie atteint)
   et monte jusqu'au **niveau 30**, avec 1 point de talent par niveau. Le tronc (12 rangs) ne renforce que les
   tourelles de la classe ; une spécialisation compte 16 à 18 rangs (paliers à 3, 7, 11 et 15 points) : talents de
@@ -80,10 +80,11 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   entre deux parties en retirant ses points.
   La progression appartient au **compte** choisi au lancement (voir *Comptes*), vérifiée à la relecture ; l'hôte revalide
   les talents de chacun (le niveau annoncé, lui, n'est pas vérifiable sans serveur).
-- **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile ou Cauchemar. La plus votée l'emporte ; en cas d'égalité, la plus facile.
+- **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile, Cauchemar ou Infernal. La plus votée l'emporte ; en cas d'égalité, la plus facile.
 - **Rythme** (hôte, coopération) :
   - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague, même pendant une vague
-    (une seule vague d'avance), avec un bonus d'or égal aux secondes d'attente évitées.
+    (une seule vague d'avance). La suivante part d'elle-même 30 s après l'appel de la précédente ; l'appeler plus tôt
+    rapporte 1 or par seconde d'avance (jusqu'à 30).
   - *Entre les vagues* : une phase de construction de 20 s commence quand la carte est vide ; pendant une vague,
     impossible de construire, d'améliorer, de vendre ou d'appeler la vague suivante.
 - **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
@@ -128,7 +129,15 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
     Sylve profonde (forêt dense, deux routes qui se frôlent).
 - **Entrées par vague** : sur certaines cartes, les monstres arrivent par une entrée ou une autre selon la vague
   (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et clignote sur le plateau.
-- **4 difficultés** : Facile, Normal, Difficile, Cauchemar (PV des monstres, vies, or de départ, primes).
+- **5 difficultés**, même or de départ et mêmes primes partout, comptées par rapport au Normal (100 %) :
+
+  | | PV | Monstres | Armure | Vies | Intérêts (4 % de l'or gardé) |
+  |---|---|---|---|---|---|
+  | Facile | -20 % | -10 % | – | 20 | 30 or au plus, dès 750 or gardés |
+  | Normal | 100 % | 100 % | – | 20 | 30 or au plus, dès 750 or gardés |
+  | Difficile | +20 % | +5 % | – | 20 | 25 or au plus, dès 625 or gardés |
+  | Cauchemar | +35 % | +20 % | +2 | 10 | 20 or au plus, dès 500 or gardés |
+  | Infernal | +50 % | +30 % | +3 | 1 | 15 or au plus, dès 375 or gardés |
 - **36 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
   - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
     Baliste (tireur d'élite), Canon et Mortier (zone au sol), Sentinelle (anti-aérien) ;
