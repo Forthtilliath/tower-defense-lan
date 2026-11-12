@@ -15,6 +15,9 @@ const PLAYER := {
 	"gift_min": ["int", 1, 100000, 10],
 }
 const COOP_SCALING := {"hp": ["num", 0.0, 5.0], "count": ["num", 0.0, 5.0]}
+## hp : PV des monstres en Normal par rapport à leur fiche ; la difficulté s'y applique ensuite
+## (Facile x0,75, Difficile x1,5…), si bien que Normal reste la référence à 100 %.
+const MONSTER_SCALING := {"hp": ["num", 0.1, 10.0, 1.0]}
 ## Progression : expérience pour passer du niveau n au suivant = xp_base × xp_growth^(n-1) ;
 ## une victoire rapporte xp_per_wave par vague (× xp de la difficulté), plus win_bonus de
 ## cette somme. Défaite : chaque vague passée rapporte une part de xp_per_wave qui dépend du
@@ -27,10 +30,13 @@ const PROGRESSION := {
 	"defeat_steps": ["int", 1, 10, 4], "defeat_rate_min": ["num", 0.0, 1.0, 0.1],
 	"defeat_rate_max": ["num", 0.0, 1.0, 0.85],
 }
+## Difficulté : hp (PV, Normal = 1), count (nombre de monstres des vagues), armor (armure en plus),
+## interest_cap (plafond des intérêts ; -1 : celui du joueur), lives, gold, reward, xp.
 const DIFFICULTY := {
 	"id": ["id"], "name": ["text", 24], "hp": ["num", 0.1, 10.0], "lives": ["int", 1, 1000],
 	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0], "xp": ["num", 0.0, 10.0, 1.0],
-	"armor": ["num", 0.0, 20.0, 0.0],
+	"armor": ["num", 0.0, 20.0, 0.0], "count": ["num", 0.1, 5.0, 1.0],
+	"interest_cap": ["int", -1, 100000, -1],
 }
 ## Éléments des tourelles ("" : coups physiques), auxquels certains monstres résistent.
 const ELEMENTS := ["fire", "ice", "lightning", "poison", "bleed", "wind"]

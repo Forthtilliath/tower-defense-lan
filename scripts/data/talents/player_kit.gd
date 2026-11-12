@@ -179,9 +179,16 @@ func boost(stats: Dictionary, type: String) -> void:
 				stats[key] = minf(stats[key], TalentSchema.GRANT_CAPS[key])
 
 
-## Intérêts : [taux, plafond], bonus de la classe et des talents compris.
-func interest_rule(data: GameData) -> Array:
-	return [float(data.player["interest"]) + interest, int(data.player["interest_cap"]) + interest_cap]
+## Intérêts : [taux, plafond], plafond de la difficulté, bonus de la classe et des talents compris.
+func interest_rule(data: GameData, difficulty := {}) -> Array:
+	var base := base_interest(data, difficulty)
+	return [float(base[0]) + interest, int(base[1]) + interest_cap]
+
+
+## Intérêts sans bonus : taux du joueur, plafond de la difficulté (celui du joueur à défaut).
+static func base_interest(data: GameData, difficulty := {}) -> Array:
+	var cap := int(difficulty.get("interest_cap", -1))
+	return [float(data.player["interest"]), cap if cap >= 0 else int(data.player["interest_cap"])]
 
 
 ## Prix payé pour une construction ou une amélioration affichée à `base` or ; `zone` : réduction

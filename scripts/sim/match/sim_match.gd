@@ -5,7 +5,8 @@ extends RefCounted
 ## Coopération : un plateau partagé, vies communes, chacun son or (dons possibles entre alliés).
 ## Versus : un plateau par joueur ; envoyer des monstres chez l'adversaire augmente le revenu.
 ## Après la dernière vague, le versus continue en « mort subite » (vagues de plus en plus dures).
-## La difficulté choisie règle les PV des monstres, les vies, l'or de départ et les primes ;
+## La difficulté choisie règle les PV et le nombre des monstres (Normal = 100 %), leur armure,
+## les vies, le plafond des intérêts et l'XP ;
 ## en coopération, chaque joueur en plus ajoute des monstres et des PV (coop_scaling).
 ## L'enchaînement des vagues (rythme, appel de vague) est dans MatchFlow.
 
@@ -139,11 +140,11 @@ func launch_next_wave() -> void:
 	var total := map.waves.size()
 	var wave: Dictionary = data.waves[map.waves[mini(wave_index, total - 1)]]
 	var hp_mult := float(wave["hp"]) * monster_hp_mult()
-	var count_mult := 1.0
+	var count_mult := float(difficulty["count"])
 	if mode == Mode.COOP:
 		var scaling := coop_scaling(_active_count())
 		hp_mult *= scaling[0]
-		count_mult = scaling[1]
+		count_mult *= scaling[1]
 	var clean := {}
 	for i in boards.size():
 		var b := boards[i]
@@ -211,9 +212,10 @@ func leader() -> int:
 	return order[0]
 
 
-## PV des monstres selon la difficulté, la carte et la « mort subite » (hors bonus coop).
+## PV des monstres : référence du Normal (monster_scaling), puis difficulté, carte et « mort
+## subite » (hors bonus coop).
 func monster_hp_mult() -> float:
-	return float(difficulty["hp"]) * map.monster_hp * endless_mult()
+	return float(data.monster_scaling["hp"]) * float(difficulty["hp"]) * map.monster_hp * endless_mult()
 
 
 ## Multiplicateur de PV de la « mort subite » (après la dernière vague, en versus).
