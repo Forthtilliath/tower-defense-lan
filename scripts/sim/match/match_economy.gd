@@ -46,7 +46,7 @@ static func pay_wave(sim: SimMatch, wave: Dictionary, early: int, clean: Diction
 		if not p["alive"] or not p["connected"]:
 			continue
 		var kit: PlayerKit = p["kit"]
-		var interest := MatchFlow.interest(sim.data, p["gold"] + roundi(kit.m("compound") * invested(sim, id)), kit)
+		var interest := MatchFlow.interest(sim.data, p["gold"] + roundi(kit.m("compound") * invested(sim, id)), kit, sim.difficulty)
 		p["gold"] += interest
 		shared[id] = roundi(interest * kit.m("share_interest"))
 		var wave_gold := roundi(int(wave["gold"]) * float(p["gold_mult"]))

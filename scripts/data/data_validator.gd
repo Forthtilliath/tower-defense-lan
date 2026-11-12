@@ -17,6 +17,7 @@ func fill(root: Variant, gd: GameData) -> bool:
 		return false
 	var player = _obj(root.get("player"), DataSchema.PLAYER, "player")
 	var scaling = _obj(root.get("coop_scaling"), DataSchema.COOP_SCALING, "coop_scaling")
+	var monster_scaling = _obj(root.get("monster_scaling", {}), DataSchema.MONSTER_SCALING, "monster_scaling")
 	var difficulties = _collection(root.get("difficulties"), 8, "difficulties", _plain.bind(DataSchema.DIFFICULTY))
 	var specials = _specials(root.get("special_tiles"))
 	var towers = _collection(root.get("towers"), MAX_TOWERS, "towers", _tower)
@@ -24,7 +25,7 @@ func fill(root: Variant, gd: GameData) -> bool:
 	var modifiers = _collection(root.get("wave_modifiers"), 16, "wave_modifiers", _plain.bind(DataSchema.WAVE_MODIFIER.merged(DataSchema.PASSIVE_TRAITS)), 0)
 	var progression = _obj(root.get("progression", {}), DataSchema.PROGRESSION, "progression")
 	var tiers = TreeValidator.tiers(self, root.get("talent_tiers", [0]))
-	if player == null or scaling == null or difficulties == null or specials == null or progression == null \
+	if player == null or scaling == null or monster_scaling == null or difficulties == null or specials == null or progression == null \
 			or tiers == null or towers == null or monsters == null or modifiers == null or not _check_splits(monsters[0]):
 		return false
 	var common = TreeValidator.common_towers(self, root.get("common_towers"), towers[0])
@@ -39,6 +40,7 @@ func fill(root: Variant, gd: GameData) -> bool:
 		return false
 	gd.player = player
 	gd.coop_scaling = scaling
+	gd.monster_scaling = monster_scaling
 	gd.progression = progression
 	gd.talent_tiers.assign(tiers)
 	gd.common_towers.assign(common)
