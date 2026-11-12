@@ -9,7 +9,7 @@ func test_bundled_data_is_valid() -> void:
 		check(m.theme != "prairie" or gd.maps.find(m) < 9, "%s : nouvelle carte sans thème" % m.id)
 	check(gd.builders.size() == 6 and gd.modifiers.size() == 4, "6 bâtisseurs et 4 vagues spéciales")
 	check(gd.tower_order.size() == 36, "36 tourelles attendues")
-	check(gd.difficulties.size() == 4 and gd.specials.size() == 19, "4 difficultés et 19 cases spéciales (dont Butte et Fossé) : %d" % gd.specials.size())
+	check(gd.difficulties.size() == 5 and gd.specials.size() == 19, "5 difficultés et 19 cases spéciales (dont Butte et Fossé) : %d" % gd.specials.size())
 	check(gd.specials.all(func(s: Dictionary) -> bool: return s["id"] != "gold"), "plus de Filon d'or")
 	check(gd.sendable_monsters().size() == 11, "11 monstres envoyables : %d" % gd.sendable_monsters().size())
 	for id in gd.tower_order:
@@ -88,7 +88,7 @@ func test_rejects_bad_specials_and_splits() -> void:
 	check(not gd.is_valid() and gd.error.contains("inconnu"), "division vers un inconnu refusée : " + gd.error)
 	gd = GameData.from_text(_bundled_text().replace("{ \"char\": \"^\"", "{ \"char\": \"=\""))
 	check(not gd.is_valid() and gd.error.contains("symbole"), "symbole déjà pris refusé : " + gd.error)
-	gd = GameData.from_text(_bundled_text().replace("\"lives\": 30", "\"lives\": 0"))
+	gd = GameData.from_text(_bundled_text().replace("\"lives\": 20", "\"lives\": 0"))
 	check(not gd.is_valid(), "difficulté sans vie refusée")
 
 

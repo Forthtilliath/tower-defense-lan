@@ -56,8 +56,8 @@ func test_free_rhythm_calls_a_wave_during_a_wave() -> void:
 	var gold: int = sim.players[1]["gold"]
 	check(sim.apply_command(1, {"a": "ready"}) == "", "vague suivante appelée pendant la vague")
 	check(sim.wave_index == 1, "vague 2 lancée")
-	var expected := gold + MatchFlow.interest(sim.data, gold) + 15 + int(SimMatch.BETWEEN_WAVES)
-	check(sim.players[1]["gold"] == expected, "intérêts, vague et bonus complet : %d / %d" % [sim.players[1]["gold"], expected])
+	var expected := gold + MatchFlow.interest(sim.data, gold) + 15 + int(SimMatch.CALL_WINDOW - DT)
+	check(sim.players[1]["gold"] == expected, "intérêts, vague et secondes d'avance : %d / %d" % [sim.players[1]["gold"], expected])
 	check(sim.apply_command(1, {"a": "ready"}) == "Une vague est déjà en attente", "une seule vague d'avance")
 	check(_build(sim, 1, 2 * sim.map.width + 2) == "", "construction libre pendant la vague")
 
@@ -128,7 +128,7 @@ func test_solo_lanes_close_other_zones() -> void:
 	check(rock >= 0 and sim.map.zone_closed(1, 1), "le décor garde sa zone")
 	var colors := BoardPainter.zone_colors(sim.map, [Color.RED] as Array[Color])
 	check(str(colors) == str([Color.RED, BoardPainter.CLOSED, BoardPainter.CLOSED, BoardPainter.CLOSED]), "zones fermées assombries : %s" % str(colors))
-	check(is_equal_approx(sim.monster_hp_mult(), sim.map.monster_hp * float(sim.difficulty["hp"])) and sim.map.monster_hp > 1.0, "route longue : monstres renforcés (x%f)" % sim.monster_hp_mult())
+	check(is_equal_approx(sim.monster_hp_mult(), sim.data.monster_scaling["hp"] * sim.map.monster_hp * float(sim.difficulty["hp"])) and sim.map.monster_hp > 1.0, "route longue : monstres renforcés (x%f)" % sim.monster_hp_mult())
 	var plaine := _sim(1, PLAINE)
 	check(_build(plaine, 1, _cell_in_zone(plaine.map, -1)) == "", "carte sans zones : rien de fermé")
 
