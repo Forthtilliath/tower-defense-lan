@@ -30,11 +30,18 @@ var entry_info := Callable()
 var _ts := 32.0
 var _origin := Vector2.ZERO
 var _terrain: TerrainLayer
+## Bulle du survol : souris immobile HOVER_DELAY s au-dessus d'un monstre ou d'une entrée.
+const HOVER_DELAY := 0.3
+var _tip: HoverTip
+var _mouse := Vector2(-1, -1)  # x < 0 : souris hors du plateau
+var _still := 0.0
 
 
 func _init() -> void:
 	_terrain = TerrainLayer.new(self)
 	add_child(_terrain)
+	_tip = HoverTip.new()
+	add_child(_tip)
 
 
 func set_map(p_map: MapDef) -> void:
@@ -59,12 +66,35 @@ func origin() -> Vector2:
 	return _origin
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if state != null:
 		queue_redraw()
+		_update_tip(delta)
+
+
+## Bulle recalculée à chaque image tant qu'elle est ouverte (PV qui baissent, monstre qui s'en va).
+func _update_tip(delta: float) -> void:
+	if _mouse.x < 0.0 or state.ended:
+		_tip.visible = false
+		return
+	_still += delta
+	if _tip.visible or _still >= HOVER_DELAY:
+		_tip.show_at(_hover_text(_mouse), _mouse, size)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_MOUSE_EXIT:
+		_mouse = Vector2(-1, -1)
+		_tip.visible = false
 
 
 func _gui_input(event: InputEvent) -> void:
+	var mm := event as InputEventMouseMotion
+	if mm != null:
+		_mouse = mm.position
+		if not _tip.visible:
+			_still = 0.0
+		return
 	var mb := event as InputEventMouseButton
 	if mb != null and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
 		cell_pressed.emit(cell_at(mb.position))
@@ -129,8 +159,8 @@ func _draw_banner(text: String, col: Color, veil: float) -> void:
 	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)
 
 
-## Info-bulle au survol (souris) : monstre sous le curseur, sinon entrée des monstres.
-func _get_tooltip(at_position: Vector2) -> String:
+## Texte de la bulle au survol : monstre sous le curseur, sinon entrée des monstres ("" : rien).
+func _hover_text(at_position: Vector2) -> String:
 	if map == null or state == null or not state.received or board_index >= state.boards.size():
 		return ""
 	var b: Dictionary = state.boards[board_index]
@@ -151,12 +181,6 @@ func _get_tooltip(at_position: Vector2) -> String:
 		if center.distance_to(at_position) <= _ts * 0.7:
 			return entry_info.call(p)
 	return ""
-
-
-func _make_custom_tooltip(for_text: String) -> Object:
-	var l := UiTheme.label(for_text, 16)
-	l.autowrap_mode = TextServer.AUTOWRAP_OFF
-	return l
 
 
 func _draw_selection(b: Dictionary) -> void:
