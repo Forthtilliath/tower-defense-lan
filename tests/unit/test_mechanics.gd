@@ -162,6 +162,13 @@ func test_next_wave_timer_starts_at_call() -> void:
 	var bonus: int = sim.players[1]["gold"] - gold - interest - wave_gold
 	check(sim.wave_index == 1 and ahead >= 26 and bonus == ahead, "%d s d'avance : +%d or" % [ahead, bonus])
 	check(is_equal_approx(sim.countdown, SimMatch.CALL_WINDOW) and not MatchFlow.can_call(sim), "nouveau décompte, une seule vague d'avance")
+	sim.step(DT)
+	check(MatchFlow.countdown_held(sim) and is_equal_approx(sim.countdown, SimMatch.CALL_WINDOW), "décompte en pause tant que la vague appelée attend : %f" % sim.countdown)
+	var guard := 0
+	while MatchFlow.countdown_held(sim) and guard < int(120.0 / DT):
+		sim.step(DT)
+		guard += 1
+	check(MatchFlow.can_call(sim) and sim.countdown > SimMatch.CALL_WINDOW - 0.2, "décompte relancé avec le bouton quand elle arrive : %f" % sim.countdown)
 
 
 func test_coop_scales_with_player_count() -> void:
