@@ -99,8 +99,9 @@ func start(sim: SimMatch) -> void:
 
 
 ## Un pas de simulation (DT) : les bots réfléchissent toutes les THINK_EVERY secondes, appellent
-## la vague suivante en avance tant qu'ils ne perdent pas de vie, lancent la première après
-## FIRST_WAVE_AFTER secondes de préparation (elle ne part jamais seule).
+## la vague suivante en avance tant qu'ils ne perdent pas de vie, une fois la vague en cours
+## entièrement arrivée (une vague appelée arrive aussitôt : jamais deux à la fois), lancent la
+## première après FIRST_WAVE_AFTER secondes de préparation (elle ne part jamais seule).
 func tick(sim: SimMatch) -> void:
 	_timer -= DT
 	if _timer <= 0.0:
@@ -111,7 +112,8 @@ func tick(sim: SimMatch) -> void:
 		if _wave != sim.wave_index:
 			_wave = sim.wave_index
 			_lives = sim.boards[0].lives
-		if calls_early and sim.started() and sim.boards[0].lives == _lives and MatchFlow.can_call(sim):
+		if calls_early and sim.started() and sim.boards[0].lives == _lives and not sim.boards[0].spawns_pending() \
+				and MatchFlow.can_call(sim):
 			for id in sim.order:
 				sim.apply_command(id, {"a": "ready"})
 	if not sim.started() and _elapsed >= FIRST_WAVE_AFTER:

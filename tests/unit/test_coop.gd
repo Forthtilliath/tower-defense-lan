@@ -58,7 +58,8 @@ func test_free_rhythm_calls_a_wave_during_a_wave() -> void:
 	check(sim.wave_index == 1, "vague 2 lancée")
 	var expected := gold + MatchFlow.interest(sim.data, gold) + 15 + int(SimMatch.CALL_WINDOW - DT)
 	check(sim.players[1]["gold"] == expected, "intérêts, vague et secondes d'avance : %d / %d" % [sim.players[1]["gold"], expected])
-	check(sim.apply_command(1, {"a": "ready"}) == "Une vague est déjà en attente", "une seule vague d'avance")
+	check(sim.boards[0].pending_waves() == 2, "vague 2 lancée tout de suite, en plus de la 1")
+	check(sim.apply_command(1, {"a": "ready"}) == "" and sim.wave_index == 2, "encore une vague appelable : elles arrivent ensemble")
 	check(_build(sim, 1, 2 * sim.map.width + 2) == "", "construction libre pendant la vague")
 
 

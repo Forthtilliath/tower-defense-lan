@@ -145,7 +145,7 @@ func test_difficulty_scale_is_consistent() -> void:
 
 
 ## Coopération, rythme libre : le compte à rebours part dès l'appel d'une vague ; la suivante
-## s'appelle tout de suite, contre 1 or par seconde d'avance (une seule vague d'avance).
+## s'appelle à tout moment, contre 1 or par seconde d'avance, et arrive aussitôt.
 func test_next_wave_timer_starts_at_call() -> void:
 	var gd := load_data()
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]])
@@ -161,14 +161,13 @@ func test_next_wave_timer_starts_at_call() -> void:
 	sim.apply_command(1, {"a": "ready"})
 	var bonus: int = sim.players[1]["gold"] - gold - interest - wave_gold
 	check(sim.wave_index == 1 and ahead >= 26 and bonus == ahead, "%d s d'avance : +%d or" % [ahead, bonus])
-	check(is_equal_approx(sim.countdown, SimMatch.CALL_WINDOW) and not MatchFlow.can_call(sim), "nouveau décompte, une seule vague d'avance")
-	sim.step(DT)
-	check(MatchFlow.countdown_held(sim) and is_equal_approx(sim.countdown, SimMatch.CALL_WINDOW), "décompte en pause tant que la vague appelée attend : %f" % sim.countdown)
-	var guard := 0
-	while MatchFlow.countdown_held(sim) and guard < int(120.0 / DT):
+	check(is_equal_approx(sim.countdown, SimMatch.CALL_WINDOW) and MatchFlow.can_call(sim), "nouveau décompte, bouton toujours là")
+	var queued := func() -> int: return sim.boards[0]._queue.filter(func(e: Dictionary) -> bool: return e["wave"] == 1).size()
+	var before: int = queued.call()
+	for i in int(1.0 / DT):
 		sim.step(DT)
-		guard += 1
-	check(MatchFlow.can_call(sim) and sim.countdown > SimMatch.CALL_WINDOW - 0.2, "décompte relancé avec le bouton quand elle arrive : %f" % sim.countdown)
+	var now: int = queued.call()
+	check(now < before and sim.boards[0].pending_waves() == 2, "la vague appelée arrive aussitôt, pendant la 1re (%d -> %d en attente)" % [before, now])
 
 
 func test_coop_scales_with_player_count() -> void:
