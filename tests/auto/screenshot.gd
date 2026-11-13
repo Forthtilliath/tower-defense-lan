@@ -119,9 +119,26 @@ func _run() -> void:
 	_shot("4d-pause-%s" % tag)
 	screen.toggle_pause()
 	await _wait(0.3)
+	var view: BoardView = screen.get("_view")
+	_hover(view, view.to_px(map.cell_center(MapSpawns.path_start(map, 0))))  # bulle d'une entrée
+	await _wait(0.4)
+	_shot("4e-survol-entree-%s" % tag)
 	await _showcase(map)
+	var b: Dictionary = view.state.boards[0]
+	for id in b["monsters"]:  # bulle d'un monstre
+		var m: Dictionary = b["monsters"][id]
+		_hover(view, view.to_px(map.position_at(m["path"], view.state.monster_progress(m), m["flying"])))
+		break
+	await _wait(0.2)
+	_shot("5b-survol-monstre")
 	Net.leave()
 	get_tree().quit(0)
+
+
+## Souris posée (sans vraie souris) : la bulle du plateau s'ouvre à la prochaine image.
+func _hover(view: BoardView, at: Vector2) -> void:
+	view.set("_mouse", at)
+	view.set("_still", 1.0)
 
 
 ## Vitrine du rendu : toutes les tourelles posées d'office et un monstre de chaque sorte,
