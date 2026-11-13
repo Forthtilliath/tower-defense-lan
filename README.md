@@ -84,15 +84,26 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
 - **Rythme** (hôte, coopération) :
   - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague, même pendant une vague
     (une seule vague d'avance). La suivante part d'elle-même 30 s après l'appel de la précédente ; l'appeler plus tôt
-    rapporte 1 or par seconde d'avance (jusqu'à 30).
+    rapporte 1 or par seconde d'avance (jusqu'à 30). Une vague appelée pendant qu'une autre arrive encore attend son tour :
+    le décompte reste en pause jusqu'à ce qu'elle arrive, puis repart à 30 s avec le bouton « Vague suivante ».
   - *Entre les vagues* : une phase de construction de 20 s commence quand la carte est vide ; pendant une vague,
     impossible de construire, d'améliorer, de vendre ou d'appeler la vague suivante.
 - **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
 - **Héritage** (hôte, coopération et versus) : *Activé* ou *Désactivé*. Désactivé, personne ne reçoit de bonus
   d'héritage : chacun joue avec sa classe et ses talents seulement, pour des parties plus équitables.
 
-En partie, le bouton **Talents** de la barre du haut montre l'arbre joué, en lecture seule (la partie continue pendant
-ce temps), avec la liste des bonus d'héritage du compte, marqués « désactivé » si l'hôte l'a coupé.
+En partie, la barre du haut propose :
+- **Pause** (hôte, touche P ou Espace) : tout se fige pour tout le monde ; on peut encore construire, améliorer et vendre.
+- **Menu** (touche Échap, retour d'Android) : **Bestiaire**, **Talents** (l'arbre joué, en lecture seule, avec les bonus
+  d'héritage du compte, marqués « désactivé » si l'hôte l'a coupé), **Recommencer la partie** (hôte : même carte, mêmes
+  réglages, depuis la 1re vague, sans expérience pour la partie abandonnée) et **Quitter**. L'hôte qui ouvre le menu met la
+  partie en pause le temps de le consulter. « Recommencer » est aussi proposé à l'hôte en fin de partie.
+
+**Survol à la souris** : un monstre du plateau affiche ses PV restants, sa vitesse, sa prime, ses bonus et ses états
+(ralenti, empoisonné…) ; une entrée affiche ce qui en sortira à la prochaine vague (nombre de chaque monstre, vague
+spéciale), ou pourquoi rien n'en sortira. Les entrées actives à la prochaine vague sont cerclées, avec des chevrons qui
+filent le long du chemin. Le **bestiaire** (aussi dans le menu principal) liste chaque monstre avec son portrait, ses
+caractéristiques, ses bonus et les cartes où on le croise, filtrable par carte.
 
 Dans tous les cas, **la première vague ne part jamais seule** : on se prépare aussi longtemps qu'on veut, puis on la lance
 (« Prêt ! » de tous les joueurs, ou l'hôte seul selon le lancement choisi).
@@ -126,9 +137,9 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
     Grande plaine (ciel ouvert), Quatre fiefs (horde, 4 zones, 4 couloirs), Bastion (siège, 4 zones autour d'un couloir commun) ;
   - cartes à thème, avec leur décor : Lac gelé (toundra, 2 entrées), Caldeira (volcan, spirale autour d'un cratère de lave),
     Tourbière (marais, 3 entrées), Cryptes (nécropole, 4 cryptes), Gorge du vautour (canyon, une très longue route),
-    Sylve profonde (forêt dense, deux routes qui se frôlent).
+    Sylve profonde (forêt dense, deux entrées qui se rejoignent au cœur du bois).
 - **Entrées par vague** : sur certaines cartes, les monstres arrivent par une entrée ou une autre selon la vague
-  (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et clignote sur le plateau.
+  (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et signalée sur le plateau.
 - **5 difficultés**, même or de départ et mêmes primes partout, comptées par rapport au Normal (100 %) :
 
   | | PV | Monstres | Armure | Vies | Intérêts (4 % de l'or gardé) |
@@ -234,7 +245,8 @@ scripts/ui/main.gd       Racine de l'application : un écran à la fois
 scripts/ui/screens/      Accueil, comptes, menu, rejoindre, envoyer / recevoir un compte
 scripts/ui/screens/history/  Écran de l'historique : filtres, parties, étoiles par carte
 scripts/ui/lobby/        Salon d'attente et arbre de talents
-scripts/ui/game/         Écran de partie : barre du haut, panneaux, fin de partie, textes
+scripts/ui/game/         Écran de partie : barre du haut, menu, panneaux, fin de partie, textes
+scripts/ui/bestiary/     Bestiaire : fiches des monstres, portraits, cartes où on les croise
 scripts/ui/state/        État affiché, reconstruit à partir des instantanés de l'hôte
 scripts/ui/board/        Dessin du plateau (décor, unités, effets) ; glyphs/ : silhouettes
 scripts/ui/theme/        Thème, encre style manga, fond des menus
