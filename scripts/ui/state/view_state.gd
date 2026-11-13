@@ -20,6 +20,8 @@ var ended := false
 var result := ""
 var winner := 0
 var speed := 1
+## Partie en pause par l'hôte.
+var paused := false
 var interval := 0.1
 ## La vague suivante peut être appelée / construire, améliorer et vendre sont permis.
 var can_call := false
@@ -84,6 +86,7 @@ func apply(snap: Variant) -> bool:
 	result = parsed["res"]
 	winner = parsed["win"]
 	speed = parsed["speed"]
+	paused = parsed["ps"]
 	interval = parsed["iv"]
 	can_call = parsed["nx"]
 	can_trade = parsed["tr"]
@@ -108,6 +111,7 @@ func _parse(snap: Variant) -> Variant:
 		"res": s.get("res") if typeof(s.get("res")) == TYPE_STRING and RESULTS.has(s.get("res")) else null,
 		"win": Check.as_int(s.get("win"), 0, NetPayloads.MAX_PEER_ID),
 		"speed": Check.as_int(s.get("speed", 1), 1, 4),
+		"ps": Check.as_bool(s.get("ps", false)),
 		"iv": Check.as_num(s.get("iv", 0.1), 0.01, 1.0),
 		"nx": Check.as_bool(s.get("nx")),
 		"tr": Check.as_bool(s.get("tr")),

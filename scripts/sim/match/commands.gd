@@ -53,6 +53,11 @@ static func sanitize(raw: Variant, data: GameData, map: MapDef) -> Variant:
 			if to == null or amount == null or d.size() != 3:
 				return INVALID
 			return {"a": action, "to": to, "amount": amount}
+		"pause":
+			var on = Check.as_bool(d.get("on"))
+			if on == null or d.size() != 2:
+				return INVALID
+			return {"a": action, "on": on}
 		"ready", "speed":
 			if d.size() != 1:
 				return INVALID
