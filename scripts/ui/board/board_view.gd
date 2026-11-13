@@ -23,6 +23,10 @@ var zone_colors: Array[Color] = []:
 var kit_of := func(_id: int) -> Variant: return null
 ## Portée d'une tourelle envisagée sur la case sélectionnée vide (0 : rien à dessiner).
 var preview_range := 0.0
+## Chemins défendus (couloirs ouverts) ; vide : tous.
+var lane_paths: Array[int] = []
+## Texte de l'info-bulle d'une entrée (n° de chemin -> texte) ; non valide : pas d'info-bulle.
+var entry_info := Callable()
 var _ts := 32.0
 var _origin := Vector2.ZERO
 var _terrain: TerrainLayer
@@ -90,7 +94,7 @@ func _draw() -> void:
 	for z in b["patches"]:
 		FxPainter.patch(self, data, z, to_px(z["pos"]), _ts)
 	if state.wave < state.total:
-		EntryPainter.draw(self, map, state.wave, _origin, _ts, get_theme_default_font())
+		EntryPainter.draw(self, map, state.wave, _origin, _ts, get_theme_default_font(), lane_paths)
 	_draw_selection(b)
 	for cell in b["towers"]:
 		var t: Dictionary = b["towers"][cell]
@@ -109,19 +113,50 @@ func _draw() -> void:
 	for f in b["fx"]:
 		UnitPainter.fx(self, data, f, _origin, _ts)
 	if not b["alive"]:
-		_draw_lost()
+		_draw_banner("Plateau perdu", UiTheme.DANGER, 0.6)
+	elif state.paused and not state.ended:
+		_draw_banner("Pause", UiTheme.ACCENT, 0.25)
 
 
-## Plateau perdu : voile sombre et titre façon onomatopée cernée d'encre.
-func _draw_lost() -> void:
-	draw_rect(Rect2(_origin, Vector2(map.width, map.height) * _ts), Color(Ink.INK, 0.6))
+## Voile sombre et titre façon onomatopée cernée d'encre (plateau perdu, pause).
+func _draw_banner(text: String, col: Color, veil: float) -> void:
+	draw_rect(Rect2(_origin, Vector2(map.width, map.height) * _ts), Color(Ink.INK, veil))
 	var font := get_theme_default_font()
-	var text := "Plateau perdu"
 	var fs := int(_ts * 0.9)
 	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var at := size / 2.0 - Vector2(w / 2.0, 0)
 	draw_string_outline(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, maxi(4, int(_ts * 0.18)), Ink.INK)
-	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, UiTheme.DANGER)
+	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)
+
+
+## Info-bulle au survol (souris) : monstre sous le curseur, sinon entrée des monstres.
+func _get_tooltip(at_position: Vector2) -> String:
+	if map == null or state == null or not state.received or board_index >= state.boards.size():
+		return ""
+	var b: Dictionary = state.boards[board_index]
+	var best := ""
+	var best_d := INF
+	for id in b["monsters"]:
+		var m: Dictionary = b["monsters"][id]
+		var pos := to_px(map.position_at(m["path"], state.monster_progress(m), m["flying"]))
+		var d := pos.distance_to(at_position)
+		var reach := maxf(_ts * 0.35, _ts * float(data.monsters[m["type"]]["size"]) * 0.6)
+		if d <= reach and d < best_d:
+			best_d = d
+			best = MonsterText.hover_text(data, m)
+	if best != "" or not entry_info.is_valid():
+		return best
+	for p in map.start_count():
+		var center := to_px(map.cell_center(MapSpawns.path_start(map, p)))
+		if center.distance_to(at_position) <= _ts * 0.7:
+			return entry_info.call(p)
+	return ""
+
+
+func _make_custom_tooltip(for_text: String) -> Object:
+	var l := UiTheme.label(for_text, 16)
+	l.autowrap_mode = TextServer.AUTOWRAP_OFF
+	return l
 
 
 func _draw_selection(b: Dictionary) -> void:

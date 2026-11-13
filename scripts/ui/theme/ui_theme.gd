@@ -45,6 +45,8 @@ static func build() -> Theme:
 	t.set_stylebox("panel", "PopupMenu", box(PANEL, 8))
 	t.set_stylebox("panel", "AcceptDialog", box(PANEL, 12))
 	t.set_stylebox("panel", "ConfirmationDialog", box(PANEL, 12))
+	t.set_stylebox("panel", "TooltipPanel", box(PANEL.darkened(0.2), 6, ACCENT))
+	t.set_color("font_color", "TooltipLabel", TEXT)
 	return t
 
 
