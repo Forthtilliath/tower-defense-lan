@@ -32,9 +32,7 @@ var _pending := {}  # id -> instant de connexion, tant que le joueur ne s'est pa
 var end_reason := ""
 var _my_name := ""
 var _rpc: Node
-const KIT_INTERVAL_MS := 250
-var _pending_kit: Variant = null
-var _last_kit_ms := -100000
+var _kits := KitRelay.new()
 
 
 func _ready() -> void:
@@ -85,7 +83,7 @@ func host(player_name: String) -> String:
 	role = Role.HOST
 	players = {1: NetLobby.new_player(player_name, 0)}
 	settings = NetLobby.DEFAULT_SETTINGS.duplicate()
-	discovery.start_broadcast(_announce_info)
+	discovery.start_broadcast(lobby.announce_info)
 	lobby_changed.emit()
 	return ""
 
@@ -132,19 +130,18 @@ func choose(key: String, value: Variant) -> void:
 
 
 ## Annonce la classe choisie, avec le niveau et les talents enregistrés pour elle sur cet appareil.
-## Envois espacés (KIT_INTERVAL_MS) : seul le dernier état part, rien n'est perdu.
+## Envois espacés (KitRelay) : seul le dernier état part, rien n'est perdu.
 func choose_kit(builder: int) -> void:
-	_pending_kit = {"b": builder, "lv": Progress.level(builder), "t": Progress.talents(builder), "h": Progress.heritage()}
+	_kits.queue({"b": builder, "lv": Progress.level(builder), "t": Progress.talents(builder), "h": Progress.heritage()})
 	_flush_kit()
 
 
 func _flush_kit() -> void:
-	if _pending_kit == null or role == Role.NONE or Time.get_ticks_msec() - _last_kit_ms < KIT_INTERVAL_MS:
+	if role == Role.NONE:
 		return
-	_last_kit_ms = Time.get_ticks_msec()
-	var kit = _pending_kit
-	_pending_kit = null
-	choose("kit", kit)
+	var kit = _kits.take()
+	if kit != null:
+		choose("kit", kit)
 
 
 func set_choice(id: int, raw_key: Variant, raw_value: Variant) -> void:
@@ -170,6 +167,13 @@ func start_match() -> void:
 		if id != 1:
 			_rpc.start.rpc_id(id, config)
 	match_started.emit(config)
+
+
+## Recommence la partie depuis la 1re vague (même carte, réglages et joueurs) ; hôte seul, sans gain.
+func restart_match() -> void:
+	if is_host() and host_loop != null:
+		host_loop = null
+		start_match()
 
 
 func return_to_lobby() -> void:
@@ -205,7 +209,8 @@ func _on_tick(snap: Dictionary, to_network: bool) -> void:
 	if not to_network:
 		return
 	var net_snap := snap.duplicate()
-	net_snap["iv"] = HostLoop.TICK * HostLoop.NET_EVERY / host_loop.speed
+	if not host_loop.paused:
+		net_snap["iv"] = HostLoop.TICK * HostLoop.NET_EVERY / host_loop.speed
 	for id in players:
 		if id != 1:
 			_rpc.snapshot.rpc_id(id, net_snap)
@@ -228,13 +233,6 @@ func _notify(id: int, message: String) -> void:
 		notice.emit(message)
 	else:
 		_rpc.notice.rpc_id(id, message)
-
-
-func _announce_info() -> Dictionary:
-	return {
-		"g": LanDiscovery.MAGIC, "v": version(), "n": players.get(1, {}).get("name", "Hôte"),
-		"m": settings["mode"], "p": players.size(), "x": MAX_PLAYERS, "s": host_loop != null,
-	}
 
 
 func _kick(id: int, reason: String) -> void:

@@ -24,6 +24,14 @@ static func new_player(player_name: String, color: int) -> Dictionary:
 	}
 
 
+## Annonce de la partie sur le réseau local (LanDiscovery), lue par l'écran « Rejoindre ».
+func announce_info() -> Dictionary:
+	return {
+		"g": LanDiscovery.MAGIC, "v": net.version(), "n": net.players.get(1, {}).get("name", "Hôte"),
+		"m": net.settings["mode"], "p": net.players.size(), "x": net.MAX_PLAYERS, "s": net.host_loop != null,
+	}
+
+
 ## Accueil d'un joueur qui se présente : motif du refus (version, partie commencée, salon complet),
 ## ou "" s'il entre au salon (pseudo nettoyé et rendu unique, couleur libre).
 func admit(id: int, raw_name: Variant, raw_version: Variant) -> String:
