@@ -82,10 +82,10 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   les talents de chacun (le niveau annoncé, lui, n'est pas vérifiable sans serveur).
 - **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile, Cauchemar ou Infernal. La plus votée l'emporte ; en cas d'égalité, la plus facile.
 - **Rythme** (hôte, coopération) :
-  - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague, même pendant une vague
-    (une seule vague d'avance). La suivante part d'elle-même 30 s après l'appel de la précédente ; l'appeler plus tôt
-    rapporte 1 or par seconde d'avance (jusqu'à 30). Une vague appelée pendant qu'une autre arrive encore attend son tour :
-    le décompte reste en pause jusqu'à ce qu'elle arrive, puis repart à 30 s avec le bouton « Vague suivante ».
+  - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague à tout moment, même
+    pendant une vague : elle arrive aussitôt, en plus de celle en cours. La suivante part d'elle-même 30 s après l'appel
+    de la précédente ; l'appeler plus tôt rapporte 1 or par seconde d'avance (jusqu'à 30). Enchaîner les appels rapporte
+    gros, mais fait arriver plusieurs vagues à la fois.
   - *Entre les vagues* : une phase de construction de 20 s commence quand la carte est vide ; pendant une vague,
     impossible de construire, d'améliorer, de vendre ou d'appeler la vague suivante.
 - **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
