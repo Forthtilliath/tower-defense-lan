@@ -61,6 +61,11 @@ func show_history() -> void:
 	_switch(HistoryScreen.new(self))
 
 
+## Tous les monstres du jeu, avec leurs bonus et leurs cartes.
+func show_bestiary() -> void:
+	_switch(BestiaryPanel.new(show_menu))
+
+
 func show_join() -> void:
 	_switch(JoinScreen.new(self))
 

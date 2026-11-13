@@ -1,6 +1,6 @@
 class_name MenuScreen
 extends CenterContainer
-## Menu principal du compte ouvert : héberger, rejoindre, historique, changer de compte.
+## Menu principal du compte ouvert : héberger, rejoindre, historique, bestiaire, changer de compte.
 
 var _nav: Node
 var _message := ""
@@ -27,6 +27,7 @@ func _ready() -> void:
 	box.add_child(host)
 	box.add_child(UiTheme.button("Rejoindre une partie", _nav.show_join))
 	box.add_child(UiTheme.button("Historique des parties", _nav.show_history))
+	box.add_child(UiTheme.button("Bestiaire", _nav.show_bestiary))
 	box.add_child(UiTheme.button("Changer de compte", go_back))
 	if not OS.has_feature("mobile"):
 		box.add_child(UiTheme.button("Quitter", func() -> void: get_tree().quit()))
