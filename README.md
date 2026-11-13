@@ -260,8 +260,12 @@ Facultatifs aussi : `zones` (mêmes dimensions que la carte, `1` à `4` pour une
 (nombre de joueurs conseillé, affiché dans le salon). Les bâtisseurs (`builders`) et les vagues spéciales
 (`wave_modifiers`, appliquées par le champ `modifier` d'une vague) se règlent dans le même fichier.
 
-Équilibrage : `tests/unit/test_balance.gd` fait jouer un bot simple (`tests/bot/balance_bot.gd`), qui doit gagner chaque carte en Normal ; après
-une modification des données, relancer `tools/verify.ps1`.
+Équilibrage : `tests/unit/test_balance.gd` fait jouer un joueur automatique (`tests/bot/balance_bot.gd`) qui joue
+chaque spécialisation comme un joueur qui la connaît : talents répartis dans sa branche, tourelles choisies d'après ses
+talents, les monstres à venir et les meilleures cases, prévisions étalonnées sur la simulation (`docs/BOT.md`). Après
+une modification des données, relancer `tools/verify.ps1`. Bilan complet (une ligne par spécialisation, une colonne
+par carte) : `godot --headless --path . --script res://tests/bot/bot_report.gd -- --level=10 --difficulty=1` ;
+captures d'écran de ses parties : `godot --path . --resolution 1280x720 -- --botshots=build/bot --map=0`.
 
 ### Architecture réseau
 
