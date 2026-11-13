@@ -4,7 +4,9 @@ extends RefCounted
 ##
 ## Rythme libre (coopération) : on construit à tout moment. Le compte à rebours de la vague
 ## suivante (SimMatch.CALL_WINDOW) démarre dès qu'une vague est appelée ; on peut l'appeler tout
-## de suite (une seule vague d'avance), contre 1 or par seconde restante.
+## de suite (une seule vague d'avance), contre 1 or par seconde restante. Une vague appelée
+## pendant qu'une autre arrive encore attend son tour : le décompte reste en pause jusqu'à ce
+## qu'elle commence à arriver (il ne tourne donc que quand la vague suivante peut être appelée).
 ## Versus : le compte à rebours (SimMatch.BETWEEN_WAVES) démarre quand la vague a fini d'apparaître.
 ## Rythme « entre les vagues » (coopération) : une phase de construction démarre quand la carte est
 ## vide. Construire, améliorer et vendre n'est possible que pendant cette phase, et aucune vague
@@ -20,6 +22,8 @@ static func update(sim: SimMatch, dt: float) -> void:
 		if _should_start_countdown(sim):
 			sim.countdown = SimMatch.BUILD_PHASE if sim.rhythm == SimMatch.Rhythm.BETWEEN else SimMatch.BETWEEN_WAVES
 		return
+	if countdown_held(sim):
+		return
 	sim.countdown -= dt
 	if sim.countdown <= 0.0:
 		sim.countdown = 0.0
@@ -29,6 +33,11 @@ static func update(sim: SimMatch, dt: float) -> void:
 ## Le compte à rebours part-il de l'appel de la vague précédente (coopération, rythme libre) ?
 static func timed_from_call(sim: SimMatch) -> bool:
 	return sim.mode == SimMatch.Mode.COOP and sim.rhythm == SimMatch.Rhythm.FREE
+
+
+## Décompte en pause : la dernière vague appelée attend que la précédente ait fini d'arriver.
+static func countdown_held(sim: SimMatch) -> bool:
+	return timed_from_call(sim) and sim.boards[0].pending_waves() > 1
 
 
 static func _should_start_countdown(sim: SimMatch) -> bool:
