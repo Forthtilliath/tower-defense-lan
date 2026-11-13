@@ -83,10 +83,7 @@ func _timer_text(s: ViewState) -> String:
 			return "L'hôte lancera la 1re vague"
 		return "Construisez, puis lancez"
 	var text := ""
-	var timed := not _game.is_versus and _game.rhythm() == SimMatch.Rhythm.FREE
-	if timed and s.countdown >= 0.0 and not s.can_call:
-		text = "Vague %d en file : décompte en pause" % s.wave
-	elif s.countdown >= 0.0:
+	if s.countdown >= 0.0:
 		var label := "Construction" if _game.rhythm() == SimMatch.Rhythm.BETWEEN else "Prochaine vague"
 		text = "%s : %d s" % [label, ceili(s.countdown)]
 		var mod := _game.wave_modifier(s.wave)

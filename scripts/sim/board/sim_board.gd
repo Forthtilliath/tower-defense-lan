@@ -51,7 +51,8 @@ func _init(p_data: GameData, p_map: MapDef, p_lives: int, p_reward_mult := 1.0) 
 	rng.seed = 20211109
 
 
-## Programme les monstres d'une vague, à la suite de ceux déjà prévus.
+## Programme les monstres d'une vague, qui commencent à arriver tout de suite (une vague appelée
+## en avance s'ajoute à celle en cours au lieu d'attendre sa fin).
 ## count_mult multiplie le nombre de monstres et resserre leur espacement d'autant.
 ## Une vague spéciale (champ « modifier ») change aussi leur nombre, leurs PV et leurs capacités.
 func queue_wave(wave: Dictionary, hp_mult: float, count_mult := 1.0, number := 0) -> void:
@@ -59,7 +60,7 @@ func queue_wave(wave: Dictionary, hp_mult: float, count_mult := 1.0, number := 0
 	hp_mult *= float(mod.get("hp", 1.0))
 	var spacing := maxf(count_mult, 1.0)
 	count_mult *= float(mod.get("count", 1.0))
-	var t := maxf(clock, _last_wave_time()) + 0.5
+	var t := clock + 0.5
 	var paths := MapSpawns.wave_paths(map, number)  # entrées ouvertes à cette vague (vide : toutes)
 	for group in wave["groups"]:
 		var count := maxi(1, roundi(int(group["count"]) * count_mult))
@@ -222,14 +223,6 @@ func snapshot() -> Dictionary:
 ## Effet rond (rayon et teinte), les autres vont d'un point à un autre.
 static func is_round_fx(kind: int) -> bool:
 	return kind == Fx.RING or kind == Fx.WAVE or kind == Fx.JAM
-
-
-func _last_wave_time() -> float:
-	var t := 0.0
-	for e in _queue:
-		if e["wave"] >= 0:
-			t = maxf(t, e["time"])
-	return t
 
 
 func _spawn_due() -> void:
