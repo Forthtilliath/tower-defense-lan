@@ -71,17 +71,51 @@ static func _extras_text(def: Dictionary, parts: Array) -> void:
 
 
 ## Monstres d'une vague, un par ligne avec leurs bonus : « Feu follet : lévite… ».
-static func wave_text(data: GameData, wave: Dictionary) -> String:
-	var lines := []
-	var seen := {}
+## mult > 0 : nombre de monstres en tête de ligne (« 12 × Loup »), voir WaveScaling.count_mult.
+static func wave_text(data: GameData, wave: Dictionary, mult := 0.0) -> String:
+	var counts := {}
 	for g in wave["groups"]:
 		var id: String = g["monster"]
-		if seen.has(id):
-			continue
-		seen[id] = true
+		counts[id] = int(counts.get(id, 0)) + (WaveScaling.group_count(data, wave, g, mult) if mult > 0.0 else 0)
+	var lines := []
+	for id in counts:
 		var def: Dictionary = data.monsters[id]
 		var traits := traits_text(def)
-		lines.append("• %s%s" % [def["name"], " : " + traits if traits != "" else ""])
+		var head := "%d × " % counts[id] if mult > 0.0 else ""
+		lines.append("• %s%s%s" % [head, def["name"], " : " + traits if traits != "" else ""])
+	return "\n".join(lines)
+
+
+## Caractéristiques de base (PV du Normal, avant le renfort des vagues) : « PV 52 · vitesse 1,6 · 3 or · 1 vie ».
+static func stats_text(data: GameData, def: Dictionary) -> String:
+	var hp := roundi(float(def["hp"]) * float(data.monster_scaling["hp"]))
+	return "PV %d · vitesse %s · %d or · %s" % [hp, _n(def["speed"]), int(def["gold"]), lives_text(int(def["damage"]))]
+
+
+static func lives_text(damage: int) -> String:
+	return "%d vie%s s'il passe" % [damage, "s" if damage > 1 else ""]
+
+
+const STATES := [["slowed", "ralenti"], ["poisoned", "empoisonné"], ["burning", "en feu"], ["bleeding", "saigne"],
+	["stunned", "étourdi"], ["feared", "apeuré"], ["charmed", "charmé"], ["warded", "protégé"],
+	["frostbitten", "gelure"], ["shocked", "électrocuté"], ["grounded", "cloué au sol"], ["burrowed", "enfoui"]]
+
+
+## Info-bulle d'un monstre du plateau (m : monstre de ViewState, PV de 0 à 255).
+static func hover_text(data: GameData, m: Dictionary) -> String:
+	var def: Dictionary = data.monsters[m["type"]]
+	var lines := [def["name"] + (" (vague spéciale)" if m.get("elite", false) else "")]
+	lines.append("PV : %d %% · vitesse %s · %d or · %s" % [
+		roundi(float(m["hp"]) / 2.55), _n(def["speed"]), int(def["gold"]), lives_text(int(def["damage"]))])
+	var traits := traits_text(def)
+	if traits != "":
+		lines.append(traits.left(1).to_upper() + traits.substr(1))
+	var states := []
+	for s in STATES:
+		if m.get(s[0], false):
+			states.append(s[1])
+	if not states.is_empty():
+		lines.append("État : " + ", ".join(states))
 	return "\n".join(lines)
 
 
