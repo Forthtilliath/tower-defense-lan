@@ -186,19 +186,10 @@ func has_next_wave() -> bool:
 	return mode == Mode.VERSUS or wave_index + 1 < map.waves.size()
 
 
-## Renforcement coop selon le nombre de joueurs : [PV, nombre de monstres, or des joueurs].
-## Sur une carte à plusieurs couloirs, seuls les couloirs ouverts (un par joueur au départ)
-## reçoivent des monstres, chacun une vague solo complète. Si des joueurs partent, les couloirs
-## restent ouverts : ceux qui restent en défendent plusieurs, avec l'or en proportion.
+## Renforcement coop selon le nombre de joueurs : [PV, nombre de monstres, or des joueurs]
+## (voir WaveScaling.coop).
 func coop_scaling(player_count: int) -> Array:
-	var lanes := float(lanes_open())
-	var per_lane := maxf(1.0, float(player_count)) / lanes
-	if per_lane < 1.0:
-		return [1.0, lanes, 1.0 / per_lane]
-	var extra := per_lane - 1.0
-	var hp := 1.0 + float(data.coop_scaling["hp"]) * extra
-	var count := lanes * (1.0 + float(data.coop_scaling["count"]) * extra)
-	return [hp, count, 1.0]
+	return WaveScaling.coop(data, lanes_open(), player_count)
 
 
 ## Couloirs qui reçoivent des monstres (1 sur une carte à un seul couloir).
