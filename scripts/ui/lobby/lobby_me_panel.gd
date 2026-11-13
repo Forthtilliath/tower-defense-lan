@@ -8,6 +8,7 @@ var _builder: OptionButton
 var _talents: Button
 var _vote: OptionButton
 var _summary: Label
+var _summary_width := 0.0  # largeur de la dernière mesure de la hauteur réservée
 
 
 func _init(on_talents: Callable) -> void:
@@ -33,6 +34,10 @@ func _ready() -> void:
 	_vote.item_selected.connect(func(i: int) -> void: Net.choose("vote", i))
 	_summary = UiTheme.label("", 15, UiTheme.TEXT)
 	body.add_child(_summary)
+	# La largeur change les retours à la ligne : nouvelle mesure (pas pour un simple changement de hauteur).
+	_summary.resized.connect(func() -> void:
+		if not is_equal_approx(_summary.size.x, _summary_width):
+			_reserve_lines())
 
 
 func refresh(my: Dictionary) -> void:
@@ -45,3 +50,25 @@ func refresh(my: Dictionary) -> void:
 		_talents.text += " (%d libre%s)" % [free, "s" if free > 1 else ""]
 	_talents.add_theme_color_override("font_color", UiTheme.GOLD if free > 0 else UiTheme.TEXT)
 	_summary.text = LobbyTexts.builder_text(builder, NetPayloads.heritage_on(Net.settings))
+	_reserve_lines()
+
+
+## Même hauteur pour toutes les classes, spécialisation choisie ou non : le salon ne bouge pas
+## d'une classe à l'autre. Lignes réellement affichées (retours à la ligne compris) du plus long
+## résumé ; une classe sans spécialisation compte déjà la ligne « En plus du tronc commun ».
+func _reserve_lines() -> void:
+	if _summary.size.x <= 0.0:
+		return
+	_summary_width = _summary.size.x
+	var shown := _summary.text
+	var heritage := NetPayloads.heritage_on(Net.settings)
+	var lines := 0
+	for b in Data.db.builders.size():
+		var text := LobbyTexts.builder_text(b, heritage)
+		if PlayerKit.make(Data.db, b, Progress.talents(b)).spec < 0:
+			text += "\nEn plus du tronc commun : deux tourelles de la spécialisation."
+		_summary.text = text
+		lines = maxi(lines, _summary.get_line_count())
+	_summary.text = shown
+	var spacing := _summary.get_theme_constant("line_spacing")
+	_summary.custom_minimum_size.y = lines * _summary.get_line_height() + (lines - 1) * spacing
