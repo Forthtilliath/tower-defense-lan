@@ -134,10 +134,12 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 - **15 cartes** de 20 vagues, chacune avec ses propres monstres et ses propres cases spéciales :
   - décor Prairie : Prairie (bestiaire de base), Carrefour (peaux-vertes, 2 entrées), Rivière (créatures de l'eau),
     Trois portes (assaut armé, 3 entrées), Spirale (magie), Labyrinthe (coureurs), et trois grandes cartes pour 2 à 4 joueurs :
-    Grande plaine (ciel ouvert), Quatre fiefs (horde, 4 zones, 4 couloirs), Bastion (siège, 4 zones autour d'un couloir commun) ;
-  - cartes à thème, avec leur décor : Lac gelé (toundra, 2 entrées), Caldeira (volcan, spirale autour d'un cratère de lave),
-    Tourbière (marais, 3 entrées), Cryptes (nécropole, 4 cryptes), Gorge du vautour (canyon, une très longue route),
-    Sylve profonde (forêt dense, deux entrées qui se rejoignent au cœur du bois).
+    Grande plaine (ciel ouvert : la route fait le tour de la plaine, les volants la traversent tout droit),
+    Quatre fiefs (horde, 4 zones, 4 couloirs), Bastion (siège, 4 zones autour d'un couloir commun) ;
+  - cartes à thème, avec leur décor : Lac gelé (toundra, 2 entrées, une route qui fait le tour du lac),
+    Caldeira (volcan, descente en V dans le cratère et remontée), Tourbière (marais, entrées à gauche, à droite et en
+    haut, sortie en bas), Cryptes (nécropole, 4 cryptes alignées en haut, en peigne), Gorge du vautour (canyon, un escalier
+    en diagonale), Sylve profonde (forêt dense, deux entrées, en haut et en bas, qui se rejoignent en Y).
 - **Entrées par vague** : sur certaines cartes, les monstres arrivent par une entrée ou une autre selon la vague
   (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et signalée sur le plateau.
 - **5 difficultés**, même or de départ et mêmes primes partout, comptées par rapport au Normal (100 %) :
