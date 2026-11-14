@@ -20,7 +20,13 @@ const BOT_LEVEL := 10
 ## Classe sans spécialisation précisée : l'Artilleur Tireur d'élite, le plus polyvalent.
 const DEFAULT_SPEC := 1
 const MAX_SECONDS := 2400.0
+## Écart supposé entre le bot et un humain : le bot joue contre des monstres à HUMAN_EDGE de leurs
+## PV (0,9 : un humain fait 10 % de mieux). Les tests d'équilibrage mesurent ainsi ce que vivrait
+## un joueur ; c'est le réglage à revoir si les parties réelles s'écartent des mesures.
+const HUMAN_EDGE := 0.9
 
+## PV des monstres dans les parties du bot (HUMAN_EDGE par défaut, 1 : tels quels).
+var human_edge := HUMAN_EDGE
 ## Appelle la vague suivante en avance tant qu'il ne perd pas de vie (désactivable pour comparer).
 var calls_early := true
 ## Trace des actions des bots (bilans).
@@ -54,8 +60,17 @@ func auto_talents(gd: GameData, builder: int, level: int, spec := 0) -> Dictiona
 ## heritage : classes déjà montées au niveau maximum (les mêmes pour tous les bots).
 func play(gd: GameData, map_index: int, count: int, difficulty: int, options := {}, builders := [], level := BOT_LEVEL, heritage := []) -> SimMatch:
 	var sim := SimMatch.new(gd, map_index, SimMatch.Mode.COOP, roster(gd, count, builders, level, heritage), difficulty, options)
+	handicap(sim)
 	run(sim)
 	return sim
+
+
+## Monstres ramenés à human_edge de leurs PV (copie de la difficulté : les données restent intactes).
+func handicap(sim: SimMatch) -> void:
+	if is_equal_approx(human_edge, 1.0):
+		return
+	sim.difficulty = sim.difficulty.duplicate()
+	sim.difficulty["hp"] = float(sim.difficulty["hp"]) * human_edge
 
 
 ## Joueurs d'une partie de bots : [[id, nom, couleur, classe, talents, héritage], ...].
