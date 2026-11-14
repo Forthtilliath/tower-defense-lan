@@ -5,6 +5,7 @@ extends SceneTree
 ##
 ## godot --headless --path . --script res://tests/bot/bot_report.gd -- [--level=10] [--difficulty=1]
 ##   [--maps=0,1,2] [--classes=0,1] [--specs=0,1] [--players=1] [--out=chemin.md]
+##   [--human=0.9] (PV des monstres face au bot, voir HUMAN_EDGE ; 1 : PV réels)
 
 const Bot := preload("res://tests/bot/balance_bot.gd")
 
@@ -18,6 +19,7 @@ func _init() -> void:
 	var specs: Array = []
 	var out := ""
 	var verbose := false
+	var human := Bot.HUMAN_EDGE
 	for arg in OS.get_cmdline_user_args():
 		var kv := arg.split("=")
 		if kv.size() != 2:
@@ -39,6 +41,8 @@ func _init() -> void:
 				out = kv[1]
 			"--verbose":
 				verbose = kv[1] == "1"
+			"--human":
+				human = clampf(float(kv[1]), 0.1, 2.0)
 	var gd := GameData.load_file()
 	if not gd.is_valid():
 		printerr("Données invalides : ", gd.error)
@@ -50,6 +54,7 @@ func _init() -> void:
 		classes = range(gd.builders.size())
 	var bot = Bot.new()
 	bot.verbose = verbose
+	bot.human_edge = human
 	if verbose:
 		var table: Dictionary = preload("res://tests/bot/bot_calibrate.gd")._table(gd)
 		for type in table:
@@ -90,8 +95,8 @@ func _init() -> void:
 			total_won += won
 			total_games += maps.size()
 	lines.append("")
-	lines.append("Total : %d/%d parties gagnées (niveau %d, %s, %d joueur(s)), en %d s." % [total_won, total_games, level,
-		gd.difficulties[difficulty]["name"], players, (Time.get_ticks_msec() - started) / 1000])
+	lines.append("Total : %d/%d parties gagnées (niveau %d, %s, %d joueur(s), PV ×%.2f face au bot), en %d s." % [total_won, total_games, level,
+		gd.difficulties[difficulty]["name"], players, human, (Time.get_ticks_msec() - started) / 1000])
 	var text := "\n".join(lines)
 	print("\nRAPPORT\n" + text)
 	if out != "":
