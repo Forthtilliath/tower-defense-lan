@@ -23,8 +23,9 @@ const ECON_AFTER := 3
 const ECON_MARGIN := 150
 ## Types de tourelles qui tirent envisagés à chaque réflexion (les plus forts contre la vague).
 const SHOOTER_TYPES := 7
-## Réserve d'intérêts par vague passée (talents d'intérêts), jusqu'au plafond.
+## Réserve d'intérêts par vague passée (Usurier), jusqu'à RESERVE_MAX (les intérêts n'ont pas de plafond).
 const RESERVE_PER_WAVE := 30
+const RESERVE_MAX := 1000
 ## Bonus à l'amélioration de sa tourelle la plus chère (il en pousse une au maximum).
 const FOCUS := 1.2
 
@@ -276,15 +277,13 @@ func _discount(board: SimBoard, cell: int, type: String) -> float:
 	return MatchActions.zone_discount(board, cell) + MatchEconomy.team_discount(sim, id) + TileBonus.discount(sim.data, board.map, cell, type)
 
 
-## Or gardé pour les intérêts quand ses talents en montent le taux (Usurier) et que rien ne fuit.
+## Or gardé pour les intérêts quand il joue l'Usurier (spécialisation des intérêts) et que rien ne fuit.
 func reserve(board: SimBoard) -> int:
-	var rule := kit.interest_rule(sim.data, sim.difficulty)
-	var base := PlayerKit.base_interest(sim.data, sim.difficulty)
-	if float(rule[0]) <= float(base[0]):
+	if kit.interest <= 0.0 or kit.spec < 0 or sim.data.builders[kit.builder]["branches"][kit.spec]["id"] != "usurer":
 		return 0
 	if board.lives < _lives_mark:
 		return 0
-	return mini(MatchFlow.interest_cap_gold(rule), RESERVE_PER_WAVE * maxi(0, sim.wave_index))
+	return mini(RESERVE_MAX, RESERVE_PER_WAVE * maxi(0, sim.wave_index))
 
 
 func execute(plan: Dictionary) -> bool:

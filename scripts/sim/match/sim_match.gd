@@ -6,7 +6,7 @@ extends RefCounted
 ## Versus : un plateau par joueur ; envoyer des monstres chez l'adversaire augmente le revenu.
 ## Après la dernière vague, le versus continue en « mort subite » (vagues de plus en plus dures).
 ## La difficulté choisie règle les PV et le nombre des monstres (Normal = 100 %), leur armure,
-## les vies, le plafond des intérêts et l'XP ;
+## les vies et l'XP ;
 ## en coopération, chaque joueur en plus ajoute des monstres et des PV (coop_scaling).
 ## L'enchaînement des vagues (rythme, appel de vague) est dans MatchFlow.
 

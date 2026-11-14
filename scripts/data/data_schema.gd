@@ -7,11 +7,10 @@ extends RefCounted
 
 const ARGC := {"int": 2, "num": 2, "text": 1}
 
-## interest : part de l'or gardé versée à chaque vague (plafonnée à interest_cap).
 ## gift_ratio : part d'un don d'or réellement reçue par l'allié (le reste est perdu).
+## Les intérêts sont un bonus de classe (le Gobelin) : voir TalentSchema.BUILDER.
 const PLAYER := {
-	"start_gold": ["int", 0, 100000], "interest": ["num", 0.0, 0.5, 0.0],
-	"interest_cap": ["int", 0, 100000, 0], "gift_ratio": ["num", 0.05, 1.0, 0.5],
+	"start_gold": ["int", 0, 100000], "gift_ratio": ["num", 0.05, 1.0, 0.5],
 	"gift_min": ["int", 1, 100000, 10],
 }
 const COOP_SCALING := {"hp": ["num", 0.0, 5.0], "count": ["num", 0.0, 5.0]}
@@ -31,12 +30,11 @@ const PROGRESSION := {
 	"defeat_rate_max": ["num", 0.0, 1.0, 0.85],
 }
 ## Difficulté : hp (PV, Normal = 1), count (nombre de monstres des vagues), armor (armure en plus),
-## interest_cap (plafond des intérêts ; -1 : celui du joueur), lives, gold, reward, xp.
+## lives, gold, reward, xp.
 const DIFFICULTY := {
 	"id": ["id"], "name": ["text", 24], "hp": ["num", 0.1, 10.0], "lives": ["int", 1, 1000],
 	"gold": ["num", 0.1, 10.0], "reward": ["num", 0.1, 10.0], "xp": ["num", 0.0, 10.0, 1.0],
 	"armor": ["num", 0.0, 20.0, 0.0], "count": ["num", 0.1, 5.0, 1.0],
-	"interest_cap": ["int", -1, 100000, -1],
 }
 ## Éléments des tourelles ("" : coups physiques), auxquels certains monstres résistent.
 const ELEMENTS := ["fire", "ice", "lightning", "poison", "bleed", "wind"]

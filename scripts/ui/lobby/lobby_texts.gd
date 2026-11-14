@@ -84,7 +84,7 @@ static func record_text(map_index: int) -> String:
 	return "Tes étoiles : " + " · ".join(parts)
 
 
-## [« Difficile · 2 votes (Normal : 1) », « 20 vies · PV des monstres +20 % · monstres +5 % · intérêts : 4 % de l'or gardé, 25 or au plus (dès 625 or gardés) »].
+## [« Difficile · 2 votes (Normal : 1) », « 20 vies · PV des monstres +20 % · monstres +5 % »].
 static func vote_lines(players: Dictionary) -> Array[String]:
 	var count := Data.db.difficulties.size()
 	var tally := NetPayloads.tally_votes(players, count)
@@ -106,7 +106,6 @@ static func vote_lines(players: Dictionary) -> Array[String]:
 	for key in ["gold", "reward"]:
 		if not is_equal_approx(float(d[key]), 1.0):
 			parts.append("%s %s" % ["or de départ" if key == "gold" else "primes", percent_delta(d[key])])
-	parts.append("intérêts : " + MatchFlow.interest_text(PlayerKit.base_interest(Data.db, d)))
 	return [title, " · ".join(parts) + ".\nÉgalité : la plus facile l'emporte."]
 
 

@@ -90,18 +90,13 @@ static func early_bonus(sim: SimMatch) -> int:
 	return int(SimMatch.BETWEEN_WAVES)
 
 
-## Or à garder pour toucher le plafond des intérêts : rule = [taux, plafond] (4 %, 25 -> 625).
-static func interest_cap_gold(rule: Array) -> int:
-	return ceili(float(rule[1]) / float(rule[0]) - 0.000001) if float(rule[0]) > 0.0 else 0
+## « 4 % de l'or gardé » (4,5 % avec une décimale).
+static func interest_text(rate: float) -> String:
+	var pct := snappedf(rate * 100.0, 0.1)
+	return "%s %% de l'or gardé" % (str(int(pct)) if is_equal_approx(pct, roundf(pct)) else str(pct).replace(".", ","))
 
 
-## « 4 % de l'or gardé, 25 or au plus (dès 625 or gardés) ».
-static func interest_text(rule: Array) -> String:
-	return "%d %% de l'or gardé, %d or au plus (dès %d or gardés)" % [roundi(float(rule[0]) * 100.0), int(rule[1]), interest_cap_gold(rule)]
-
-
-## Intérêts versés à chaque vague sur l'or gardé (plafonnés selon la difficulté), bonus du
-## bâtisseur compris.
-static func interest(data: GameData, gold: int, kit: PlayerKit = null, difficulty := {}) -> int:
-	var rule := kit.interest_rule(data, difficulty) if kit != null else PlayerKit.base_interest(data, difficulty)
-	return mini(int(rule[1]), floori(gold * float(rule[0])))
+## Intérêts versés au départ de chaque vague sur l'or gardé, sans plafond : seul le Gobelin en
+## touche (taux de sa classe et de ses talents). Comptés avant l'or de la vague et le bonus d'avance.
+static func interest(gold: int, kit: PlayerKit) -> int:
+	return floori(maxi(0, gold) * kit.interest) if kit != null else 0
