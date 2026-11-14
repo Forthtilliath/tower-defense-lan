@@ -47,7 +47,7 @@ func test_rejects_unknown_monster_in_wave() -> void:
 
 
 func test_rejects_out_of_bounds_values() -> void:
-	var gd := GameData.from_text(_bundled_text().replace("\"start_gold\": 150", "\"start_gold\": -5"))
+	var gd := GameData.from_text(_bundled_text().replace("\"start_gold\": 250", "\"start_gold\": -5"))
 	check(not gd.is_valid(), "or négatif refusé")
 	gd = GameData.from_text(_bundled_text().replace("\"cost\": 50,", "\"cost\": 50.5,"))
 	check(not gd.is_valid(), "coût non entier refusé")
@@ -74,7 +74,7 @@ func test_rejects_duplicate_ids_and_bad_json() -> void:
 
 
 func test_unknown_keys_are_dropped() -> void:
-	var gd := GameData.from_text(_bundled_text().replace("\"start_gold\": 150", "\"start_gold\": 150, \"hack\": 1"))
+	var gd := GameData.from_text(_bundled_text().replace("\"start_gold\": 250", "\"start_gold\": 250, \"hack\": 1"))
 	check(gd.is_valid(), "clé inconnue tolérée")
 	check(not gd.player.has("hack"), "clé inconnue non recopiée")
 

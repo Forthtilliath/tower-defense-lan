@@ -56,8 +56,8 @@ func test_free_rhythm_calls_a_wave_during_a_wave() -> void:
 	var gold: int = sim.players[1]["gold"]
 	check(sim.apply_command(1, {"a": "ready"}) == "", "vague suivante appelée pendant la vague")
 	check(sim.wave_index == 1, "vague 2 lancée")
-	var expected := gold + MatchFlow.interest(sim.data, gold) + 15 + int(SimMatch.CALL_WINDOW - DT)
-	check(sim.players[1]["gold"] == expected, "intérêts, vague et secondes d'avance : %d / %d" % [sim.players[1]["gold"], expected])
+	var expected := gold + 15 + int(SimMatch.CALL_WINDOW - DT)
+	check(sim.players[1]["gold"] == expected, "vague et secondes d'avance (pas d'intérêts hors Gobelin) : %d / %d" % [sim.players[1]["gold"], expected])
 	check(sim.boards[0].pending_waves() == 2, "vague 2 lancée tout de suite, en plus de la 1")
 	check(sim.apply_command(1, {"a": "ready"}) == "" and sim.wave_index == 2, "encore une vague appelable : elles arrivent ensemble")
 	check(_build(sim, 1, 2 * sim.map.width + 2) == "", "construction libre pendant la vague")
@@ -189,16 +189,33 @@ func test_builder_restricts_towers_and_boosts_them() -> void:
 	check(arrow == "" and is_equal_approx(sim.boards[0].towers[cell + 1].stats["damage"], gd.tower_levels("crossbow")[0]["damage"]), "bonus de classe réservé aux tourelles élémentaires")
 
 
-func test_interest_is_capped() -> void:
+## Seul le Gobelin touche des intérêts : 4 % de l'or gardé, sans plafond, comptés sur l'or
+## gardé avant l'or de la vague et le bonus d'avance.
+func test_interest_is_goblin_only_and_uncapped() -> void:
 	var gd := load_data()
-	check(MatchFlow.interest(gd, 0) == 0 and MatchFlow.interest(gd, 100) == 4, "4 %% de l'or gardé")
-	check(MatchFlow.interest(gd, 5000) == 30, "plafonné à 30")
+	var goblin := -1
+	for i in gd.builders.size():
+		if gd.builders[i]["id"] == "goblin":
+			goblin = i
+	check(MatchFlow.interest(5000, null) == 0 and MatchFlow.interest(5000, PlayerKit.make(gd, 0)) == 0, "pas d'intérêts hors Gobelin")
+	var kit := PlayerKit.make(gd, goblin)
+	check(MatchFlow.interest(0, kit) == 0 and MatchFlow.interest(100, kit) == 4 and MatchFlow.interest(-50, kit) == 0, "Gobelin : 4 %% de l'or gardé")
+	check(MatchFlow.interest(5000, kit) == 200, "sans plafond : %d" % MatchFlow.interest(5000, kit))
+	check(MatchFlow.interest_text(0.04) == "4 % de l'or gardé" and MatchFlow.interest_text(0.055) == "5,5 % de l'or gardé", "taux affiché : " + MatchFlow.interest_text(0.055))
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "G", 0, goblin]])
+	sim.apply_command(1, {"a": "ready"})  # vague 1, sans bonus d'avance
+	sim.players[1]["gold"] = 1000
+	sim.countdown = 20.0
+	sim.launch_next_wave()  # vague 2 appelée 20 s en avance
+	var wave_gold := int(gd.waves[sim.map.waves[1]]["gold"])
+	check(sim.players[1]["gold"] == 1000 + 40 + wave_gold + 20, "intérêts sur les 1000 or gardés seulement : %d" % sim.players[1]["gold"])
 
 
 func test_gift_costs_twice_what_the_ally_gets() -> void:
 	var sim := _sim(2)
+	var start := int(sim.data.player["start_gold"])
 	check(sim.apply_command(1, {"a": "give", "to": 1, "amount": 50}) == "", "don accepté")
-	check(sim.players[1]["gold"] == 100 and sim.players[2]["gold"] == 175, "50 donnés, 25 reçus : %d / %d" % [sim.players[1]["gold"], sim.players[2]["gold"]])
+	check(sim.players[1]["gold"] == start - 50 and sim.players[2]["gold"] == start + 25, "50 donnés, 25 reçus : %d / %d" % [sim.players[1]["gold"], sim.players[2]["gold"]])
 	check(sim.notices.size() == 1 and sim.notices[0][0] == 2, "l'allié est prévenu")
 	check(sim.apply_command(1, {"a": "give", "to": 0, "amount": 50}) != "", "don à soi-même refusé")
 	check(sim.apply_command(1, {"a": "give", "to": 1, "amount": 5}).contains("minimum"), "don trop petit refusé")
@@ -238,7 +255,8 @@ func test_special_waves_strengthen_monsters() -> void:
 func test_lanes_open_one_per_player() -> void:
 	var solo := _sim(1, FIEFS)
 	check(solo.open_paths.size() == 1 and solo.boards[0].lives == 20, "seul : un couloir, vies normales (%d)" % solo.boards[0].lives)
-	check(solo.players[1]["gold"] == 150 and solo.coop_scaling(1) == [1.0, 1.0, 1.0], "seul : or et vague solo")
+	var start := int(solo.data.player["start_gold"])
+	check(solo.players[1]["gold"] == start and solo.coop_scaling(1) == [1.0, 1.0, 1.0], "seul : or et vague solo")
 	solo.apply_command(1, {"a": "ready"})
 	for i in 200:
 		solo.step(0.05)
@@ -248,11 +266,11 @@ func test_lanes_open_one_per_player() -> void:
 	check(paths.keys() == solo.open_paths, "les monstres n'arrivent que par le couloir ouvert : %s" % str(paths.keys()))
 	var trio := _sim(3, FIEFS)
 	check(trio.open_paths.size() == 3 and trio.boards[0].lives == 60, "à trois : 3 couloirs, 3 fois plus de vies")
-	check(trio.players[1]["gold"] == 150 and trio.players[3]["gold"] == 150, "chacun son couloir : or normal")
+	check(trio.players[1]["gold"] == start and trio.players[3]["gold"] == start, "chacun son couloir : or normal")
 	for p in trio.open_paths.size():
 		check(MapSpawns.start_zone(trio.map, trio.open_paths[p]) == p, "le joueur %d défend le couloir de sa zone" % (p + 1))
 	var full := _sim(4, FIEFS)
-	check(full.coop_scaling(4) == [1.0, 4.0, 1.0] and full.players[4]["gold"] == 150, "un joueur par couloir : règles solo")
+	check(full.coop_scaling(4) == [1.0, 4.0, 1.0] and full.players[4]["gold"] == start, "un joueur par couloir : règles solo")
 	check(full.coop_scaling(2) == [1.0, 4.0, 2.0], "deux joueurs partis : les couloirs restent, l'or double")
 	var prairie := _sim(3)
 	var s := prairie.coop_scaling(3)

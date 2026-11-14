@@ -169,7 +169,7 @@ func test_patron_team_bounty_and_gambler_gold() -> void:
 	var wave: Dictionary = gd.waves[solo.map.waves[1]]
 	var expected := int(wave["gold"]) + 10 * 2 + 10
 	var got: int = solo.players[1]["gold"] - g0
-	check(got - MatchFlow.interest(gd, g0, gambler) == expected, "or de vague + avance ×2 + vague propre : %d" % got)
+	check(got - MatchFlow.interest(g0, gambler) == expected, "or de vague + avance ×2 + vague propre : %d" % got)
 
 
 func test_snapshot_carries_new_marks_and_invested() -> void:

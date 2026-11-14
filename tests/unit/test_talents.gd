@@ -109,11 +109,11 @@ func test_kit_bonuses_and_economy() -> void:
 	var goblin := _builder(gd, "goblin")
 	var kit := PlayerKit.make(gd, goblin, {"go_greed": 2, "go_stocking": 3, "go_rate": 1})
 	check(is_equal_approx(kit.bounty, 1.15 + 0.12), "primes : classe + Avarice : %f" % kit.bounty)
-	var rule := kit.interest_rule(gd)
-	check(is_equal_approx(rule[0], 0.05) and rule[1] == 60, "intérêts : 4 + 1 %%, plafond 30 + 30 : %s" % str(rule))
+	check(is_equal_approx(kit.interest, 0.065), "intérêts : 4 + 1,5 (Bas de laine) + 1 %% (Taux) : %f" % kit.interest)
+	check(PlayerKit.make(gd, goblin, {"go_vault": 2}).start_gold == 60, "Coffre-fort : +30 or de départ par rang")
 	check(kit.spec_name(gd) == "Usurier" and kit.title(gd) == "Gobelin · Usurier", "spécialisation reconnue")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "G", 0, goblin, {"go_smuggle": 2}]])
-	check(sim.players[1]["gold"] == 150 + 80, "or de départ : Contrebande 2 x 40")
+	check(sim.players[1]["gold"] == int(gd.player["start_gold"]) + 80, "or de départ : Contrebande 2 x 40")
 	var support := _builder(gd, "support")
 	var warlord := PlayerKit.make(gd, support, {"su_orders": 3, "su_drum": 1, "su_presence": 3})
 	check(warlord.allows("drum") and not warlord.allows("banner"), "Tambour débloqué, Étendard pas encore")
@@ -139,7 +139,8 @@ func test_heritage_of_maxed_classes() -> void:
 	for bad in [[1, 1], [99], ["x"], "tout", [0, 1, 2, 3, 4, 5, 0]]:
 		check(TalentRules.parse_heritage(gd, bad) == null, "héritage refusé : %s" % str(bad))
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, arcanist, {}, [goblin]]])
-	check(sim.players[1]["gold"] == 150 + 100, "l'héritage passe dans la partie")
+	check(sim.players[1]["gold"] == int(gd.player["start_gold"]) + 100, "l'héritage passe dans la partie")
+	check(MatchFlow.interest(5000, heir) == 0,"l'héritage du Gobelin ne donne pas ses intérêts")
 
 
 ## Bâtisseur : tourelles du tronc commun seulement, prix réduits, revente bonifiée.
@@ -154,7 +155,7 @@ func test_mason_costs_and_refunds() -> void:
 	check(is_equal_approx(scrapper.sell_ratio(), 0.85), "revente 70 + 15 %%")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "B", 0, mason, {"ma_thrifty": 2}]])
 	var start: int = sim.players[1]["gold"]
-	check(start == 150 + 50, "+50 or de départ (classe)")
+	check(start == int(gd.player["start_gold"]) + 50, "+50 or de départ (classe)")
 	var cell := 2 * sim.map.width + 2
 	check(sim.apply_command(1, {"a": "build", "cell": cell, "tower": "crossbow"}) == "", "construction")
 	check(sim.players[1]["gold"] == start - architect.cost(50), "prix réduit payé")

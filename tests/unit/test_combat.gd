@@ -174,11 +174,12 @@ func test_bounty_split_by_contribution() -> void:
 func test_goblin_economy() -> void:
 	var gd := load_data()
 	var goblin := _builder(gd, "goblin")
-	check(MatchFlow.interest(gd, 500, PlayerKit.make(gd, goblin, {"go_rate": 1})) == 25, "4 + 1 %% d'intérêts (Taux)")
+	check(MatchFlow.interest(500, PlayerKit.make(gd, goblin, {"go_rate": 1})) == 25, "4 + 1 %% d'intérêts (Taux)")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 0], [2, "G", 1, goblin]])
 	MatchEconomy.credit_bounty(sim, 1, 20)
 	MatchEconomy.credit_bounty(sim, 2, 20)
-	check(sim.players[1]["gold"] == 170 and sim.players[2]["gold"] == 173, "+15 %% sur ses primes : %d / %d" % [sim.players[1]["gold"], sim.players[2]["gold"]])
+	var start := int(gd.player["start_gold"])
+	check(sim.players[1]["gold"] == start + 20 and sim.players[2]["gold"] == start + 23, "+15 %% sur ses primes : %d / %d" % [sim.players[1]["gold"], sim.players[2]["gold"]])
 
 
 func test_support_boosts_controls() -> void:

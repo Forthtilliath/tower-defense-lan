@@ -48,11 +48,12 @@ func test_compound_and_shared_interest() -> void:
 	var b: Dictionary = sim.players[2]
 	sim.apply_command(1, {"a": "build", "cell": 2 * sim.map.width + 2, "tower": "crossbow"})
 	a["kit"].money = {"compound": 0.5, "share_interest": 0.5}
+	a["kit"].interest = 0.04  # taux du Gobelin, seul à toucher des intérêts
 	a["gold"] = 100
 	b["gold"] = 0
 	MatchEconomy.pay_wave(sim, {"gold": 0, "groups": []}, 0, {})
-	var expected := MatchFlow.interest(sim.data, 100 + 25, a["kit"])
-	check(a["gold"] == 100 + expected, "intérêts sur l'or et la moitié des 50 investis : %d" % a["gold"])
+	var expected := MatchFlow.interest(100 + 25, a["kit"])
+	check(expected == 5 and a["gold"] == 100 + expected, "intérêts sur l'or et la moitié des 50 investis : %d" % a["gold"])
 	check(b["gold"] == roundi(expected * 0.5), "l'allié touche la moitié des intérêts : %d" % b["gold"])
 
 
