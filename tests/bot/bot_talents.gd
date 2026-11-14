@@ -5,7 +5,7 @@ extends RefCounted
 ## par palier, et prend son ultime (son pouvoir) au niveau maximum.
 
 ## Clés d'un talent qui en font un bonus chiffré direct (pris avant les mécaniques).
-const DIRECT := ["damage", "rate", "aura", "cc", "bounty", "interest", "interest_cap", "start_gold", "build_cost",
+const DIRECT := ["damage", "rate", "aura", "cc", "bounty", "interest", "start_gold", "build_cost",
 	"sell_bonus", "team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"]
 
 

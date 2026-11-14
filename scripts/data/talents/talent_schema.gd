@@ -15,7 +15,7 @@ const TALENT := {
 	"max_rank": ["int", 1, 5, 1], "unlock": ["id", ""],
 	"damage": ["num", 0.0, 1.0, 0.0], "rate": ["num", 0.0, 1.0, 0.0], "range": ["num", 0.0, 1.0, 0.0],
 	"cc": ["num", 0.0, 1.0, 0.0], "aura": ["num", 0.0, 1.0, 0.0], "bounty": ["num", 0.0, 1.0, 0.0],
-	"interest": ["num", 0.0, 0.1, 0.0], "interest_cap": ["int", 0, 1000, 0], "start_gold": ["int", 0, 10000, 0],
+	"interest": ["num", 0.0, 0.1, 0.0], "start_gold": ["int", 0, 10000, 0],
 	"build_cost": ["num", 0.0, 0.2, 0.0], "sell_bonus": ["num", 0.0, 0.1, 0.0], "gift_bonus": ["num", 0.0, 0.25, 0.0],
 	"team_bounty": ["num", 0.0, 0.2, 0.0], "early_bonus": ["num", 0.0, 2.0, 0.0], "clean_gold": ["int", 0, 1000, 0],
 	"imbue_all": ["bool", false], "raze_charges": ["int", 0, 20, 0], "tile_charges": ["int", 0, 10, 0],
@@ -103,12 +103,13 @@ const GRANT_CAPS := {"armor_pierce": 1.0, "stun_chance": 1.0, "shred": 0.9, "hea
 ## débloquent les leurs), branches de talents, et bonus de classe. Les multiplicateurs (dégâts,
 ## portée, cadence, contrôles, auras) valent pour les tourelles de « bonus_towers » (toutes si vide).
 ## cc : multiplie les chances et durées de contrôle. bounty : multiplie sa part des primes.
-## interest / interest_cap / start_gold : s'ajoutent à ceux du joueur. roams (Support, coopération) :
+## interest : part de l'or gardé versée à chaque vague, sans plafond (seul le Gobelin en a).
+## start_gold : s'ajoute à celui du joueur. roams (Support, coopération) :
 ## construit dans toutes les zones ouvertes, et ses alliés construisent dans la sienne (MatchActions.zone_refusal).
 const BUILDER := {
 	"id": ["id"], "name": ["text", 24], "color": ["color"], "description": ["text", 200, ""],
 	"damage": ["num", 0.5, 3.0, 1.0], "range": ["num", 0.5, 3.0, 1.0], "rate": ["num", 0.5, 3.0, 1.0],
 	"cc": ["num", 0.5, 3.0, 1.0], "aura": ["num", 0.5, 3.0, 1.0], "bounty": ["num", 0.5, 3.0, 1.0],
-	"interest": ["num", 0.0, 0.2, 0.0], "interest_cap": ["int", 0, 10000, 0], "start_gold": ["int", 0, 10000, 0],
+	"interest": ["num", 0.0, 0.2, 0.0], "start_gold": ["int", 0, 10000, 0],
 	"roams": ["bool", false],
 }

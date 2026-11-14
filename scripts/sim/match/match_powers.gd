@@ -193,7 +193,7 @@ static func _fire(sim: SimMatch, id: int, p: Dictionary, b: SimBoard, power: Str
 				m.control_guard = 0.0
 				m.apply_control(SimMonster.Crowd.CHARM, PARADE_TIME, id)
 		"cash_in":
-			p["gold"] += CASH_IN_WAVES * floori(int(p["gold"]) * p["kit"].interest_rule(sim.data)[0])
+			p["gold"] += CASH_IN_WAVES * MatchFlow.interest(int(p["gold"]), p["kit"])
 		"golden_age":
 			for other in sim.order:
 				if other != id:

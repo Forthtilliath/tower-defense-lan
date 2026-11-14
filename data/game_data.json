@@ -1,5 +1,5 @@
 {
-	"player": { "start_gold": 250, "interest": 0.04, "interest_cap": 30, "gift_ratio": 0.5, "gift_min": 10 },
+	"player": { "start_gold": 250, "gift_ratio": 0.5, "gift_min": 10 },
 	"coop_scaling": { "hp": 0.15, "count": 0.35 },
 	"monster_scaling": { "hp": 1.45 },
 	"progression": { "max_level": 30, "xp_base": 200, "xp_growth": 1.1, "xp_per_wave": 10, "win_bonus": 0.25, "defeat_steps": 4, "defeat_rate_min": 0.1, "defeat_rate_max": 0.85 },
@@ -239,12 +239,12 @@
 		{
 			"id": "goblin", "name": "Gobelin", "color": "#9acd32",
 			"heritage": { "id": "he_goblin", "name": "Héritage du Gobelin", "description": "+100 or de départ, +15 % sur ses parts de primes.", "tier": 1, "start_gold": 100, "bounty": 0.15 },
-			"description": "Vit pour l'or : +15 % sur ses parts de primes.",
-			"bounty": 1.15,
+			"description": "Vit pour l'or : +15 % sur ses parts de primes, et seul à toucher des intérêts : 4 % de l'or gardé à chaque vague, sans plafond.",
+			"bounty": 1.15, "interest": 0.04,
 			"branches": [
 				{ "id": "hoard", "name": "Bourse", "description": "Tronc commun du Gobelin : son or.", "trunk": true, "talents": [
 					{ "id": "go_greed", "name": "Avarice", "description": "+6 % sur tes primes par rang.", "tier": 1, "max_rank": 3, "bounty": 0.06 },
-					{ "id": "go_stocking", "name": "Bas de laine", "description": "+10 au plafond d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest_cap": 10 },
+					{ "id": "go_stocking", "name": "Bas de laine", "description": "+0,5 % d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest": 0.005 },
 					{ "id": "go_loot", "name": "Pillage", "description": "3 % de chance par rang qu'un monstre tué rapporte 5 or de plus.", "tier": 2, "max_rank": 2, "loot": 0.03 },
 					{ "id": "go_smuggle", "name": "Contrebande", "description": "+40 or de départ par rang.", "tier": 2, "max_rank": 2, "start_gold": 40 },
 					{ "id": "go_loan", "name": "Prêt", "description": "Emprunt de 150 or par rang au départ, rendu ×1,2 à partir de la vague 10.", "tier": 2, "max_rank": 2, "loan": 150 }
@@ -261,12 +261,12 @@
 				] },
 				{ "id": "usurer", "name": "Usurier", "description": "L'or qui dort rapporte.", "talents": [
 					{ "id": "go_rate", "name": "Taux", "description": "+1 % d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest": 0.01 },
-					{ "id": "go_vault", "name": "Coffre-fort", "description": "+20 au plafond d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest_cap": 20 },
+					{ "id": "go_vault", "name": "Coffre-fort", "description": "+30 or de départ par rang : de quoi faire fructifier dès la 1re vague.", "tier": 1, "max_rank": 3, "start_gold": 30 },
 					{ "id": "go_rent", "name": "Rente", "description": "+5 or fixes par vague et par rang.", "tier": 2, "max_rank": 3, "rent": 5 },
 					{ "id": "go_compound", "name": "Intérêts composés", "description": "Tes intérêts comptent aussi 10 % par rang de l'or investi dans tes tourelles.", "tier": 3, "max_rank": 3, "compound": 0.1 },
 					{ "id": "go_bigloan", "name": "Gros emprunt", "description": "Emprunt de 233 or par rang au départ, rendu ×1,2 à partir de la vague 10.", "tier": 4, "max_rank": 3, "loan": 233 },
 					{ "id": "go_saver", "name": "Épargnant", "description": "Une victoire rapporte +2 % d'expérience par 100 or gardés.", "tier": 5, "saver": 0.02 },
-					{ "id": "go_cashin", "name": "Encaissement", "description": "Pouvoir : touche tout de suite 3 vagues d'intérêts, sans plafond.", "tier": 5, "ultimate": true, "power": "cash_in" }
+					{ "id": "go_cashin", "name": "Encaissement", "description": "Pouvoir : touche tout de suite 3 vagues d'intérêts.", "tier": 5, "ultimate": true, "power": "cash_in" }
 				] },
 				{ "id": "patron", "name": "Mécène", "description": "L'or de l'équipe.", "talents": [
 					{ "id": "go_generosity", "name": "Générosité", "description": "Dons : l'allié reçoit 8 % de plus par rang.", "tier": 1, "max_rank": 3, "gift_bonus": 0.08 },
@@ -351,11 +351,11 @@
 		{ "id": "undying", "name": "Increvables", "color": "#5ad17a", "description": "Les monstres régénèrent 1 % de leurs PV par seconde.", "regen": 0.01 }
 	],
 	"difficulties": [
-		{ "id": "easy", "name": "Facile", "hp": 0.8, "count": 0.9, "lives": 20, "gold": 1.0, "reward": 1.0, "xp": 0.8, "interest_cap": 30 },
-		{ "id": "normal", "name": "Normal", "hp": 1.0, "count": 1.0, "lives": 20, "gold": 1.0, "reward": 1.0, "xp": 1.0, "interest_cap": 30 },
-		{ "id": "hard", "name": "Difficile", "hp": 1.2, "count": 1.05, "lives": 20, "gold": 1.0, "reward": 1.0, "xp": 1.5, "interest_cap": 25 },
-		{ "id": "nightmare", "name": "Cauchemar", "hp": 1.35, "count": 1.2, "lives": 10, "gold": 1.0, "reward": 1.0, "xp": 2.0, "armor": 2, "interest_cap": 20 },
-		{ "id": "infernal", "name": "Infernal", "hp": 1.5, "count": 1.3, "lives": 1, "gold": 1.0, "reward": 1.0, "xp": 3.0, "armor": 3, "interest_cap": 15 }
+		{ "id": "easy", "name": "Facile", "hp": 0.8, "count": 0.9, "lives": 20, "gold": 1.0, "reward": 1.0, "xp": 0.8 },
+		{ "id": "normal", "name": "Normal", "hp": 1.0, "count": 1.0, "lives": 20, "gold": 1.0, "reward": 1.0, "xp": 1.0 },
+		{ "id": "hard", "name": "Difficile", "hp": 1.2, "count": 1.05, "lives": 20, "gold": 1.0, "reward": 1.0, "xp": 1.5 },
+		{ "id": "nightmare", "name": "Cauchemar", "hp": 1.35, "count": 1.2, "lives": 10, "gold": 1.0, "reward": 1.0, "xp": 2.0, "armor": 2 },
+		{ "id": "infernal", "name": "Infernal", "hp": 1.5, "count": 1.3, "lives": 1, "gold": 1.0, "reward": 1.0, "xp": 3.0, "armor": 3 }
 	],
 	"special_tiles": [
 		{ "char": "^", "id": "hill", "name": "Colline", "color": "#d8c27a", "description": "+25 % de portée", "range": 1.25, "geomancy": true },

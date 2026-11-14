@@ -10,7 +10,7 @@ const MONEY := ["loot", "loan", "boss_bounty", "jackpot", "trophy", "contract", 
 	"invest", "team_discount", "share_interest", "hot_hand", "early_wave", "risk", "nerve",
 	"floors", "moves", "scrap", "spare", "tinker", "team_aura", "vein_tiles", "mound_tiles", "ditch_tiles", "fertile",
 	"saver", "jackpot_share"]
-const ECONOMY := ["bounty", "interest", "interest_cap", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
+const ECONOMY := ["bounty", "interest", "start_gold", "build_cost", "sell_bonus", "gift_bonus",
 	"team_bounty", "early_bonus", "clean_gold", "raze_charges", "tile_charges"] + MONEY
 ## Auras des tourelles de soutien, toutes renforcées par la statistique « aura ».
 const AURAS := ["aura_rate", "aura_damage", "aura_cc", "aura_range", "aura_frostbite", "aura_shock", "aura_bounty", "aura_discount",
@@ -28,8 +28,8 @@ var towers := {}  # id de tourelle -> true
 ## Branche de spécialisation choisie (index dans les branches de la classe), -1 : aucune encore.
 var spec := -1
 var bounty := 1.0
+## Intérêts : part de l'or gardé versée à chaque vague, sans plafond (classe et talents compris).
 var interest := 0.0
-var interest_cap := 0
 var start_gold := 0
 var build_cost := 0.0
 var sell_bonus := 0.0
@@ -80,7 +80,6 @@ static func make(data: GameData, p_builder: int, p_talents := {}, p_heritage: Ar
 		k._bonus_towers[id] = true
 	k.bounty = float(b["bounty"])
 	k.interest = float(b["interest"])
-	k.interest_cap = int(b["interest_cap"])
 	k.start_gold = int(b["start_gold"])
 	var branches: Array = b["branches"]
 	for i in branches.size():
@@ -104,7 +103,6 @@ func _apply(t: Dictionary, rank: int) -> void:
 		power = t["power"]
 	bounty += float(t["bounty"]) * rank
 	interest += float(t["interest"]) * rank
-	interest_cap += int(t["interest_cap"]) * rank
 	start_gold += int(t["start_gold"]) * rank
 	build_cost += float(t["build_cost"]) * rank
 	sell_bonus += float(t["sell_bonus"]) * rank
@@ -177,18 +175,6 @@ func boost(stats: Dictionary, type: String) -> void:
 			stats[key] += _grants[id][key]
 			if TalentSchema.GRANT_CAPS.has(key):
 				stats[key] = minf(stats[key], TalentSchema.GRANT_CAPS[key])
-
-
-## Intérêts : [taux, plafond], plafond de la difficulté, bonus de la classe et des talents compris.
-func interest_rule(data: GameData, difficulty := {}) -> Array:
-	var base := base_interest(data, difficulty)
-	return [float(base[0]) + interest, int(base[1]) + interest_cap]
-
-
-## Intérêts sans bonus : taux du joueur, plafond de la difficulté (celui du joueur à défaut).
-static func base_interest(data: GameData, difficulty := {}) -> Array:
-	var cap := int(difficulty.get("interest_cap", -1))
-	return [float(data.player["interest"]), cap if cap >= 0 else int(data.player["interest_cap"])]
 
 
 ## Prix payé pour une construction ou une amélioration affichée à `base` or ; `zone` : réduction

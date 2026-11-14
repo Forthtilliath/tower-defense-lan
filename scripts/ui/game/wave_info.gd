@@ -9,6 +9,21 @@ static func count_mult(game: GameScreen) -> float:
 	return WaveScaling.count_mult(Data.db, game.map, game.difficulty(), not game.is_versus, game.order.size())
 
 
+## Intérêts que touchera le joueur au départ de la prochaine vague (comme MatchEconomy.pay_wave :
+## or gardé, plus la part de l'or investi dans ses tourelles avec les Intérêts composés).
+static func next_interest(game: GameScreen) -> int:
+	var kit := game.my_kit()
+	if kit.interest <= 0.0:
+		return 0
+	var invested := 0
+	if kit.m("compound") > 0.0:
+		for b in game.state.boards:
+			for cell in b["towers"]:
+				if int(b["towers"][cell]["owner"]) == game.my_id:
+					invested += int(b["towers"][cell]["invested"])
+	return MatchFlow.interest(int(game.me().get("gold", 0)) + roundi(kit.m("compound") * invested), kit)
+
+
 ## Chemins défendus (carte à couloirs séparés en coop : un par joueur) ; vide : tous.
 static func lane_paths(game: GameScreen) -> Array[int]:
 	if game.is_versus or game.map.lanes <= 1:
