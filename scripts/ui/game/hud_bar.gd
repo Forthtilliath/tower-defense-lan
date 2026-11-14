@@ -1,10 +1,11 @@
 class_name HudBar
 extends PanelContainer
-## Barre du haut : or, vies, vague, compte à rebours, « lancer maintenant », vitesse et pause
+## Barre du haut : or (et intérêts à venir), vies, vague, compte à rebours, « lancer maintenant », vitesse et pause
 ## (hôte), menu (bestiaire, talents, recommencer, quitter).
 
 var _game: GameScreen
 var _gold: Label
+var _interest: Label
 var _lives: Label
 var _wave: Label
 var _timer: Label
@@ -25,10 +26,20 @@ func _ready() -> void:
 	_lives = UiTheme.label("Vies : -", 22, UiTheme.LIFE)
 	_wave = UiTheme.label("Vague -", 22)
 	_timer = UiTheme.label("", 18, UiTheme.MUTED)
-	for l in [_gold, _lives, _wave, _timer]:
+	# Sous l'or : les intérêts de la prochaine vague (classes à intérêts seulement)
+	_interest = UiTheme.label("", 14, UiTheme.GOLD.darkened(0.15))
+	_interest.visible = false
+	var gold_box := VBoxContainer.new()
+	gold_box.add_theme_constant_override("separation", 0)
+	gold_box.size_flags_vertical = SIZE_SHRINK_CENTER
+	gold_box.add_child(_gold)
+	gold_box.add_child(_interest)
+	row.add_child(gold_box)
+	for l in [_gold, _interest, _lives, _wave, _timer]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.size_flags_vertical = SIZE_SHRINK_CENTER
-		row.add_child(l)
+		if l.get_parent() == null:
+			row.add_child(l)
 	# Le message prend la place libre et se coupe (« … ») plutôt que d'élargir tout l'écran
 	_timer.clip_text = true
 	_timer.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -53,6 +64,10 @@ func refresh() -> void:
 	_gold.text = "Or : %d" % int(me.get("gold", 0))
 	if _game.is_versus:
 		_gold.text += "  (+%d/vague)" % (SimMatch.VERSUS_BASE_INCOME + int(me.get("income", 0)))
+	# Intérêts comptés sur l'or gardé au départ de la vague, avant l'or de la vague et le bonus d'avance
+	_interest.visible = _game.my_kit().interest > 0.0 and not s.ended and (_game.is_versus or s.wave < s.total)
+	if _interest.visible:
+		_interest.text = "+%d or d'intérêts à la prochaine vague" % WaveInfo.next_interest(_game)
 	var own: Dictionary = s.boards[_game.my_board]
 	_lives.text = "Vies : %d" % int(own["lives"])
 	if s.wave > s.total:
