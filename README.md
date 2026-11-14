@@ -54,7 +54,7 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   - Fléau (+15 % de dégâts des effets continus) : Poison (Peste, Miasmes), Saignement (Faux), Gelure, Électrocution.
   - Support (+15 % de contrôles et d'auras) : Dompteur (Épouvantail, Flûte), Corrupteur (Alambic),
     Chef de guerre (Tambour, Étendard), Gardien (Totem) ; fait pour l'équipe.
-  - Gobelin (+15 % sur ses parts de primes) : Chasseur de primes, Usurier (intérêts), Mécène (dons moins chers), Parieur.
+  - Gobelin (+15 % sur ses parts de primes, seul à toucher des intérêts) : Chasseur de primes, Usurier (intérêts), Mécène (dons moins chers), Parieur.
   - Bâtisseur (+50 or de départ, tronc commun seulement) : Architecte (prix réduits), Ferrailleur (revente),
     Contremaître, Terrassier.
 
@@ -112,7 +112,9 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 
 - **Primes partagées selon la contribution** : la prime d'un monstre se répartit entre les joueurs selon les dégâts infligés,
   la part apportée par leurs auras et les secondes de contrôle. Un joueur de soutien gagne donc sa part sans tuer.
-- **Intérêts** : à chaque vague, 4 % de l'or gardé (30 or au plus).
+- **Or** : 250 or de départ ; à chaque vague, l'or de la vague, plus 1 or par seconde d'avance si on l'appelle tôt.
+  Seul le **Gobelin** touche des **intérêts** : 4 % de l'or gardé à chaque vague, sans plafond, comptés sur l'or gardé
+  avant l'or de la vague et le bonus d'avance. Le montant à venir s'affiche sous son or.
 - **Don d'or** à un allié (panneau de droite) : le don coûte cher, l'allié ne reçoit que la moitié du montant.
 - **Vagues spéciales** toutes les 5 vagues, annoncées à l'avance : Ruée (monstres plus rapides), Colosses (moitié moins de monstres,
   bien plus résistants et plus riches), Cuirassés (+2 d'armure). La vague 20 est celle du boss final.
@@ -144,13 +146,13 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
   (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et signalée sur le plateau.
 - **5 difficultés**, même or de départ et mêmes primes partout, comptées par rapport au Normal (100 %) :
 
-  | | PV | Monstres | Armure | Vies | Intérêts (4 % de l'or gardé) |
-  |---|---|---|---|---|---|
-  | Facile | -20 % | -10 % | – | 20 | 30 or au plus, dès 750 or gardés |
-  | Normal | 100 % | 100 % | – | 20 | 30 or au plus, dès 750 or gardés |
-  | Difficile | +20 % | +5 % | – | 20 | 25 or au plus, dès 625 or gardés |
-  | Cauchemar | +35 % | +20 % | +2 | 10 | 20 or au plus, dès 500 or gardés |
-  | Infernal | +50 % | +30 % | +3 | 1 | 15 or au plus, dès 375 or gardés |
+  | | PV | Monstres | Armure | Vies |
+  |---|---|---|---|---|
+  | Facile | -20 % | -10 % | – | 20 |
+  | Normal | 100 % | 100 % | – | 20 |
+  | Difficile | +20 % | +5 % | – | 20 |
+  | Cauchemar | +35 % | +20 % | +2 | 10 |
+  | Infernal | +50 % | +30 % | +3 | 1 |
 - **36 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
   - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
     Baliste (tireur d'élite), Canon et Mortier (zone au sol), Sentinelle (anti-aérien) ;
@@ -276,9 +278,11 @@ Facultatifs aussi : `zones` (mêmes dimensions que la carte, `1` à `4` pour une
 
 Équilibrage : `tests/unit/test_balance.gd` fait jouer un joueur automatique (`tests/bot/balance_bot.gd`) qui joue
 chaque spécialisation comme un joueur qui la connaît : talents répartis dans sa branche, tourelles choisies d'après ses
-talents, les monstres à venir et les meilleures cases, prévisions étalonnées sur la simulation (`docs/BOT.md`). Après
-une modification des données, relancer `tools/verify.ps1`. Bilan complet (une ligne par spécialisation, une colonne
-par carte) : `godot --headless --path . --script res://tests/bot/bot_report.gd -- --level=10 --difficulty=1` ;
+talents, les monstres à venir et les meilleures cases, prévisions étalonnées sur la simulation (`docs/BOT.md`). Un
+humain jouant mieux que le bot, celui-ci affronte des monstres à 90 % de leurs PV (`HUMAN_EDGE` dans `balance_bot.gd`,
+`--human=0.9` dans les bilans, 1 pour les PV réels) : c'est le réglage à revoir si les vraies parties s'écartent des
+mesures. Après une modification des données, relancer `tools/verify.ps1`. Bilan complet (une ligne par
+spécialisation, une colonne par carte) : `godot --headless --path . --script res://tests/bot/bot_report.gd -- --level=10 --difficulty=1` ;
 captures d'écran de ses parties : `godot --path . --resolution 1280x720 -- --botshots=build/bot --map=0`.
 
 ### Architecture réseau
