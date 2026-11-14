@@ -12,6 +12,8 @@ const FLOOR_RANGE := 0.2
 
 var player := {}
 var coop_scaling := {}
+## PV des monstres en Normal par rapport à leur fiche (DataSchema.MONSTER_SCALING).
+var monster_scaling := {"hp": 1.0}
 var progression := {}
 ## Points à dépenser dans une branche pour atteindre chaque palier de talents.
 var talent_tiers: Array[int] = []

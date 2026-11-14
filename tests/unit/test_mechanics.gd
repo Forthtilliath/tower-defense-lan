@@ -117,8 +117,57 @@ func test_difficulty_changes_lives_gold_and_hp() -> void:
 		sim.step(1.0)
 	var e: SimMonster = easy.boards[0].monsters[0]
 	var n: SimMonster = nightmare.boards[0].monsters[0]
-	check(is_equal_approx(e.max_hp, 12.0 * de["hp"]) and is_equal_approx(n.max_hp, 12.0 * dn["hp"]), "PV : %f / %f" % [e.max_hp, n.max_hp])
+	var base := 12.0 * float(gd.monster_scaling["hp"])
+	check(is_equal_approx(e.max_hp, base * de["hp"]) and is_equal_approx(n.max_hp, base * dn["hp"]), "PV : %f / %f" % [e.max_hp, n.max_hp])
 	check(n.max_hp > e.max_hp, "monstres plus résistants en Cauchemar")
+
+
+## Normal sert de référence (PV x1) ; PV, nombre de monstres, armure et XP montent, vies et
+## plafond des intérêts baissent, l'or reste le même ; Infernal ne laisse qu'une vie.
+func test_difficulty_scale_is_consistent() -> void:
+	var gd := load_data()
+	check(gd.difficulties[1]["id"] == "normal" and is_equal_approx(gd.difficulties[1]["hp"], 1.0), "Normal à 100 %% des PV")
+	for i in range(1, gd.difficulties.size()):
+		var prev: Dictionary = gd.difficulties[i - 1]
+		var d: Dictionary = gd.difficulties[i]
+		check(d["hp"] > prev["hp"] and d["xp"] > prev["xp"] and d["lives"] <= prev["lives"], "%s plus dur que %s" % [d["id"], prev["id"]])
+		check(d["count"] > prev["count"] and d["armor"] >= prev["armor"] and d["interest_cap"] <= prev["interest_cap"], "%s : plus de monstres, moins d'intérêts" % d["id"])
+		check(is_equal_approx(d["gold"], 1.0) and is_equal_approx(d["reward"], 1.0), "%s : même or partout" % d["id"])
+	check(gd.difficulties[-1]["id"] == "infernal" and gd.difficulties[-1]["lives"] == 1, "Infernal : une seule vie")
+	var hard := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]], 2)
+	check(MatchFlow.interest(gd, 5000, null, hard.difficulty) == int(hard.difficulty["interest_cap"]), "intérêts plafonnés par la difficulté")
+	check(MatchFlow.interest_text([0.04, 25]) == "4 % de l'or gardé, 25 or au plus (dès 625 or gardés)", "plafond affiché en or gardé : " + MatchFlow.interest_text([0.04, 25]))
+	var infernal := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]], gd.difficulties.size() - 1)
+	infernal.launch_next_wave()
+	var normal := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]], 1)
+	normal.launch_next_wave()
+	check(infernal.boards[0]._queue.size() > normal.boards[0]._queue.size(), "plus de monstres en Infernal : %d / %d" % [infernal.boards[0]._queue.size(), normal.boards[0]._queue.size()])
+
+
+## Coopération, rythme libre : le compte à rebours part dès l'appel d'une vague ; la suivante
+## s'appelle à tout moment, contre 1 or par seconde d'avance, et arrive aussitôt.
+func test_next_wave_timer_starts_at_call() -> void:
+	var gd := load_data()
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]])
+	sim.launch_next_wave()
+	check(is_equal_approx(sim.countdown, SimMatch.CALL_WINDOW), "30 s dès l'appel : %f" % sim.countdown)
+	for i in int(3.0 / DT):
+		sim.step(DT)
+	check(MatchFlow.can_call(sim) and sim.boards[0].spawns_pending(), "vague suivante appelable pendant la vague")
+	var gold: int = sim.players[1]["gold"]
+	var interest := MatchFlow.interest(gd, gold, sim.players[1]["kit"], sim.difficulty)
+	var wave_gold := int(gd.waves[sim.map.waves[1]]["gold"])
+	var ahead := int(sim.countdown)
+	sim.apply_command(1, {"a": "ready"})
+	var bonus: int = sim.players[1]["gold"] - gold - interest - wave_gold
+	check(sim.wave_index == 1 and ahead >= 26 and bonus == ahead, "%d s d'avance : +%d or" % [ahead, bonus])
+	check(is_equal_approx(sim.countdown, SimMatch.CALL_WINDOW) and MatchFlow.can_call(sim), "nouveau décompte, bouton toujours là")
+	var queued := func() -> int: return sim.boards[0]._queue.filter(func(e: Dictionary) -> bool: return e["wave"] == 1).size()
+	var before: int = queued.call()
+	for i in int(1.0 / DT):
+		sim.step(DT)
+	var now: int = queued.call()
+	check(now < before and sim.boards[0].pending_waves() == 2, "la vague appelée arrive aussitôt, pendant la 1re (%d -> %d en attente)" % [before, now])
 
 
 func test_coop_scales_with_player_count() -> void:
@@ -133,7 +182,7 @@ func test_coop_scales_with_player_count() -> void:
 	var trio_count := trio.boards[0].monsters.size()
 	check(solo_count == 8 and trio_count == 14, "8 gobelins seul, 14 à trois : %d / %d" % [solo_count, trio_count])
 	var hp: float = trio.boards[0].monsters[0].max_hp
-	check(is_equal_approx(hp, 12.0 * 1.3 * float(trio.difficulty["hp"])), "PV à trois : x1,3 (%f)" % hp)
+	check(is_equal_approx(hp, 12.0 * 1.3 * float(gd.monster_scaling["hp"]) * float(trio.difficulty["hp"])), "PV à trois : x1,3 (%f)" % hp)
 
 
 func test_snapshot_carries_new_effects() -> void:

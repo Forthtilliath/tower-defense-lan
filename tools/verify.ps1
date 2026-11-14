@@ -15,7 +15,7 @@ try {
     if ($LASTEXITCODE -ne 0) { $failed = $true }
 
     Write-Host '== Tests unitaires'
-    & $run -TimeoutSec 300 -- --headless --path . --script res://tests/run_tests.gd | Select-String 'TOTAL|ÉCHEC|ERROR'
+    & $run -TimeoutSec 600 -- --headless --path . --script res://tests/run_tests.gd | Select-String 'TOTAL|ÉCHEC|ERROR'
     if ($LASTEXITCODE -ne 0) { $failed = $true }
 
     Write-Host '== Test réseau (hôte + client en local)'

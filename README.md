@@ -65,7 +65,7 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   du Parieur, Terrassier qui rase arbres et rochers pour construire dessus et pose des cases bonus (Colline, Cristal,
   Rune, et avec ses talents Tableau de chasse, Butte et Fossé), avec un nombre de charges par partie selon ses talents.
 - **Talents et progression** (bouton « Talents » du salon, un onglet par spécialisation) : chaque classe gagne de
-  l'expérience à chaque partie (victoire : 10 XP par vague × difficulté — Difficile ×1,5, Cauchemar ×2 —, + 25 % ;
+  l'expérience à chaque partie (victoire : 10 XP par vague × difficulté — Difficile ×1,5, Cauchemar ×2, Infernal ×3 —, + 25 % ;
   défaite : chaque vague passée rapporte 10 %, 35 %, 60 % ou 85 % de ses 10 XP selon le quart de la partie atteint)
   et monte jusqu'au **niveau 30**, avec 1 point de talent par niveau. Le tronc (12 rangs) ne renforce que les
   tourelles de la classe ; une spécialisation compte 16 à 18 rangs (paliers à 3, 7, 11 et 15 points) : talents de
@@ -80,18 +80,30 @@ réglées par l'hôte, aperçu de la carte) puis **tes choix** (classe, talents,
   entre deux parties en retirant ses points.
   La progression appartient au **compte** choisi au lancement (voir *Comptes*), vérifiée à la relecture ; l'hôte revalide
   les talents de chacun (le niveau annoncé, lui, n'est pas vérifiable sans serveur).
-- **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile ou Cauchemar. La plus votée l'emporte ; en cas d'égalité, la plus facile.
+- **Vote de difficulté** (chaque joueur) : Facile, Normal, Difficile, Cauchemar ou Infernal. La plus votée l'emporte ; en cas d'égalité, la plus facile.
 - **Rythme** (hôte, coopération) :
-  - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague, même pendant une vague
-    (une seule vague d'avance), avec un bonus d'or égal aux secondes d'attente évitées.
+  - *Libre* : construire, améliorer et vendre à tout moment. « Vague suivante » appelle la prochaine vague à tout moment, même
+    pendant une vague : elle arrive aussitôt, en plus de celle en cours. La suivante part d'elle-même 30 s après l'appel
+    de la précédente ; l'appeler plus tôt rapporte 1 or par seconde d'avance (jusqu'à 30). Enchaîner les appels rapporte
+    gros, mais fait arriver plusieurs vagues à la fois.
   - *Entre les vagues* : une phase de construction de 20 s commence quand la carte est vide ; pendant une vague,
     impossible de construire, d'améliorer, de vendre ou d'appeler la vague suivante.
 - **Lancement** (hôte, coopération) : *Vote de tous* (la vague part en avance quand tout le monde est prêt) ou *Hôte seul*.
 - **Héritage** (hôte, coopération et versus) : *Activé* ou *Désactivé*. Désactivé, personne ne reçoit de bonus
   d'héritage : chacun joue avec sa classe et ses talents seulement, pour des parties plus équitables.
 
-En partie, le bouton **Talents** de la barre du haut montre l'arbre joué, en lecture seule (la partie continue pendant
-ce temps), avec la liste des bonus d'héritage du compte, marqués « désactivé » si l'hôte l'a coupé.
+En partie, la barre du haut propose :
+- **Pause** (hôte, touche P ou Espace) : tout se fige pour tout le monde ; on peut encore construire, améliorer et vendre.
+- **Menu** (touche Échap, retour d'Android) : **Bestiaire**, **Talents** (l'arbre joué, en lecture seule, avec les bonus
+  d'héritage du compte, marqués « désactivé » si l'hôte l'a coupé), **Recommencer la partie** (hôte : même carte, mêmes
+  réglages, depuis la 1re vague, sans expérience pour la partie abandonnée) et **Quitter**. L'hôte qui ouvre le menu met la
+  partie en pause le temps de le consulter. « Recommencer » est aussi proposé à l'hôte en fin de partie.
+
+**Survol à la souris** : un monstre du plateau affiche ses PV restants, sa vitesse, sa prime, ses bonus et ses états
+(ralenti, empoisonné…) ; une entrée affiche ce qui en sortira à la prochaine vague (nombre de chaque monstre, vague
+spéciale), ou pourquoi rien n'en sortira. Les entrées actives à la prochaine vague sont cerclées, avec des chevrons qui
+filent le long du chemin. Le **bestiaire** (aussi dans le menu principal) liste chaque monstre avec son portrait, ses
+caractéristiques, ses bonus et les cartes où on le croise, filtrable par carte.
 
 Dans tous les cas, **la première vague ne part jamais seule** : on se prépare aussi longtemps qu'on veut, puis on la lance
 (« Prêt ! » de tous les joueurs, ou l'hôte seul selon le lancement choisi).
@@ -122,13 +134,23 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 - **15 cartes** de 20 vagues, chacune avec ses propres monstres et ses propres cases spéciales :
   - décor Prairie : Prairie (bestiaire de base), Carrefour (peaux-vertes, 2 entrées), Rivière (créatures de l'eau),
     Trois portes (assaut armé, 3 entrées), Spirale (magie), Labyrinthe (coureurs), et trois grandes cartes pour 2 à 4 joueurs :
-    Grande plaine (ciel ouvert), Quatre fiefs (horde, 4 zones, 4 couloirs), Bastion (siège, 4 zones autour d'un couloir commun) ;
-  - cartes à thème, avec leur décor : Lac gelé (toundra, 2 entrées), Caldeira (volcan, spirale autour d'un cratère de lave),
-    Tourbière (marais, 3 entrées), Cryptes (nécropole, 4 cryptes), Gorge du vautour (canyon, une très longue route),
-    Sylve profonde (forêt dense, deux routes qui se frôlent).
+    Grande plaine (ciel ouvert : la route fait le tour de la plaine, les volants la traversent tout droit),
+    Quatre fiefs (horde, 4 zones, 4 couloirs), Bastion (siège, 4 zones autour d'un couloir commun) ;
+  - cartes à thème, avec leur décor : Lac gelé (toundra, 2 entrées, une route qui fait le tour du lac),
+    Caldeira (volcan, descente en V dans le cratère et remontée), Tourbière (marais, entrées à gauche, à droite et en
+    haut, sortie en bas), Cryptes (nécropole, 4 cryptes alignées en haut, en peigne), Gorge du vautour (canyon, un escalier
+    en diagonale), Sylve profonde (forêt dense, deux entrées, en haut et en bas, qui se rejoignent en Y).
 - **Entrées par vague** : sur certaines cartes, les monstres arrivent par une entrée ou une autre selon la vague
-  (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et clignote sur le plateau.
-- **4 difficultés** : Facile, Normal, Difficile, Cauchemar (PV des monstres, vies, or de départ, primes).
+  (ex. entrée 1, puis 2, puis les deux). La prochaine entrée est annoncée dans le panneau et signalée sur le plateau.
+- **5 difficultés**, même or de départ et mêmes primes partout, comptées par rapport au Normal (100 %) :
+
+  | | PV | Monstres | Armure | Vies | Intérêts (4 % de l'or gardé) |
+  |---|---|---|---|---|---|
+  | Facile | -20 % | -10 % | – | 20 | 30 or au plus, dès 750 or gardés |
+  | Normal | 100 % | 100 % | – | 20 | 30 or au plus, dès 750 or gardés |
+  | Difficile | +20 % | +5 % | – | 20 | 25 or au plus, dès 625 or gardés |
+  | Cauchemar | +35 % | +20 % | +2 | 10 | 20 or au plus, dès 500 or gardés |
+  | Infernal | +50 % | +30 % | +3 | 1 | 15 or au plus, dès 375 or gardés |
 - **36 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
   - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
     Baliste (tireur d'élite), Canon et Mortier (zone au sol), Sentinelle (anti-aérien) ;
@@ -225,7 +247,8 @@ scripts/ui/main.gd       Racine de l'application : un écran à la fois
 scripts/ui/screens/      Accueil, comptes, menu, rejoindre, envoyer / recevoir un compte
 scripts/ui/screens/history/  Écran de l'historique : filtres, parties, étoiles par carte
 scripts/ui/lobby/        Salon d'attente et arbre de talents
-scripts/ui/game/         Écran de partie : barre du haut, panneaux, fin de partie, textes
+scripts/ui/game/         Écran de partie : barre du haut, menu, panneaux, fin de partie, textes
+scripts/ui/bestiary/     Bestiaire : fiches des monstres, portraits, cartes où on les croise
 scripts/ui/state/        État affiché, reconstruit à partir des instantanés de l'hôte
 scripts/ui/board/        Dessin du plateau (décor, unités, effets) ; glyphs/ : silhouettes
 scripts/ui/theme/        Thème, encre style manga, fond des menus
@@ -251,8 +274,12 @@ Facultatifs aussi : `zones` (mêmes dimensions que la carte, `1` à `4` pour une
 (nombre de joueurs conseillé, affiché dans le salon). Les bâtisseurs (`builders`) et les vagues spéciales
 (`wave_modifiers`, appliquées par le champ `modifier` d'une vague) se règlent dans le même fichier.
 
-Équilibrage : `tests/unit/test_balance.gd` fait jouer un bot simple (`tests/bot/balance_bot.gd`), qui doit gagner chaque carte en Normal ; après
-une modification des données, relancer `tools/verify.ps1`.
+Équilibrage : `tests/unit/test_balance.gd` fait jouer un joueur automatique (`tests/bot/balance_bot.gd`) qui joue
+chaque spécialisation comme un joueur qui la connaît : talents répartis dans sa branche, tourelles choisies d'après ses
+talents, les monstres à venir et les meilleures cases, prévisions étalonnées sur la simulation (`docs/BOT.md`). Après
+une modification des données, relancer `tools/verify.ps1`. Bilan complet (une ligne par spécialisation, une colonne
+par carte) : `godot --headless --path . --script res://tests/bot/bot_report.gd -- --level=10 --difficulty=1` ;
+captures d'écran de ses parties : `godot --path . --resolution 1280x720 -- --botshots=build/bot --map=0`.
 
 ### Architecture réseau
 

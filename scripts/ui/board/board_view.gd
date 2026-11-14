@@ -23,14 +23,25 @@ var zone_colors: Array[Color] = []:
 var kit_of := func(_id: int) -> Variant: return null
 ## Portée d'une tourelle envisagée sur la case sélectionnée vide (0 : rien à dessiner).
 var preview_range := 0.0
+## Chemins défendus (couloirs ouverts) ; vide : tous.
+var lane_paths: Array[int] = []
+## Texte de l'info-bulle d'une entrée (n° de chemin -> texte) ; non valide : pas d'info-bulle.
+var entry_info := Callable()
 var _ts := 32.0
 var _origin := Vector2.ZERO
 var _terrain: TerrainLayer
+## Bulle du survol : souris immobile HOVER_DELAY s au-dessus d'un monstre ou d'une entrée.
+const HOVER_DELAY := 0.3
+var _tip: HoverTip
+var _mouse := Vector2(-1, -1)  # x < 0 : souris hors du plateau
+var _still := 0.0
 
 
 func _init() -> void:
 	_terrain = TerrainLayer.new(self)
 	add_child(_terrain)
+	_tip = HoverTip.new()
+	add_child(_tip)
 
 
 func set_map(p_map: MapDef) -> void:
@@ -55,12 +66,35 @@ func origin() -> Vector2:
 	return _origin
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if state != null:
 		queue_redraw()
+		_update_tip(delta)
+
+
+## Bulle recalculée à chaque image tant qu'elle est ouverte (PV qui baissent, monstre qui s'en va).
+func _update_tip(delta: float) -> void:
+	if _mouse.x < 0.0 or state.ended:
+		_tip.visible = false
+		return
+	_still += delta
+	if _tip.visible or _still >= HOVER_DELAY:
+		_tip.show_at(_hover_text(_mouse), _mouse, size)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_MOUSE_EXIT:
+		_mouse = Vector2(-1, -1)
+		_tip.visible = false
 
 
 func _gui_input(event: InputEvent) -> void:
+	var mm := event as InputEventMouseMotion
+	if mm != null:
+		_mouse = mm.position
+		if not _tip.visible:
+			_still = 0.0
+		return
 	var mb := event as InputEventMouseButton
 	if mb != null and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
 		cell_pressed.emit(cell_at(mb.position))
@@ -90,7 +124,7 @@ func _draw() -> void:
 	for z in b["patches"]:
 		FxPainter.patch(self, data, z, to_px(z["pos"]), _ts)
 	if state.wave < state.total:
-		EntryPainter.draw(self, map, state.wave, _origin, _ts, get_theme_default_font())
+		EntryPainter.draw(self, map, state.wave, _origin, _ts, get_theme_default_font(), lane_paths)
 	_draw_selection(b)
 	for cell in b["towers"]:
 		var t: Dictionary = b["towers"][cell]
@@ -109,19 +143,44 @@ func _draw() -> void:
 	for f in b["fx"]:
 		UnitPainter.fx(self, data, f, _origin, _ts)
 	if not b["alive"]:
-		_draw_lost()
+		_draw_banner("Plateau perdu", UiTheme.DANGER, 0.6)
+	elif state.paused and not state.ended:
+		_draw_banner("Pause", UiTheme.ACCENT, 0.25)
 
 
-## Plateau perdu : voile sombre et titre façon onomatopée cernée d'encre.
-func _draw_lost() -> void:
-	draw_rect(Rect2(_origin, Vector2(map.width, map.height) * _ts), Color(Ink.INK, 0.6))
+## Voile sombre et titre façon onomatopée cernée d'encre (plateau perdu, pause).
+func _draw_banner(text: String, col: Color, veil: float) -> void:
+	draw_rect(Rect2(_origin, Vector2(map.width, map.height) * _ts), Color(Ink.INK, veil))
 	var font := get_theme_default_font()
-	var text := "Plateau perdu"
 	var fs := int(_ts * 0.9)
 	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var at := size / 2.0 - Vector2(w / 2.0, 0)
 	draw_string_outline(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, maxi(4, int(_ts * 0.18)), Ink.INK)
-	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, UiTheme.DANGER)
+	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)
+
+
+## Texte de la bulle au survol : monstre sous le curseur, sinon entrée des monstres ("" : rien).
+func _hover_text(at_position: Vector2) -> String:
+	if map == null or state == null or not state.received or board_index >= state.boards.size():
+		return ""
+	var b: Dictionary = state.boards[board_index]
+	var best := ""
+	var best_d := INF
+	for id in b["monsters"]:
+		var m: Dictionary = b["monsters"][id]
+		var pos := to_px(map.position_at(m["path"], state.monster_progress(m), m["flying"]))
+		var d := pos.distance_to(at_position)
+		var reach := maxf(_ts * 0.35, _ts * float(data.monsters[m["type"]]["size"]) * 0.6)
+		if d <= reach and d < best_d:
+			best_d = d
+			best = MonsterText.hover_text(data, m)
+	if best != "" or not entry_info.is_valid():
+		return best
+	for p in map.start_count():
+		var center := to_px(map.cell_center(MapSpawns.path_start(map, p)))
+		if center.distance_to(at_position) <= _ts * 0.7:
+			return entry_info.call(p)
+	return ""
 
 
 func _draw_selection(b: Dictionary) -> void:

@@ -33,8 +33,7 @@ var _versus: VersusPanel
 var _end: EndOverlay
 var _toast: Label
 var _toast_time := 0.0
-var _confirm: ConfirmationDialog
-var _talents: TalentPanel  # arbre en lecture seule, ouvert depuis la barre du haut
+var _menu: GameMenu  # pause, bestiaire, talents, recommencer, quitter
 
 
 func _init(nav: Node, p_config: Dictionary) -> void:
@@ -81,6 +80,8 @@ func _build_layout() -> void:
 			ordered.append(colors[id])
 		_view.zone_colors = BoardPainter.zone_colors(map, ordered)
 	_view.board_index = viewed_board
+	_view.lane_paths = WaveInfo.lane_paths(self)
+	_view.entry_info = func(path: int) -> String: return WaveInfo.entry_text(self, path)
 	_view.size_flags_horizontal = SIZE_EXPAND_FILL
 	_view.set_map(map)
 	_view.cell_pressed.connect(_on_cell_pressed)
@@ -112,13 +113,22 @@ func _build_layout() -> void:
 	add_child(_toast)
 	_end = EndOverlay.new(self)
 	add_child(_end)
-	_confirm = ConfirmationDialog.new()
-	_confirm.title = "Quitter la partie"
-	_confirm.dialog_text = "Quitter la partie ?" + ("\nTu es l'hôte : la partie s'arrêtera pour tout le monde." if Net.is_host() else "")
-	_confirm.ok_button_text = "Quitter"
-	_confirm.cancel_button_text = "Annuler"
-	_confirm.confirmed.connect(quit_game)
-	add_child(_confirm)
+	_menu = GameMenu.new(self)
+	add_child(_menu)
+
+
+## Raccourcis clavier : Échap ouvre ou ferme le menu, P ou Espace met en pause (hôte).
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key == null or not key.pressed or key.echo:
+		return
+	if key.keycode == KEY_ESCAPE:
+		go_back()
+	elif key.keycode == KEY_P or key.keycode == KEY_SPACE:
+		toggle_pause()
+	else:
+		return
+	get_viewport().set_input_as_handled()
 
 
 func _process(delta: float) -> void:
@@ -151,7 +161,7 @@ func _on_snapshot(snap: Dictionary) -> void:
 	if state.ended:
 		if recap.is_empty():
 			recap = MatchRecap.close(self, _start_lives)
-			close_talents()  # le résultat ne doit pas rester caché sous l'arbre
+			_menu.close_all()  # le résultat ne doit pas rester caché sous le menu ou l'arbre
 		_end.show_result()
 
 
@@ -234,7 +244,11 @@ func host_launches() -> bool:
 
 
 func difficulty_name() -> String:
-	return Data.db.difficulties[int(config.get("difficulty", 1))]["name"]
+	return difficulty()["name"]
+
+
+func difficulty() -> Dictionary:
+	return Data.db.difficulties[clampi(int(config.get("difficulty", 1)), 0, Data.db.difficulties.size() - 1)]
 
 
 func player_on_board(index: int) -> int:
@@ -251,30 +265,27 @@ func show_toast(message: String) -> void:
 	_toast_time = 2.5
 
 
-func ask_quit() -> void:
-	_confirm.popup_centered()
+func open_menu() -> void:
+	_menu.open()
 
 
-## Talents de la partie (ceux envoyés à l'hôte), sans pouvoir les changer ; la partie continue.
-func open_talents() -> void:
-	if _talents == null:
-		_talents = TalentPanel.viewer(my_kit(), NetPayloads.heritage_on(config), close_talents)
-		add_child(_talents)
+## Pause de l'hôte (bouton, P, Espace) ; sans effet pour les autres joueurs.
+func toggle_pause() -> void:
+	if Net.is_host() and state.received and not state.ended:
+		send({"a": "pause", "on": not state.paused})
 
 
-func close_talents() -> void:
-	if _talents != null:
-		_talents.queue_free()
-		_talents = null
-
-
+## Retour (Android, Échap) : ferme la fenêtre du dessus, puis la sélection, sinon ouvre le menu.
 func go_back() -> void:
-	if _talents != null:
-		close_talents()
-	elif _view.selected >= 0:
+	if _end.visible:
+		_menu.ask_quit()
+		return
+	if _menu.back():
+		return
+	if _view.selected >= 0:
 		_on_cell_pressed(_view.selected)
 	else:
-		ask_quit()
+		_menu.open()
 
 
 func quit_game() -> void:

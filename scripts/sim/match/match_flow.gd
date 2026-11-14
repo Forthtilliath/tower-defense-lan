@@ -2,8 +2,11 @@ class_name MatchFlow
 extends RefCounted
 ## Enchaînement des vagues : compte à rebours, phases de construction, appel de la vague suivante.
 ##
-## Rythme libre : on construit à tout moment. Le compte à rebours démarre quand la vague a fini
-## d'apparaître, et l'on peut appeler la vague suivante même pendant une vague (une seule d'avance).
+## Rythme libre (coopération) : on construit à tout moment. Le compte à rebours de la vague
+## suivante (SimMatch.CALL_WINDOW) démarre dès qu'une vague est appelée ; on peut l'appeler à tout
+## moment, contre 1 or par seconde restante. Elle arrive aussitôt, en plus de celle en cours
+## (appeler plusieurs vagues d'affilée les fait arriver ensemble : c'est le risque à prendre).
+## Versus : le compte à rebours (SimMatch.BETWEEN_WAVES) démarre quand la vague a fini d'apparaître.
 ## Rythme « entre les vagues » (coopération) : une phase de construction démarre quand la carte est
 ## vide. Construire, améliorer et vendre n'est possible que pendant cette phase, et aucune vague
 ## ne peut être appelée tant qu'une autre est en cours.
@@ -24,8 +27,13 @@ static func update(sim: SimMatch, dt: float) -> void:
 		sim.launch_next_wave()
 
 
+## Le compte à rebours part-il de l'appel de la vague précédente (coopération, rythme libre) ?
+static func timed_from_call(sim: SimMatch) -> bool:
+	return sim.mode == SimMatch.Mode.COOP and sim.rhythm == SimMatch.Rhythm.FREE
+
+
 static func _should_start_countdown(sim: SimMatch) -> bool:
-	if not sim.has_next_wave():
+	if timed_from_call(sim) or not sim.has_next_wave():
 		return false
 	for b in sim.boards:
 		if not b.alive:
@@ -48,15 +56,11 @@ static func can_call(sim: SimMatch) -> bool:
 static func call_refusal(sim: SimMatch) -> String:
 	if sim.ended or not sim.has_next_wave():
 		return "Plus aucune vague à appeler"
-	if sim.countdown >= 0.0:
+	if timed_from_call(sim) or sim.countdown >= 0.0:
 		return ""
 	if sim.rhythm == SimMatch.Rhythm.BETWEEN:
 		return "Impossible pendant une vague"
-	if sim.mode == SimMatch.Mode.VERSUS:
-		return "Aucune vague en attente"
-	if sim.boards[0].pending_waves() > 1:
-		return "Une vague est déjà en attente"
-	return ""
+	return "Aucune vague en attente"
 
 
 ## Demande de lancer la vague suivante (bouton « Prêt » / « Vague suivante »).
@@ -75,8 +79,8 @@ static func call_wave(sim: SimMatch, id: int) -> String:
 	return ""
 
 
-## Or offert à chacun quand une vague part en avance : les secondes d'attente évitées.
-## Appelée pendant une vague, elle évite tout le compte à rebours qui aurait suivi.
+## Or offert à chacun quand une vague part en avance : les secondes d'attente évitées (1 or par
+## seconde). En versus, appelée pendant une vague, elle évite tout le compte à rebours qui aurait suivi.
 ## La première vague, lancée quand les joueurs le décident, ne rapporte pas de bonus.
 static func early_bonus(sim: SimMatch) -> int:
 	if not sim.started():
@@ -86,7 +90,18 @@ static func early_bonus(sim: SimMatch) -> int:
 	return int(SimMatch.BETWEEN_WAVES)
 
 
-## Intérêts versés à chaque vague sur l'or gardé (plafonnés), bonus du bâtisseur compris.
-static func interest(data: GameData, gold: int, kit: PlayerKit = null) -> int:
-	var rule := kit.interest_rule(data) if kit != null else [float(data.player["interest"]), int(data.player["interest_cap"])]
+## Or à garder pour toucher le plafond des intérêts : rule = [taux, plafond] (4 %, 25 -> 625).
+static func interest_cap_gold(rule: Array) -> int:
+	return ceili(float(rule[1]) / float(rule[0]) - 0.000001) if float(rule[0]) > 0.0 else 0
+
+
+## « 4 % de l'or gardé, 25 or au plus (dès 625 or gardés) ».
+static func interest_text(rule: Array) -> String:
+	return "%d %% de l'or gardé, %d or au plus (dès %d or gardés)" % [roundi(float(rule[0]) * 100.0), int(rule[1]), interest_cap_gold(rule)]
+
+
+## Intérêts versés à chaque vague sur l'or gardé (plafonnés selon la difficulté), bonus du
+## bâtisseur compris.
+static func interest(data: GameData, gold: int, kit: PlayerKit = null, difficulty := {}) -> int:
+	var rule := kit.interest_rule(data, difficulty) if kit != null else PlayerKit.base_interest(data, difficulty)
 	return mini(int(rule[1]), floori(gold * float(rule[0])))

@@ -117,7 +117,7 @@ func test_lobby_payloads() -> void:
 		"option d'héritage inconnue": func(d): d["heritage"] = 2,
 		"couleur hors limites": func(d): d["players"][0][2] = 9,
 		"bâtisseur inconnu": func(d): d["players"][1][3] = 9,
-		"vote hors limites": func(d): d["players"][1][4] = 4,
+		"vote hors limites": func(d): d["players"][1][4] = 5,
 		"vote absent": func(d): d["players"][1].remove_at(4),
 	}
 	for label in cases:

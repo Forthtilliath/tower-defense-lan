@@ -1,6 +1,7 @@
 class_name HudBar
 extends PanelContainer
-## Barre du haut : or, vies, vague, compte à rebours, « lancer maintenant », vitesse, talents, quitter.
+## Barre du haut : or, vies, vague, compte à rebours, « lancer maintenant », vitesse et pause
+## (hôte), menu (bestiaire, talents, recommencer, quitter).
 
 var _game: GameScreen
 var _gold: Label
@@ -9,6 +10,7 @@ var _wave: Label
 var _timer: Label
 var _ready_btn: Button
 var _speed: Button
+var _pause: Button
 
 
 func _init(game: GameScreen) -> void:
@@ -37,8 +39,12 @@ func _ready() -> void:
 	if Net.is_host():
 		_speed = UiTheme.button("Vitesse x1", func() -> void: _game.send({"a": "speed"}), 48, false)
 		row.add_child(_speed)
-	row.add_child(UiTheme.button("Talents", _game.open_talents, 48, false))
-	row.add_child(UiTheme.button("Quitter", _game.ask_quit, 48, false))
+		_pause = UiTheme.button("Pause", _game.toggle_pause, 48, false)
+		_pause.tooltip_text = "Pause (touche P ou Espace)"
+		row.add_child(_pause)
+	var menu := UiTheme.button("Menu", _game.open_menu, 48, false)
+	menu.tooltip_text = "Bestiaire, talents, recommencer, quitter (touche Échap)"
+	row.add_child(menu)
 
 
 func refresh() -> void:
@@ -62,11 +68,16 @@ func refresh() -> void:
 		_ready_btn.disabled = me.get("ready", false)
 	if _speed != null:
 		_speed.text = "Vitesse x%d" % s.speed
+	if _pause != null:
+		_pause.text = "Reprendre" if s.paused else "Pause"
+		_pause.disabled = s.ended
 
 
 func _timer_text(s: ViewState) -> String:
 	if s.ended:
 		return ""
+	if s.paused:
+		return "En pause" + ("" if Net.is_host() else " (par l'hôte)")
 	if s.wave == 0:
 		if _game.host_launches() and _game.my_id != _game.order[0]:
 			return "L'hôte lancera la 1re vague"

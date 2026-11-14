@@ -1,6 +1,6 @@
 class_name EndOverlay
 extends ColorRect
-## Fin de partie : résultat, retour au salon (hôte) ou au menu.
+## Fin de partie : résultat, recommencer ou retour au salon (hôte), ou retour au menu.
 
 var _game: GameScreen
 var _title: Label
@@ -32,9 +32,10 @@ func _ready() -> void:
 	_detail =UiTheme.label("", 18, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 	box.add_child(_detail)
 	if Net.is_host():
+		box.add_child(UiTheme.button("Recommencer la partie", Net.restart_match))
 		box.add_child(UiTheme.button("Retour au salon", Net.return_to_lobby))
 	else:
-		box.add_child(UiTheme.label("L'hôte peut relancer une partie depuis le salon.", 16, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
+		box.add_child(UiTheme.label("L'hôte peut recommencer la partie ou en relancer une depuis le salon.", 16, UiTheme.MUTED, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(UiTheme.button("Menu principal", _game.quit_game))
 
 
