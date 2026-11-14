@@ -26,7 +26,7 @@ func test_build_spends_gold() -> void:
 	var sim := _coop()
 	var cell := _first_buildable(sim.map)
 	check(sim.apply_command(1, _cmd({"a": "build", "cell": cell, "tower": 0}, sim)) == "", "construction acceptée")
-	check(sim.players[1]["gold"] == 100, "50 or dépensés")
+	check(sim.players[1]["gold"] == int(sim.data.player["start_gold"]) - 50, "50 or dépensés")
 	check(sim.apply_command(1, _cmd({"a": "build", "cell": cell, "tower": 0}, sim)) != "", "case occupée refusée")
 
 
@@ -47,8 +47,8 @@ func test_only_owner_can_sell_or_upgrade() -> void:
 	check(sim.apply_command(2, _cmd({"a": "upgrade", "cell": cell}, sim)) != "", "amélioration par un autre refusée")
 	check(sim.apply_command(1, _cmd({"a": "upgrade", "cell": cell}, sim)) == "", "amélioration acceptée")
 	check(sim.apply_command(1, _cmd({"a": "sell", "cell": cell}, sim)) == "", "vente acceptée")
-	# 150 - 50 - 45 + 70 % de 95 = 121
-	check(sim.players[1]["gold"] == 121, "remboursement à 70 %% : %d" % sim.players[1]["gold"])
+	# départ - 50 - 45 + 70 % de 95
+	check(sim.players[1]["gold"] == int(sim.data.player["start_gold"]) - 95 + 66, "remboursement à 70 %% : %d" % sim.players[1]["gold"])
 
 
 func test_malformed_commands_are_rejected() -> void:
@@ -78,13 +78,15 @@ func test_tower_kills_reward_owner() -> void:
 	var cell := 2 * sim.map.width + 2
 	sim.apply_command(2, _cmd({"a": "build", "cell": cell, "tower": 0}, sim))
 	sim.players[2]["gold"] = 0
+	sim.difficulty = sim.difficulty.duplicate()
+	sim.difficulty["hp"] = 0.5  # monstres fragiles : ce test vise les primes, pas l'équilibrage
 	sim.launch_next_wave()
 	# 25 s : avant le lancement automatique de la vague 2 (SimMatch.CALL_WINDOW)
 	for i in int(25.0 / DT):
 		sim.step(DT)
 	check(sim.players[2]["gold"] > 15, "le propriétaire touche les primes : %d" % sim.players[2]["gold"])
-	# 6 or d'intérêts (4 % de 150) + 15 or de vague ; pas de bonus pour la première vague
-	check(sim.players[1]["gold"] == 150 + 6 + 15, "l'autre joueur ne touche que l'or de vague : %d" % sim.players[1]["gold"])
+	# 15 or de vague, sans intérêts (réservés au Gobelin) ; pas de bonus pour la première vague
+	check(sim.players[1]["gold"] == int(sim.data.player["start_gold"]) + 15, "l'autre joueur ne touche que l'or de vague : %d" % sim.players[1]["gold"])
 
 
 func test_first_wave_waits_for_the_players() -> void:
@@ -97,7 +99,7 @@ func test_first_wave_waits_for_the_players() -> void:
 	check(sim.wave_index == -1, "la vague attend le second joueur")
 	sim.apply_command(2, _cmd({"a": "ready"}, sim))
 	check(sim.wave_index == 0, "vague lancée quand tout le monde est prêt")
-	check(sim.players[1]["gold"] == 150 + 6 + 15, "intérêts et vague, sans bonus pour la première : %d" % sim.players[1]["gold"])
+	check(sim.players[1]["gold"] == int(sim.data.player["start_gold"]) + 15, "or de la vague, sans bonus pour la première : %d" % sim.players[1]["gold"])
 
 
 func test_coop_defeat_when_lives_reach_zero() -> void:
@@ -113,7 +115,7 @@ func test_versus_send_and_elimination() -> void:
 	var sim := SimMatch.new(load_data(), 0, SimMatch.Mode.VERSUS, [[1, "A", 0], [5, "B", 1]])
 	check(sim.boards.size() == 2, "un plateau par joueur")
 	check(sim.apply_command(1, _cmd({"a": "send", "monster": 0}, sim)) == "", "envoi accepté")
-	check(sim.players[1]["income"] == 1 and sim.players[1]["gold"] == 140, "revenu et coût")
+	check(sim.players[1]["income"] == 1 and sim.players[1]["gold"] == int(sim.data.player["start_gold"]) - 10, "revenu et coût")
 	sim.step(1.0)
 	check(sim.boards[1].monsters.size() == 1 and sim.boards[0].monsters.is_empty(), "monstre chez l'adversaire")
 	sim.boards[1].lives = 1
