@@ -144,6 +144,12 @@ func allows(type: String) -> bool:
 	return towers.has(type)
 
 
+## Tourelle renforcée par le bonus de sa classe (liste explicite seulement : le Fléau, ses Venin,
+## Peste, Miasmes, Épines et Faux), que ses imprégnations renforcent aussi (BoardAuras.imbues).
+func class_tower(type: String) -> bool:
+	return _bonus_towers.has(type)
+
+
 ## Nom de la spécialisation choisie ("" tant qu'aucun point n'est placé dans une spécialisation).
 func spec_name(data: GameData) -> String:
 	return data.builders[builder]["branches"][spec]["name"] if spec >= 0 else ""

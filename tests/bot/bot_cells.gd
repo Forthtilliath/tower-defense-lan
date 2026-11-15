@@ -210,7 +210,7 @@ static func cluster_bonus(sim: SimMatch, cell: int, mine: Array, type: String, j
 
 ## Meilleure case pour une tourelle de soutien ou d'imprégnation : celle dont la portée atteint
 ## le plus de ses tourelles qui tirent (pondérées par l'or investi), parmi celles qui en profitent
-## (élément pour la gelure et l'électrifié sans le talent imbue_all). Renvoie [case, valeur couverte].
+## (gelure, électrifié : BoardAuras.imbues). Renvoie [case, valeur couverte].
 func best_support_cell(sim: SimMatch, id: int, type: String, mine: Array, paths: Array) -> Array:
 	var data := sim.data
 	var kit: PlayerKit = sim.players[id]["kit"]
@@ -218,8 +218,8 @@ func best_support_cell(sim: SimMatch, id: int, type: String, mine: Array, paths:
 	var reach := float(data.tower_stats(type, 0, -1, kit)["range"])
 	var imbue := ""
 	for kind in BoardAuras.IMBUE:
-		if float(def["levels"][0].get(BoardAuras.KINDS[kind], 0.0)) > 0.0 and not kit.imbue_all:
-			imbue = BoardAuras.IMBUE[kind]
+		if float(def["levels"][0].get(BoardAuras.KINDS[kind], 0.0)) > 0.0:
+			imbue = kind
 	var best := -1
 	var best_value := 0.0
 	for cell in candidates(sim, id, paths):
@@ -230,7 +230,7 @@ func best_support_cell(sim: SimMatch, id: int, type: String, mine: Array, paths:
 		for t in mine:
 			if t.support or t.center.distance_to(c) > r:
 				continue
-			if imbue != "" and data.towers[t.type]["element"] != imbue:
+			if imbue != "" and not BoardAuras.imbues(imbue, kit, t.type, data.towers[t.type]["element"]):
 				continue
 			value += t.invested
 		if value > best_value:
