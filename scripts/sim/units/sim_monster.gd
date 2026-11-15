@@ -175,7 +175,8 @@ func is_feared() -> bool:
 	return fear_timer > 0.0
 
 
-## Un monstre charmé se bat pour les joueurs : les tourelles l'ignorent.
+## Un monstre charmé se bat pour les joueurs (il recule et frappe les siens) ; les tourelles
+## continuent de le viser.
 func is_charmed() -> bool:
 	return charm_timer > 0.0
 
