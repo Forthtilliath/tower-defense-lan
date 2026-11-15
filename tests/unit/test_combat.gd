@@ -108,16 +108,8 @@ func test_fear_walks_back_and_charm_fights() -> void:
 	var rewards := []
 	MonsterEffects.update(b, 1.0, rewards)
 	check(victim.hp < victim.max_hp, "le monstre charmé frappe son voisin")
-	check(BoardCombat.find_target(b, _tower_at(b, 15.0), b.data.towers["crossbow"]) != charmed, "les tourelles ignorent le monstre charmé")
+	check(BoardCombat.can_hit(true, true, charmed), "les tourelles visent toujours le monstre charmé")
 	check(victim.contrib.get(5, 0.0) > 0.0, "ses coups sont crédités au charmeur")
-
-
-func _tower_at(b: SimBoard, progress: float) -> SimTower:
-	var t := SimTower.new()
-	t.center = b.map.position_at(0, progress, false)
-	t.stats = {"range": 3.0}
-	t.owner = 1
-	return t
 
 
 func test_bosses_resist_controls() -> void:
@@ -174,7 +166,7 @@ func test_bounty_split_by_contribution() -> void:
 func test_goblin_economy() -> void:
 	var gd := load_data()
 	var goblin := _builder(gd, "goblin")
-	check(MatchFlow.interest(500, PlayerKit.make(gd, goblin, {"go_rate": 1})) == 25, "4 + 1 %% d'intérêts (Taux)")
+	check(MatchFlow.interest(500, PlayerKit.make(gd, goblin, {"go_rate": 2})) == 25, "4 + 2 × 0,5 %% d'intérêts (Taux)")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0, 0], [2, "G", 1, goblin]])
 	MatchEconomy.credit_bounty(sim, 1, 20)
 	MatchEconomy.credit_bounty(sim, 2, 20)

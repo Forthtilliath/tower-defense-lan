@@ -49,14 +49,15 @@ func test_frost_stele_imbues_ice_neighbours_only() -> void:
 	var frost := _tower(b, "frost", AT)
 	var arrow := _tower(b, "crossbow", AT + Vector2(0, 1))
 	_tower(b, "frost_stele", AT + Vector2(1, 0), 3)
-	check(frost.buff("frostbite") == 3.0 and arrow.buff("frostbite") == 0.0, "gelure pour le Givre seulement")
+	var frostbite := float(b.data.tower_levels("frost_stele")[0]["aura_frostbite"])
+	check(is_equal_approx(frost.buff("frostbite"), frostbite) and arrow.buff("frostbite") == 0.0, "gelure pour le Givre seulement")
 	var orc := _mob(b, "orc", AT + Vector2(1.5, 0))
 	_fire(b, frost)
 	check(orc.marks.is_frostbitten() and orc.marks.frost_owner == 3, "gelure posée, créditée au poseur de la Stèle")
 	var before := orc.hp
 	MonsterEffects.update(b, 1.0, [])
 	var lost := before - orc.hp
-	check(is_equal_approx(lost, 3.0 * MonsterMarks.FROSTBITE_SLOWED), "×1,5 sur un ralenti, sans armure : %f" % lost)
+	check(is_equal_approx(lost, frostbite * MonsterMarks.FROSTBITE_SLOWED), "×1,5 sur un ralenti, sans armure : %f" % lost)
 
 
 func test_imbue_all_talent_reaches_every_neighbour() -> void:
@@ -64,7 +65,17 @@ func test_imbue_all_talent_reaches_every_neighbour() -> void:
 	var kit := _kit(b.data, "scourge", {"sc_chilblains": 3, "sc_stele": 1, "sc_imbue_frost": 1})
 	var arrow := _tower(b, "crossbow", AT)
 	_tower(b, "frost_stele", AT + Vector2(1, 0), 3, kit)
-	check(arrow.buff("frostbite") > 3.0, "avec le talent, l'Arbalète imprégnée (gelure renforcée) : %f" % arrow.buff("frostbite"))
+	check(arrow.buff("frostbite") > float(b.data.tower_levels("frost_stele")[0]["aura_frostbite"]), "avec le talent, l'Arbalète imprégnée (gelure renforcée) : %f" % arrow.buff("frostbite"))
+
+
+## Sans le talent, la Stèle d'un Fléau renforce aussi les tourelles du Fléau (pas les autres).
+func test_scourge_stele_imbues_its_class_towers() -> void:
+	var b := _board()
+	var kit := _kit(b.data, "scourge", {"sc_stele": 1})
+	var venom := _tower(b, "venom", AT)
+	var arrow := _tower(b, "crossbow", AT + Vector2(0, 1))
+	_tower(b, "frost_stele", AT + Vector2(1, 0), 3, kit)
+	check(venom.buff("frostbite") > 0.0 and arrow.buff("frostbite") == 0.0, "Venin imprégné, Arbalète non : %f / %f" % [venom.buff("frostbite"), arrow.buff("frostbite")])
 
 
 func test_lightning_rod_shock_raises_damage_taken() -> void:
@@ -73,10 +84,11 @@ func test_lightning_rod_shock_raises_damage_taken() -> void:
 	_tower(b, "lightning_rod", AT + Vector2(1, 0))
 	var orc := _mob(b, "orc", AT + Vector2(1.5, 0))
 	_fire(b, tesla)
-	check(orc.marks.is_shocked() and is_equal_approx(orc.marks.vulnerability(), 0.08), "électrifié : +8 %")
+	var shock := float(b.data.tower_levels("lightning_rod")[0]["aura_shock"])
+	check(orc.marks.is_shocked() and is_equal_approx(orc.marks.vulnerability(), shock), "électrifié : +%d %%" % roundi(shock * 100.0))
 	var before := orc.hp
 	BoardCombat.damage(b, orc, 10.0, true, [[1, 1.0]], [])
-	check(is_equal_approx(before - orc.hp, 10.8), "10 dégâts → 10,8 : %f" % (before - orc.hp))
+	check(is_equal_approx(before - orc.hp, 10.0 * (1.0 + shock)), "10 dégâts → %.1f : %f" % [10.0 * (1.0 + shock), before - orc.hp])
 
 
 func test_alembic_cuts_healing() -> void:
@@ -160,16 +172,16 @@ func test_patron_team_bounty_and_gambler_gold() -> void:
 	MatchEconomy.credit_bounty(sim, 1, 100)
 	check(sim.players[1]["gold"] - before == 106, "l'allié touche +6 %% grâce au Mécène : %d" % (sim.players[1]["gold"] - before))
 	var gambler := PlayerKit.make(gd, goblin, {"go_daring": 2, "go_flawless": 1})
-	check(is_equal_approx(gambler.early_bonus, 1.0) and gambler.clean_gold == 10, "Parieur : avance ×2, +10 or sans fuite")
+	check(is_equal_approx(gambler.early_bonus, 0.4) and gambler.clean_gold == 5, "Parieur : avance ×1,4, +5 or sans fuite")
 	var solo := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "P", 0, goblin, gambler.talents]])
 	solo.apply_command(1, {"a": "ready"})  # vague 1, sans bonus
 	var g0: int = solo.players[1]["gold"]
 	solo.countdown = 10.0
 	solo.launch_next_wave()  # vague 2 lancée en avance, aucune vie perdue
 	var wave: Dictionary = gd.waves[solo.map.waves[1]]
-	var expected := int(wave["gold"]) + 10 * 2 + 10
+	var expected := int(wave["gold"]) + roundi(10 * 1.4) + 5
 	var got: int = solo.players[1]["gold"] - g0
-	check(got - MatchFlow.interest(g0, gambler) == expected, "or de vague + avance ×2 + vague propre : %d" % got)
+	check(got - MatchFlow.interest(g0, gambler) == expected, "or de vague + avance ×1,4 + vague propre : %d" % got)
 
 
 func test_snapshot_carries_new_marks_and_invested() -> void:

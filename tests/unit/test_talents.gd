@@ -109,7 +109,7 @@ func test_kit_bonuses_and_economy() -> void:
 	var goblin := _builder(gd, "goblin")
 	var kit := PlayerKit.make(gd, goblin, {"go_greed": 2, "go_stocking": 3, "go_rate": 1})
 	check(is_equal_approx(kit.bounty, 1.15 + 0.12), "primes : classe + Avarice : %f" % kit.bounty)
-	check(is_equal_approx(kit.interest, 0.065), "intérêts : 4 + 1,5 (Bas de laine) + 1 %% (Taux) : %f" % kit.interest)
+	check(is_equal_approx(kit.interest, 0.06), "intérêts : 4 + 1,5 (Bas de laine) + 0,5 %% (Taux) : %f" % kit.interest)
 	check(PlayerKit.make(gd, goblin, {"go_vault": 2}).start_gold == 60, "Coffre-fort : +30 or de départ par rang")
 	check(kit.spec_name(gd) == "Usurier" and kit.title(gd) == "Gobelin · Usurier", "spécialisation reconnue")
 	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "G", 0, goblin, {"go_smuggle": 2}]])
@@ -134,7 +134,7 @@ func test_heritage_of_maxed_classes() -> void:
 	check(is_equal_approx(gd.tower_stats("crossbow", 0, -1, heir)["damage"], 4 * 1.2), "Artilleur hérité : +20 % sur l'Arbalète")
 	check(heir.start_gold == 100 and is_equal_approx(heir.bounty, 1.15), "Gobelin hérité : or de départ et primes")
 	var own := PlayerKit.make(gd, gunner, {}, [gunner])
-	check(own.heritage.is_empty() and is_equal_approx(gd.tower_stats("crossbow", 0, -1, own)["damage"], 4 * 1.2), "pas d'héritage de sa propre classe")
+	check(own.heritage.is_empty() and is_equal_approx(gd.tower_stats("crossbow", 0, -1, own)["damage"], 4 * float(gd.builders[gunner]["damage"])), "pas d'héritage de sa propre classe")
 	check(TalentRules.parse_heritage(gd, [3, 1]) == [1, 3], "héritage trié")
 	for bad in [[1, 1], [99], ["x"], "tout", [0, 1, 2, 3, 4, 5, 0]]:
 		check(TalentRules.parse_heritage(gd, bad) == null, "héritage refusé : %s" % str(bad))
@@ -217,7 +217,7 @@ func test_tree_data_validation() -> void:
 	var cases := {
 		"tourelle à débloquer inconnue": ["\"unlock\": \"pylon\" },", "\"unlock\": \"laser\" },", "débloquer"],
 		"palier inexistant": ["\"tier\": 4, \"max_rank\": 2, \"towers\": [\"cannon\", \"mortar\"]", "\"tier\": 9, \"max_rank\": 2, \"towers\": [\"cannon\", \"mortar\"]", "tier"],
-		"talent sans effet": ["\"tier\": 1, \"max_rank\": 3, \"interest\": 0.01", "\"tier\": 1, \"max_rank\": 3", "ne fait rien"],
+		"talent sans effet": ["\"tier\": 1, \"max_rank\": 3, \"interest\": 0.005 },", "\"tier\": 1, \"max_rank\": 3 },", "ne fait rien"],
 		"paliers décroissants": ["\"talent_tiers\": [0, 3, 7, 11, 15]", "\"talent_tiers\": [0, 7, 3, 11, 15]", "talent_tiers"],
 		"deux troncs": ["\"description\": \"L'or qui dort rapporte.\", \"talents\"", "\"description\": \"L'or qui dort rapporte.\", \"trunk\": true, \"talents\"", "tronc"],
 		"tronc commun inconnu": ["\"common_towers\": [\"crossbow\",", "\"common_towers\": [\"laser\",", "common_towers"],

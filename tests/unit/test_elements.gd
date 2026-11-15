@@ -167,12 +167,13 @@ func test_plague_spreads_to_neighbours_in_reach() -> void:
 
 func test_scythe_crits_every_third_blow() -> void:
 	var b := _board()
-	var t := _tower(b, "scythe")  # 5 dégâts, critique ×2,5 un coup sur 3
+	var t := _tower(b, "scythe")  # critique ×2,5 un coup sur 3
 	var def: Dictionary = b.data.towers["scythe"]
+	var d := float(def["levels"][0]["damage"])
 	var hits := []
 	for k in 6:
 		hits.append(BoardCombat.shot(b, t, def).stat("damage"))
-	check(hits == [5.0, 5.0, 12.5, 5.0, 5.0, 12.5], "coups : %s" % str(hits))
+	check(hits == [d, d, d * 2.5, d, d, d * 2.5], "coups : %s" % str(hits))
 
 
 func test_lower_burn_cap_keeps_existing_stacks() -> void:
