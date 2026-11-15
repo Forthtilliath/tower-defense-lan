@@ -19,7 +19,7 @@ func test_loan_and_ally_start() -> void:
 	var before := [int(a["gold"]), int(b["gold"])]
 	a["kit"].money = {"loan": 200.0, "ally_start": 30.0}
 	MatchEconomy.setup(sim)
-	check(a["gold"] == before[0] + 200 and a["loan_due"] == 240, "prêt de 200, 240 à rendre")
+	check(a["gold"] == before[0] + 200 and a["loan_due"] == 300, "prêt de 200, 300 à rendre (×1,5)")
 	check(b["gold"] == before[1] + 30, "l'allié reçoit 30 or")
 	a["gold"] = 100
 	sim.wave_index = MatchEconomy.LOAN_WAVE
@@ -38,6 +38,11 @@ func test_wave_income_talents() -> void:
 	a["gold"] = 0
 	MatchEconomy.pay_wave(sim, _wave(sim), 4, {0: true})
 	check(a["gold"] == 10 + 4 + 5 + 6 + 10, "or d'avance, rente, Main chaude (2 d'affilée), vague doublée : %d" % a["gold"])
+	for i in MatchEconomy.HOT_HAND_STREAK + 3:
+		MatchEconomy.pay_wave(sim, _wave(sim), 0, {0: true})
+	a["gold"] = 0
+	MatchEconomy.pay_wave(sim, _wave(sim), 0, {0: true})
+	check(a["gold"] == 10 + 5 + 3 * MatchEconomy.HOT_HAND_STREAK, "Main chaude plafonnée à %d vagues d'affilée : %d" % [MatchEconomy.HOT_HAND_STREAK, a["gold"]])
 	MatchEconomy.pay_wave(sim, _wave(sim), 0, {})
 	check(kit.clean_streak == 0, "une fuite remet la série à zéro")
 

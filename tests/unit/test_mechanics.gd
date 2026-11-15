@@ -118,7 +118,7 @@ func test_difficulty_changes_lives_gold_and_hp() -> void:
 		sim.step(1.0)
 	var e: SimMonster = easy.boards[0].monsters[0]
 	var n: SimMonster = nightmare.boards[0].monsters[0]
-	var base := 12.0 * float(gd.monster_scaling["hp"])
+	var base := 12.0 * float(gd.monster_scaling["hp"]) * gd.maps[0].monster_hp
 	check(is_equal_approx(e.max_hp, base * de["hp"]) and is_equal_approx(n.max_hp, base * dn["hp"]), "PV : %f / %f" % [e.max_hp, n.max_hp])
 	check(n.max_hp > e.max_hp, "monstres plus résistants en Cauchemar")
 
@@ -140,6 +140,31 @@ func test_difficulty_scale_is_consistent() -> void:
 	var normal := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]], 1)
 	normal.launch_next_wave()
 	check(infernal.boards[0]._queue.size() > normal.boards[0]._queue.size(), "plus de monstres en Infernal : %d / %d" % [infernal.boards[0]._queue.size(), normal.boards[0]._queue.size()])
+
+
+## Armure de la difficulté croissante au fil de la partie : Cauchemar (+3), 20 vagues : +0 les
+## 5 premières, +1, +2, puis +3 les 5 dernières ; chaque monstre garde l'armure de sa vague.
+func test_armor_grows_during_the_match() -> void:
+	var gd := load_data()
+	var nightmare: Dictionary = gd.difficulties[3]
+	var got := []
+	for w in [0, 4, 5, 9, 10, 15, 19, 30]:
+		got.append(int(WaveScaling.armor(nightmare, w, 20)))
+	check(got == [0, 0, 1, 1, 2, 3, 3, 3], "paliers d'armure : %s" % str(got))
+	check(WaveScaling.armor(gd.difficulties[1], 19, 20) == 0.0, "pas d'armure en plus en Normal")
+	var sim := SimMatch.new(gd, 0, SimMatch.Mode.COOP, [[1, "A", 0]], 3)
+	sim.wave_index = 4
+	sim.launch_next_wave()  # vague 6 : +1
+	var b := sim.boards[0]
+	sim.wave_index = 14
+	b.clock += 0.01
+	sim.launch_next_wave()  # vague 16 appelée avant que la 6 ait fini d'apparaître : +3
+	for i in 40:
+		sim.step(0.05)
+	var extras := {}
+	for m in b.monsters:
+		extras[roundi(m.armor - float(gd.monsters[m.type]["armor"]) - float(m.modifier.get("armor", 0.0)))] = true
+	check(extras.has(1) and extras.has(3) and extras.size() == 2, "chaque vague garde son armure (+1 et +3) : %s" % str(extras.keys()))
 
 
 ## Coopération, rythme libre : le compte à rebours part dès l'appel d'une vague ; la suivante
@@ -180,7 +205,7 @@ func test_coop_scales_with_player_count() -> void:
 	var trio_count := trio.boards[0].monsters.size()
 	check(solo_count == 8 and trio_count == 14, "8 gobelins seul, 14 à trois : %d / %d" % [solo_count, trio_count])
 	var hp: float = trio.boards[0].monsters[0].max_hp
-	check(is_equal_approx(hp, 12.0 * 1.3 * float(gd.monster_scaling["hp"]) * float(trio.difficulty["hp"])), "PV à trois : x1,3 (%f)" % hp)
+	check(is_equal_approx(hp, 12.0 * 1.3 * float(gd.monster_scaling["hp"]) * float(trio.difficulty["hp"]) * gd.maps[0].monster_hp), "PV à trois : x1,3 (%f)" % hp)
 
 
 func test_snapshot_carries_new_effects() -> void:
