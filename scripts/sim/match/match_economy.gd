@@ -7,11 +7,13 @@ extends RefCounted
 
 const LOOT_GOLD := 5
 const JACKPOT := 10
-const LOAN_RATE := 1.2
+const LOAN_RATE := 1.5
 const LOAN_WAVE := 10
 const INVEST_WAVES := 3
 const RISK_CAP := 0.3
 const NERVE_LIVES := 5
+## Main chaude : vagues sans fuite d'affilée comptées au plus.
+const HOT_HAND_STREAK := 6
 
 
 ## Départ : prêt (remboursé à la vague LOAN_WAVE), or offert par les alliés (ally_start).
@@ -56,7 +58,7 @@ static func pay_wave(sim: SimMatch, wave: Dictionary, early: int, clean: Diction
 		if clean.has(int(p["board"])):
 			kit.clean_waves += 1
 			kit.clean_streak += 1
-			p["gold"] += kit.clean_gold + int(kit.m("hot_hand")) * kit.clean_streak
+			p["gold"] += kit.clean_gold + int(kit.m("hot_hand")) * mini(kit.clean_streak, HOT_HAND_STREAK)
 		else:
 			kit.clean_streak = 0
 		_settle(sim, p)
