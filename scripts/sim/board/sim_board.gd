@@ -66,7 +66,7 @@ func queue_wave(wave: Dictionary, hp_mult: float, count_mult := 1.0, number := 0
 		var count := maxi(1, roundi(int(group["count"]) * count_mult))
 		var interval := float(group["interval"]) / spacing
 		for i in count:
-			_queue.append({"time": t, "type": group["monster"], "hp_mult": hp_mult, "wave": number, "mod": mod, "paths": paths})
+			_queue.append({"time": t, "type": group["monster"], "hp_mult": hp_mult, "wave": number, "mod": mod, "paths": paths, "armor": armor_bonus})
 			t += interval
 		t += 1.0
 
@@ -235,7 +235,10 @@ func _spawn_due() -> void:
 			if not paths.is_empty():  # entrées de la vague, à tour de rôle
 				path = paths[_spawn_turn % paths.size()]
 				_spawn_turn += 1
+			var now_armor := armor_bonus
+			armor_bonus = float(e.get("armor", armor_bonus))  # armure de sa vague, même si une autre a suivi
 			spawn(e["type"], e["hp_mult"], path, 0.0, true, e["mod"])
+			armor_bonus = now_armor
 			_queue.remove_at(i)
 		else:
 			i += 1

@@ -75,7 +75,7 @@ func entries(sim: SimMatch, w: int, weight: float) -> Array:
 	for g in wave["groups"]:
 		var m := SimMonster.new()
 		m.setup(sim.data.monsters[g["monster"]], hp_mult, 1.0, mod)
-		m.armor += sim.boards[0].armor_bonus
+		m.armor += WaveScaling.armor(sim.difficulty, w, map.waves.size())
 		var count := maxi(1, roundi(int(g["count"]) * count_mult))
 		var speed := m.speed * (map.flyer_speed if m.flying else 1.0)
 		for p in paths:

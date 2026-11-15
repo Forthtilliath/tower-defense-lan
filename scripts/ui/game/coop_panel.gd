@@ -60,6 +60,9 @@ func refresh() -> void:
 		var entries := EntryPainter.text(_game.map, s.wave)
 		if entries != "":
 			_next.text += " · " + entries
+		var armor := WaveScaling.armor(_game.difficulty(), s.wave, s.total)  # s.wave : index de la prochaine
+		if armor > 0.0:
+			_next.text += " · armure +%d" % int(armor)
 		if not mod.is_empty():
 			_next.text += "\nVague spéciale « %s » : %s" % [mod["name"], mod["description"]]
 		var ids: Array = _game.map.waves

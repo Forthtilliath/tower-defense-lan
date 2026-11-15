@@ -102,7 +102,7 @@ static func vote_lines(players: Dictionary) -> Array[String]:
 	if not is_equal_approx(float(d["count"]), 1.0):
 		parts.append("monstres " + percent_delta(d["count"]))
 	if float(d["armor"]) > 0.0:
-		parts.append("armure +%s" % _num(d["armor"]))
+		parts.append("armure de +0 à +%s au fil des vagues" % _num(d["armor"]))
 	for key in ["gold", "reward"]:
 		if not is_equal_approx(float(d[key]), 1.0):
 			parts.append("%s %s" % ["or de départ" if key == "gold" else "primes", percent_delta(d[key])])
