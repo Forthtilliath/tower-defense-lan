@@ -1,7 +1,21 @@
 class_name WaveScaling
 extends RefCounted
-## Renfort des vagues : nombre et PV des monstres selon la difficulté et le nombre de joueurs.
-## Utilisé par la simulation (SimMatch) et par l'écran pour annoncer la prochaine vague.
+## Renfort des vagues : nombre, PV et armure des monstres selon la difficulté et le nombre de
+## joueurs. Utilisé par la simulation (SimMatch) et par l'écran pour annoncer la prochaine vague.
+
+## Paliers de l'armure en plus : la partie est découpée en ARMOR_STAGES parts égales.
+const ARMOR_STAGES := 4
+
+
+## Armure en plus des monstres d'une vague (index à partir de 0) : aucune au premier palier,
+## puis elle monte palier par palier jusqu'à celle de la difficulté au dernier (Cauchemar, 20
+## vagues : +0, +1, +2, +3 toutes les 5 vagues). Au-delà de la dernière vague (mort subite), toute.
+static func armor(difficulty: Dictionary, wave_index: int, total_waves: int) -> float:
+	var full := float(difficulty.get("armor", 0.0))
+	if full <= 0.0 or total_waves <= 0:
+		return 0.0
+	var stage := clampi(maxi(0, wave_index) * ARMOR_STAGES / total_waves, 0, ARMOR_STAGES - 1)
+	return roundf(full * stage / float(ARMOR_STAGES - 1))
 
 
 ## Renfort coop selon le nombre de joueurs : [PV, nombre de monstres, or des joueurs].

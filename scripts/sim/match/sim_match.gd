@@ -5,8 +5,8 @@ extends RefCounted
 ## Coopération : un plateau partagé, vies communes, chacun son or (dons possibles entre alliés).
 ## Versus : un plateau par joueur ; envoyer des monstres chez l'adversaire augmente le revenu.
 ## Après la dernière vague, le versus continue en « mort subite » (vagues de plus en plus dures).
-## La difficulté choisie règle les PV et le nombre des monstres (Normal = 100 %), leur armure,
-## les vies et l'XP ;
+## La difficulté choisie règle les PV et le nombre des monstres (Normal = 100 %), leur armure
+## (croissante au fil des vagues, WaveScaling.armor), les vies et l'XP ;
 ## en coopération, chaque joueur en plus ajoute des monstres et des PV (coop_scaling).
 ## L'enchaînement des vagues (rythme, appel de vague) est dans MatchFlow.
 
@@ -82,7 +82,6 @@ func _init(p_data: GameData, map_index: int, p_mode: int, roster: Array, difficu
 		var kit := PlayerKit.make(data, builder, entry[4] if entry.size() > 4 else {}, entry[5] if entry.size() > 5 else [])
 		if mode == Mode.VERSUS or boards.is_empty():
 			boards.append(SimBoard.new(data, map, lives, difficulty["reward"]))
-			boards[-1].armor_bonus = float(difficulty["armor"])
 			boards[-1].open_paths = open_paths
 		var mult := gold_mult_for(i, roster.size()) if mode == Mode.COOP else 1.0
 		players[id] = {
@@ -156,6 +155,7 @@ func launch_next_wave() -> void:
 			if wave_index > 0 and b.lives == _lives_mark.get(i, -1):
 				clean[i] = true
 			_lives_mark[i] = b.lives
+			b.armor_bonus = WaveScaling.armor(difficulty, wave_index, total)  # croissante au fil des vagues
 			b.queue_wave(wave, hp_mult, count_mult, wave_index)
 	MatchEconomy.pay_wave(self, wave, bonus, clean)
 
