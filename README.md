@@ -148,11 +148,14 @@ Dans tous les cas, **la première vague ne part jamais seule** : on se prépare 
 
   | | PV | Monstres | Armure | Vies |
   |---|---|---|---|---|
-  | Facile | -20 % | -10 % | – | 20 |
+  | Facile | -35 % | -10 % | – | 20 |
   | Normal | 100 % | 100 % | – | 20 |
   | Difficile | +20 % | +5 % | – | 20 |
-  | Cauchemar | +35 % | +20 % | +2 | 10 |
-  | Infernal | +50 % | +30 % | +3 | 1 |
+  | Cauchemar | +35 % | +20 % | +0, +1, +2 puis +3 | 10 |
+  | Infernal | +50 % | +30 % | +0, +1, +3 puis +4 | 1 |
+
+  L'armure en plus monte au fil de la partie, par quarts (toutes les 5 vagues sur 20) : le début reste jouable
+  avec les tourelles de départ. Chaque monstre garde l'armure de sa vague, annoncée dans le panneau.
 - **36 tourelles à 5 niveaux** (revente à 70 %), présentées dans une fiche avant construction (stats, portée sur la case) :
   - tir : Fléchettes (courte, très rapide, faible), Arbalète (moyenne, équilibrée), Broyeur (courte, lente, très forte),
     Baliste (tireur d'élite), Canon et Mortier (zone au sol), Sentinelle (anti-aérien) ;
@@ -281,7 +284,8 @@ chaque spécialisation comme un joueur qui la connaît : talents répartis dans 
 talents, les monstres à venir et les meilleures cases, prévisions étalonnées sur la simulation (`docs/BOT.md`). Un
 humain jouant mieux que le bot, celui-ci affronte des monstres à 90 % de leurs PV (`HUMAN_EDGE` dans `balance_bot.gd`,
 `--human=0.9` dans les bilans, 1 pour les PV réels) : c'est le réglage à revoir si les vraies parties s'écartent des
-mesures. Après une modification des données, relancer `tools/verify.ps1`. Bilan complet (une ligne par
+mesures. Le bot n'appelle jamais de vague en avance : la difficulté se cale sans ce bonus, qui récompense en plus le
+joueur assez fort pour presser le jeu (`--early=1` dans les bilans pour le faire appeler). Après une modification des données, relancer `tools/verify.ps1`. Bilan complet (une ligne par
 spécialisation, une colonne par carte) : `godot --headless --path . --script res://tests/bot/bot_report.gd -- --level=10 --difficulty=1` ;
 captures d'écran de ses parties : `godot --path . --resolution 1280x720 -- --botshots=build/bot --map=0`.
 
