@@ -3,7 +3,8 @@ extends RefCounted
 ## spécialisation comme un joueur qui la connaît : talents répartis dans sa branche (BotTalents),
 ## tourelles choisies d'après ses talents, les monstres à venir et les meilleures cases
 ## (BotPlayer, BotDefense, BotEval, BotCells), Terrassier qui façonne la carte (BotTerrain),
-## pouvoir lancé dès qu'il est prêt, vagues appelées en avance tant qu'il ne perd pas de vie.
+## pouvoir lancé dès qu'il est prêt. Il n'appelle pas les vagues en avance : la difficulté se cale
+## sans ce bonus, qui récompense en plus le joueur assez fort pour presser le jeu (calls_early).
 
 const Player := preload("res://tests/bot/bot_player.gd")
 const Talents := preload("res://tests/bot/bot_talents.gd")
@@ -27,8 +28,9 @@ const HUMAN_EDGE := 0.9
 
 ## PV des monstres dans les parties du bot (HUMAN_EDGE par défaut, 1 : tels quels).
 var human_edge := HUMAN_EDGE
-## Appelle la vague suivante en avance tant qu'il ne perd pas de vie (désactivable pour comparer).
-var calls_early := true
+## Appelle la vague suivante en avance tant qu'il ne perd pas de vie (bilans, pour comparer) ;
+## jamais dans les tests d'équilibrage, calés sur un jeu sans appel en avance.
+var calls_early := false
 ## Trace des actions des bots (bilans).
 var verbose := false
 var players := {}  # id -> Player
@@ -113,10 +115,10 @@ func start(sim: SimMatch) -> void:
 	_lives_now = sim.boards[0].lives
 
 
-## Un pas de simulation (DT) : les bots réfléchissent toutes les THINK_EVERY secondes, appellent
-## la vague suivante en avance tant qu'ils ne perdent pas de vie, une fois la vague en cours
-## entièrement arrivée (une vague appelée arrive aussitôt : jamais deux à la fois), lancent la
-## première après FIRST_WAVE_AFTER secondes de préparation (elle ne part jamais seule).
+## Un pas de simulation (DT) : les bots réfléchissent toutes les THINK_EVERY secondes, lancent la
+## première vague après FIRST_WAVE_AFTER secondes de préparation (elle ne part jamais seule) et,
+## avec calls_early, appellent la suivante en avance tant qu'ils ne perdent pas de vie, une fois la
+## vague en cours entièrement arrivée (une vague appelée arrive aussitôt : jamais deux à la fois).
 func tick(sim: SimMatch) -> void:
 	_timer -= DT
 	if _timer <= 0.0:

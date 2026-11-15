@@ -6,6 +6,7 @@ extends SceneTree
 ## godot --headless --path . --script res://tests/bot/bot_report.gd -- [--level=10] [--difficulty=1]
 ##   [--maps=0,1,2] [--classes=0,1] [--specs=0,1] [--players=1] [--out=chemin.md]
 ##   [--human=0.9] (PV des monstres face au bot, voir HUMAN_EDGE ; 1 : PV réels)
+##   [--early=1] (le bot appelle les vagues en avance ; sans : il les attend, comme les tests)
 
 const Bot := preload("res://tests/bot/balance_bot.gd")
 
@@ -20,6 +21,7 @@ func _init() -> void:
 	var out := ""
 	var verbose := false
 	var human := Bot.HUMAN_EDGE
+	var early := false
 	for arg in OS.get_cmdline_user_args():
 		var kv := arg.split("=")
 		if kv.size() != 2:
@@ -43,6 +45,8 @@ func _init() -> void:
 				verbose = kv[1] == "1"
 			"--human":
 				human = clampf(float(kv[1]), 0.1, 2.0)
+			"--early":
+				early = kv[1] == "1"
 	var gd := GameData.load_file()
 	if not gd.is_valid():
 		printerr("Données invalides : ", gd.error)
@@ -55,6 +59,7 @@ func _init() -> void:
 	var bot = Bot.new()
 	bot.verbose = verbose
 	bot.human_edge = human
+	bot.calls_early = early
 	if verbose:
 		var table: Dictionary = preload("res://tests/bot/bot_calibrate.gd")._table(gd)
 		for type in table:
