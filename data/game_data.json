@@ -155,7 +155,7 @@
 					{ "id": "sc_feast", "name": "Curée", "description": "Pouvoir : les monstres qui saignent perdent d'un coup 15 % de leurs PV (5 % les gros).", "tier": 5, "ultimate": true, "power": "feast" }
 				] },
 				{ "id": "frostbite", "name": "Gelure", "description": "Le froid qui ronge, posé par la Stèle sur ses voisines.", "talents": [
-					{ "id": "sc_chilblains", "name": "Engelures", "description": "+8 % de gelure par rang (Stèle de gelure).", "tier": 1, "max_rank": 3, "towers": ["frost_stele"], "aura": 0.08 },
+					{ "id": "sc_chilblains", "name": "Engelures", "description": "Par rang : tes tourelles du Fléau ralentissent de 5 %, et la Stèle de gelure gèle 8 % plus fort.", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe", "frost_stele"], "aura": 0.08, "grant": { "slow": 0.05 } },
 					{ "id": "sc_bite", "name": "Morsure", "description": "+15 % de dégâts par rang contre un monstre ralenti (tourelles du Fléau).", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "vs_slowed": 0.15 } },
 					{ "id": "sc_stele", "name": "Stèle de gelure", "description": "Débloque la Stèle de gelure.", "tier": 2, "unlock": "frost_stele" },
 					{ "id": "sc_crystal", "name": "Cristallisation", "description": "3 % de chance par rang de geler 0,3 s (tourelles du Fléau).", "tier": 2, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe"], "grant": { "stun_chance": 0.03, "stun_duration": 0.1 } },
@@ -166,7 +166,7 @@
 					{ "id": "sc_iceage", "name": "Ère glaciaire", "description": "Pouvoir : pendant 8 s, les monstres sous gelure ralentissent de 50 % et ne guérissent plus.", "tier": 5, "ultimate": true, "power": "ice_age" }
 				] },
 				{ "id": "shock", "name": "Électrocution", "description": "Électrifier, puis faire payer chaque coup.", "talents": [
-					{ "id": "sc_voltage", "name": "Haute tension", "description": "+12 % de puissance du Paratonnerre par rang.", "tier": 1, "max_rank": 3, "towers": ["lightning_rod"], "aura": 0.12 },
+					{ "id": "sc_voltage", "name": "Haute tension", "description": "Par rang : +4 % de dégâts des tourelles du Fléau et +12 % de puissance du Paratonnerre.", "tier": 1, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe", "lightning_rod"], "damage": 0.04, "aura": 0.12 },
 					{ "id": "sc_superconductor", "name": "Supraconducteur", "description": "+10 % de portée du Paratonnerre par rang.", "tier": 1, "max_rank": 3, "towers": ["lightning_rod"], "range": 0.1 },
 					{ "id": "sc_rod", "name": "Paratonnerre", "description": "Débloque le Paratonnerre.", "tier": 2, "unlock": "lightning_rod" },
 					{ "id": "sc_arc", "name": "Arc de fuite", "description": "Un électrifié qui meurt électrifie 1 voisin par rang.", "tier": 2, "max_rank": 3, "towers": ["venom", "thorns", "plague", "miasma", "scythe", "tesla", "pylon", "railgun"], "grant": { "death_shock": 1 } },

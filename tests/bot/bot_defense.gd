@@ -142,7 +142,7 @@ func _auras(descs: Array) -> Array:
 				var value := float(st.get(BoardAuras.KINDS[kind], 0.0))
 				if value <= 0.0 or value <= float(out[j].get(kind, 0.0)):
 					continue
-				if BoardAuras.IMBUE.has(kind) and not kit.imbue_all and element != BoardAuras.IMBUE[kind]:
+				if not BoardAuras.imbues(kind, kit, t["type"], element):
 					continue
 				out[j][kind] = value
 	return out

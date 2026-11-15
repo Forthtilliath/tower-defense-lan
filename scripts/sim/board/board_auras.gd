@@ -6,8 +6,8 @@ extends RefCounted
 ## soutien brouillée n'en donne plus (MonsterAbilities refait les auras quand elle s'éteint ou se
 ## rallume). Le joueur qui pose l'aura est crédité d'une part des dégâts et contrôles qu'elle apporte.
 ##
-## Imprégnation (Stèle de gelure, Paratonnerre) : seules les voisines de leur élément (glace,
-## foudre) en profitent, toutes avec le talent imbue_all de leur propriétaire.
+## Imprégnation (Stèle de gelure, Paratonnerre) : les voisines de leur élément (glace, foudre) et
+## celles de la classe de leur propriétaire en profitent, toutes avec son talent imbue_all.
 ## Zones (Comptoir, Chantier) : pas un bonus de tourelle, mais une valeur au point visé (best_at).
 
 const KINDS := {"rate": "aura_rate", "damage": "aura_damage", "cc": "aura_cc", "range": "aura_range",
@@ -30,7 +30,6 @@ static func refresh(b: SimBoard) -> void:
 		if not s.support or s.is_jammed():
 			continue
 		var reach: float = s.stats["range"]
-		var all := s.kit != null and s.kit.imbue_all
 		for other_cell in b.towers:
 			var t: SimTower = b.towers[other_cell]
 			if t.support or t.center.distance_to(s.center) > reach:
@@ -40,9 +39,18 @@ static func refresh(b: SimBoard) -> void:
 				var value: float = s.stats[KINDS[kind]]
 				if value <= 0.0 or value <= t.buff(kind):
 					continue
-				if IMBUE.has(kind) and not all and element != IMBUE[kind]:
+				if not imbues(kind, s.kit, t.type, element):
 					continue
 				t.buffs[kind] = [value, s.owner]
+
+
+## Une aura d'imprégnation renforce-t-elle cette voisine ? Oui pour son élément (glace, foudre)
+## et pour les tourelles de la classe de son propriétaire (bonus de classe : le Fléau pour la
+## Stèle et le Paratonnerre) ; toutes avec le talent imbue_all. Les autres auras : toujours.
+static func imbues(kind: String, owner_kit: PlayerKit, type: String, element: String) -> bool:
+	if not IMBUE.has(kind) or element == IMBUE[kind]:
+		return true
+	return owner_kit != null and (owner_kit.imbue_all or owner_kit.class_tower(type))
 
 
 ## Statistiques de tir de la tourelle, auras comprises (dégâts, contrôles, imprégnation).
