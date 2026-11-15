@@ -8,6 +8,9 @@ const Foes := preload("res://tests/bot/bot_foes.gd")
 
 ## Part de temps arrêté au plus comptée pour un contrôle (les monstres en sont protégés 1 s).
 const CONTROL_CAP := 0.5
+## Part du temps de charme comptée sous le feu : mesuré sur la simulation, un charme ne vaut
+## qu'environ un quart de ce que la formule prévoit (le bot Dompteur se ruinait en Flûtes).
+const CHARM_WEIGHT := 0.25
 ## Les auras de contrôle et la glace des voisines comptent pour cette part (chevauchement des portées).
 const OVERLAP := 0.3
 ## Secondes de tir par monstre supposées quand on compare des tourelles sans case précise.
@@ -158,7 +161,7 @@ static func control(data: GameData, type: String, s: Dictionary, f: Dictionary) 
 	if not f["mech"]:
 		stopped += float(s.get("fear_chance", 0.0)) * float(s.get("fear_duration", 0.0)) * resist * 1.4
 		if float(f["cc_resist"]) < SimMonster.CHARM_IMMUNE_FROM:
-			stopped += float(s.get("charm_chance", 0.0)) * float(s.get("charm_duration", 0.0)) * 1.4
+			stopped += float(s.get("charm_chance", 0.0)) * float(s.get("charm_duration", 0.0)) * 1.4 * CHARM_WEIGHT
 	var frac := minf(CONTROL_CAP, stopped * rate)
 	var slow := 0.0
 	if not f["slow_immune"]:
