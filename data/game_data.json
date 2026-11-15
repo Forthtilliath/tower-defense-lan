@@ -247,7 +247,7 @@
 					{ "id": "go_stocking", "name": "Bas de laine", "description": "+0,5 % d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest": 0.005 },
 					{ "id": "go_loot", "name": "Pillage", "description": "3 % de chance par rang qu'un monstre tué rapporte 5 or de plus.", "tier": 2, "max_rank": 2, "loot": 0.03 },
 					{ "id": "go_smuggle", "name": "Contrebande", "description": "+40 or de départ par rang.", "tier": 2, "max_rank": 2, "start_gold": 40 },
-					{ "id": "go_loan", "name": "Prêt", "description": "Emprunt de 150 or par rang au départ, rendu ×1,2 à partir de la vague 10.", "tier": 2, "max_rank": 2, "loan": 150 }
+					{ "id": "go_loan", "name": "Prêt", "description": "Emprunt de 60 or par rang au départ, rendu ×1,5 à partir de la vague 10.", "tier": 2, "max_rank": 2, "loan": 60 }
 				] },
 				{ "id": "hunter", "name": "Chasseur de primes", "description": "Chaque tête a un prix.", "talents": [
 					{ "id": "go_headprice", "name": "Prime de tête", "description": "+20 % de prime par rang sur les boss et gros monstres.", "tier": 1, "max_rank": 3, "boss_bounty": 0.2 },
@@ -264,7 +264,7 @@
 					{ "id": "go_vault", "name": "Coffre-fort", "description": "+30 or de départ par rang : de quoi faire fructifier dès la 1re vague.", "tier": 1, "max_rank": 3, "start_gold": 30 },
 					{ "id": "go_rent", "name": "Rente", "description": "+5 or fixes par vague et par rang.", "tier": 2, "max_rank": 3, "rent": 5 },
 					{ "id": "go_compound", "name": "Intérêts composés", "description": "Tes intérêts comptent aussi 10 % par rang de l'or investi dans tes tourelles.", "tier": 3, "max_rank": 3, "compound": 0.1 },
-					{ "id": "go_bigloan", "name": "Gros emprunt", "description": "Emprunt de 233 or par rang au départ, rendu ×1,2 à partir de la vague 10.", "tier": 4, "max_rank": 3, "loan": 233 },
+					{ "id": "go_bigloan", "name": "Gros emprunt", "description": "Emprunt de 100 or par rang au départ, rendu ×1,5 à partir de la vague 10.", "tier": 4, "max_rank": 3, "loan": 100 },
 					{ "id": "go_saver", "name": "Épargnant", "description": "Une victoire rapporte +2 % d'expérience par 100 or gardés.", "tier": 5, "saver": 0.02 },
 					{ "id": "go_cashin", "name": "Encaissement", "description": "Pouvoir : touche tout de suite 3 vagues d'intérêts.", "tier": 5, "ultimate": true, "power": "cash_in" }
 				] },
@@ -278,10 +278,10 @@
 					{ "id": "go_golden", "name": "Âge d'or", "description": "Pouvoir : chaque allié reçoit tout de suite 100 or, +10 par vague passée.", "tier": 5, "ultimate": true, "power": "golden_age" }
 				] },
 				{ "id": "gambler", "name": "Parieur", "description": "Le risque paie.", "talents": [
-					{ "id": "go_daring", "name": "Audace", "description": "Or des vagues lancées en avance +50 % par rang.", "tier": 1, "max_rank": 3, "early_bonus": 0.5 },
-					{ "id": "go_flawless", "name": "Sans faute", "description": "+10 or par rang pour une vague franchie sans fuite.", "tier": 1, "max_rank": 3, "clean_gold": 10 },
-					{ "id": "go_hothand", "name": "Main chaude", "description": "Chaque vague sans fuite d'affilée : +3 or de plus par rang.", "tier": 2, "max_rank": 3, "hot_hand": 3 },
-					{ "id": "go_double", "name": "Double ou rien", "description": "Une vague lancée en avance rapporte +34 % de son or par rang.", "tier": 3, "max_rank": 3, "early_wave": 0.34 },
+					{ "id": "go_daring", "name": "Audace", "description": "Or des vagues lancées en avance +20 % par rang.", "tier": 1, "max_rank": 3, "early_bonus": 0.2 },
+					{ "id": "go_flawless", "name": "Sans faute", "description": "+5 or par rang pour une vague franchie sans fuite.", "tier": 1, "max_rank": 3, "clean_gold": 5 },
+					{ "id": "go_hothand", "name": "Main chaude", "description": "Chaque vague sans fuite d'affilée : +1 or de plus par rang (6 vagues d'affilée au plus).", "tier": 2, "max_rank": 3, "hot_hand": 1 },
+					{ "id": "go_double", "name": "Double ou rien", "description": "Une vague lancée en avance rapporte +8 % de son or par rang.", "tier": 3, "max_rank": 3, "early_wave": 0.08 },
 					{ "id": "go_risk", "name": "Prise de risque", "description": "+2 % de primes par rang et par vie perdue (jusqu'à +30 %).", "tier": 4, "max_rank": 3, "risk": 0.02 },
 					{ "id": "go_nerve", "name": "Nerfs d'acier", "description": "À 5 vies ou moins, tes primes sont ×1,5.", "tier": 5, "nerve": 0.5 },
 					{ "id": "go_allin", "name": "Va-tout", "description": "Pouvoir : pendant 15 s, chaque monstre tué rapporte ×3, mais chaque fuite coûte 1 vie de plus.", "tier": 5, "ultimate": true, "power": "all_in" }
