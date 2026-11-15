@@ -647,11 +647,11 @@
 			"id": "icebreaker", "element": "ice", "name": "Brise-glace", "color": "#3f8fd8", "air": true, "ground": true,
 			"description": "Frappe plus fort les monstres ralentis, et deux fois plus fort les monstres gelés.",
 			"levels": [
-				{ "cost": 95, "damage": 9, "range": 2.8, "rate": 0.6, "projectile_speed": 14, "vs_slowed": 0.6, "vs_stunned": 1.0 },
-				{ "cost": 75, "damage": 15, "range": 3.0, "rate": 0.65, "projectile_speed": 14, "vs_slowed": 0.65, "vs_stunned": 1.1 },
-				{ "cost": 120, "damage": 24, "range": 3.2, "rate": 0.7, "projectile_speed": 15, "vs_slowed": 0.7, "vs_stunned": 1.2 },
-				{ "cost": 180, "damage": 38, "range": 3.4, "rate": 0.75, "projectile_speed": 15, "vs_slowed": 0.75, "vs_stunned": 1.35 },
-				{ "cost": 260, "damage": 58, "range": 3.6, "rate": 0.8, "projectile_speed": 16, "vs_slowed": 0.8, "vs_stunned": 1.5 }
+				{ "cost": 95, "damage": 11, "range": 2.8, "rate": 0.6, "projectile_speed": 14, "vs_slowed": 0.6, "vs_stunned": 1.0 },
+				{ "cost": 75, "damage": 18, "range": 3.0, "rate": 0.65, "projectile_speed": 14, "vs_slowed": 0.65, "vs_stunned": 1.1 },
+				{ "cost": 120, "damage": 29, "range": 3.2, "rate": 0.7, "projectile_speed": 15, "vs_slowed": 0.7, "vs_stunned": 1.2 },
+				{ "cost": 180, "damage": 46, "range": 3.4, "rate": 0.75, "projectile_speed": 15, "vs_slowed": 0.75, "vs_stunned": 1.35 },
+				{ "cost": 260, "damage": 70, "range": 3.6, "rate": 0.8, "projectile_speed": 16, "vs_slowed": 0.8, "vs_stunned": 1.5 }
 			]
 		},
 		{
@@ -691,11 +691,11 @@
 			"id": "scythe", "element": "bleed", "name": "Faux", "color": "#9c2f45", "air": false, "ground": true,
 			"description": "Mêlée, au sol : un coup sur trois est critique, et chaque coup fait saigner.",
 			"levels": [
-				{ "cost": 85, "damage": 5, "range": 1.5, "rate": 0.9, "projectile_speed": 16, "crit_every": 3, "crit_mult": 2.5, "bleed": 0.01, "bleed_duration": 3 },
-				{ "cost": 70, "damage": 8, "range": 1.6, "rate": 0.95, "projectile_speed": 16, "crit_every": 3, "crit_mult": 2.75, "bleed": 0.015, "bleed_duration": 3 },
-				{ "cost": 110, "damage": 12, "range": 1.7, "rate": 1.0, "projectile_speed": 17, "crit_every": 3, "crit_mult": 3, "bleed": 0.02, "bleed_duration": 3 },
-				{ "cost": 165, "damage": 18, "range": 1.8, "rate": 1.1, "projectile_speed": 17, "crit_every": 3, "crit_mult": 3.5, "bleed": 0.025, "bleed_duration": 3 },
-				{ "cost": 240, "damage": 27, "range": 1.9, "rate": 1.2, "projectile_speed": 18, "crit_every": 3, "crit_mult": 4, "bleed": 0.03, "bleed_duration": 3 }
+				{ "cost": 85, "damage": 9.1, "range": 1.5, "rate": 0.9, "projectile_speed": 16, "crit_every": 3, "crit_mult": 2.5, "bleed": 0.018, "bleed_duration": 3 },
+				{ "cost": 70, "damage": 14, "range": 1.6, "rate": 0.95, "projectile_speed": 16, "crit_every": 3, "crit_mult": 2.75, "bleed": 0.027, "bleed_duration": 3 },
+				{ "cost": 110, "damage": 22, "range": 1.7, "rate": 1.0, "projectile_speed": 17, "crit_every": 3, "crit_mult": 3, "bleed": 0.036, "bleed_duration": 3 },
+				{ "cost": 165, "damage": 32, "range": 1.8, "rate": 1.1, "projectile_speed": 17, "crit_every": 3, "crit_mult": 3.5, "bleed": 0.046, "bleed_duration": 3 },
+				{ "cost": 240, "damage": 49, "range": 1.9, "rate": 1.2, "projectile_speed": 18, "crit_every": 3, "crit_mult": 4, "bleed": 0.055, "bleed_duration": 3 }
 			]
 		},
 		{
@@ -713,33 +713,33 @@
 			"id": "whirlwind", "element": "wind", "name": "Tourbillon", "color": "#9fe0d0", "air": true, "ground": false, "attack": "pulse",
 			"description": "Rafale de vent autour d'elle : cloue les volants au sol, où toutes les tourelles les touchent.",
 			"levels": [
-				{ "cost": 90, "damage": 4, "range": 1.8, "rate": 0.5, "ground_duration": 1.5 },
-				{ "cost": 75, "damage": 6, "range": 1.9, "rate": 0.5, "ground_duration": 1.8 },
-				{ "cost": 115, "damage": 9, "range": 2, "rate": 0.55, "ground_duration": 2.1 },
-				{ "cost": 170, "damage": 13, "range": 2.2, "rate": 0.55, "ground_duration": 2.5 },
-				{ "cost": 240, "damage": 18, "range": 2.4, "rate": 0.6, "ground_duration": 3 }
+				{ "cost": 90, "damage": 6, "range": 1.8, "rate": 0.5, "ground_duration": 1.5 },
+				{ "cost": 75, "damage": 9, "range": 1.9, "rate": 0.5, "ground_duration": 1.8 },
+				{ "cost": 115, "damage": 14, "range": 2, "rate": 0.55, "ground_duration": 2.1 },
+				{ "cost": 170, "damage": 20, "range": 2.2, "rate": 0.55, "ground_duration": 2.5 },
+				{ "cost": 240, "damage": 27, "range": 2.4, "rate": 0.6, "ground_duration": 3 }
 			]
 		},
 		{
 			"id": "frost_stele", "element": "ice", "name": "Stèle de gelure", "color": "#a8d8ff", "air": true, "ground": true, "support": true,
 			"description": "Les tourelles de glace voisines ajoutent la gelure à leurs coups. Ne tire pas.",
 			"levels": [
-				{ "cost": 90, "damage": 0, "range": 1.6, "rate": 1, "aura_frostbite": 3 },
-				{ "cost": 70, "damage": 0, "range": 1.7, "rate": 1, "aura_frostbite": 5 },
-				{ "cost": 110, "damage": 0, "range": 1.8, "rate": 1, "aura_frostbite": 8 },
-				{ "cost": 165, "damage": 0, "range": 2, "rate": 1, "aura_frostbite": 12 },
-				{ "cost": 240, "damage": 0, "range": 2.2, "rate": 1, "aura_frostbite": 18 }
+				{ "cost": 90, "damage": 0, "range": 1.6, "rate": 1, "aura_frostbite": 7.5 },
+				{ "cost": 70, "damage": 0, "range": 1.7, "rate": 1, "aura_frostbite": 12 },
+				{ "cost": 110, "damage": 0, "range": 1.8, "rate": 1, "aura_frostbite": 20 },
+				{ "cost": 165, "damage": 0, "range": 2, "rate": 1, "aura_frostbite": 30 },
+				{ "cost": 240, "damage": 0, "range": 2.2, "rate": 1, "aura_frostbite": 45 }
 			]
 		},
 		{
 			"id": "lightning_rod", "element": "lightning", "name": "Paratonnerre", "color": "#f0e070", "air": true, "ground": true, "support": true,
 			"description": "Les tourelles de foudre voisines électrifient : plus de dégâts subis. Ne tire pas.",
 			"levels": [
-				{ "cost": 100, "damage": 0, "range": 1.6, "rate": 1, "aura_shock": 0.08 },
-				{ "cost": 80, "damage": 0, "range": 1.7, "rate": 1, "aura_shock": 0.11 },
-				{ "cost": 125, "damage": 0, "range": 1.8, "rate": 1, "aura_shock": 0.14 },
-				{ "cost": 185, "damage": 0, "range": 2, "rate": 1, "aura_shock": 0.17 },
-				{ "cost": 260, "damage": 0, "range": 2.2, "rate": 1, "aura_shock": 0.22 }
+				{ "cost": 100, "damage": 0, "range": 1.6, "rate": 1, "aura_shock": 0.2 },
+				{ "cost": 80, "damage": 0, "range": 1.7, "rate": 1, "aura_shock": 0.275 },
+				{ "cost": 125, "damage": 0, "range": 1.8, "rate": 1, "aura_shock": 0.35 },
+				{ "cost": 185, "damage": 0, "range": 2, "rate": 1, "aura_shock": 0.425 },
+				{ "cost": 260, "damage": 0, "range": 2.2, "rate": 1, "aura_shock": 0.55 }
 			]
 		},
 		{
