@@ -6,6 +6,9 @@
 # Builds et exports
 /build/
 
+# Bilans du bot (tools/bot-matrix.ps1), régénérés à chaque lancement
+/bot_results/
+
 # Clés de signature et identifiants : JAMAIS dans le dépôt
 *.keystore
 *.jks
