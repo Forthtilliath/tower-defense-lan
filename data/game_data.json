@@ -1140,7 +1140,7 @@
 	],
 	"maps": [
 		{
-			"id": "prairie", "name": "Prairie", "tier": 0, "max_players": 2,
+			"id": "prairie", "name": "Prairie", "tier": 0, "hp": 1.0, "max_players": 2,
 			"waves": ["prairie_1", "prairie_2", "prairie_3", "prairie_4", "prairie_5", "prairie_6", "prairie_7", "prairie_8", "prairie_9", "prairie_10", "prairie_11", "prairie_12", "prairie_13", "prairie_14", "prairie_15", "prairie_16", "prairie_17", "prairie_18", "prairie_19", "prairie_20"],
 			"rows": [
 				"..T.....~~~....T",
@@ -1155,7 +1155,7 @@
 			]
 		},
 		{
-			"id": "carrefour", "name": "Carrefour", "tier": 0, "max_players": 2,
+			"id": "carrefour", "name": "Carrefour", "tier": 0, "hp": 0.95, "max_players": 2,
 			"waves": ["carrefour_1", "carrefour_2", "carrefour_3", "carrefour_4", "carrefour_5", "carrefour_6", "carrefour_7", "carrefour_8", "carrefour_9", "carrefour_10", "carrefour_11", "carrefour_12", "carrefour_13", "carrefour_14", "carrefour_15", "carrefour_16", "carrefour_17", "carrefour_18", "carrefour_19", "carrefour_20"],
 			"rows": [
 				"....T.....~~~.T.",
@@ -1171,7 +1171,7 @@
 			"entries": ["1", "2", "12"]
 		},
 		{
-			"id": "riviere", "name": "Rivière", "tier": 2, "hp": 0.85, "max_players": 3,
+			"id": "riviere", "name": "Rivière", "tier": 2, "hp": 0.67, "max_players": 3,
 			"waves": ["riviere_1", "riviere_2", "riviere_3", "riviere_4", "riviere_5", "riviere_6", "riviere_7", "riviere_8", "riviere_9", "riviere_10", "riviere_11", "riviere_12", "riviere_13", "riviere_14", "riviere_15", "riviere_16", "riviere_17", "riviere_18", "riviere_19", "riviere_20"],
 			"rows": [
 				"....T....~~....T..",
@@ -1187,7 +1187,7 @@
 			]
 		},
 		{
-			"id": "trois_portes", "name": "Trois portes", "tier": 1, "hp": 0.75, "max_players": 3,
+			"id": "trois_portes", "name": "Trois portes", "tier": 1, "hp": 0.56, "max_players": 3,
 			"waves": ["trois_portes_1", "trois_portes_2", "trois_portes_3", "trois_portes_4", "trois_portes_5", "trois_portes_6", "trois_portes_7", "trois_portes_8", "trois_portes_9", "trois_portes_10", "trois_portes_11", "trois_portes_12", "trois_portes_13", "trois_portes_14", "trois_portes_15", "trois_portes_16", "trois_portes_17", "trois_portes_18", "trois_portes_19", "trois_portes_20"],
 			"rows": [
 				"...T......~~~...T.",
@@ -1205,7 +1205,7 @@
 			"entries": ["1", "2", "3", "12", "23", "13", "123"]
 		},
 		{
-			"id": "spirale", "name": "Spirale", "tier": 0, "hp": 1.3, "flyer_speed": 0.4, "max_players": 3,
+			"id": "spirale", "name": "Spirale", "tier": 0, "hp": 1.32, "flyer_speed": 0.4, "max_players": 3,
 			"waves": ["spirale_1", "spirale_2", "spirale_3", "spirale_4", "spirale_5", "spirale_6", "spirale_7", "spirale_8", "spirale_9", "spirale_10", "spirale_11", "spirale_12", "spirale_13", "spirale_14", "spirale_15", "spirale_16", "spirale_17", "spirale_18", "spirale_19", "spirale_20"],
 			"rows": [
 				"....T..#..~~..T",
@@ -1222,7 +1222,7 @@
 			]
 		},
 		{
-			"id": "labyrinthe", "name": "Labyrinthe", "tier": 0, "hp": 1.2, "flyer_speed": 0.55, "max_players": 3,
+			"id": "labyrinthe", "name": "Labyrinthe", "tier": 0, "hp": 1.75, "flyer_speed": 0.55, "max_players": 3,
 			"waves": ["labyrinthe_1", "labyrinthe_2", "labyrinthe_3", "labyrinthe_4", "labyrinthe_5", "labyrinthe_6", "labyrinthe_7", "labyrinthe_8", "labyrinthe_9", "labyrinthe_10", "labyrinthe_11", "labyrinthe_12", "labyrinthe_13", "labyrinthe_14", "labyrinthe_15", "labyrinthe_16", "labyrinthe_17", "labyrinthe_18", "labyrinthe_19", "labyrinthe_20"],
 			"rows": [
 				"...T...#...~~~....T.",
@@ -1239,7 +1239,7 @@
 			]
 		},
 		{
-			"id": "grande_plaine", "name": "Grande plaine", "tier": 0, "flyer_speed": 0.5, "min_players": 1, "max_players": 4,
+			"id": "grande_plaine", "name": "Grande plaine", "tier": 0, "hp": 1.28, "flyer_speed": 0.5, "min_players": 1, "max_players": 4,
 			"waves": ["grande_plaine_1", "grande_plaine_2", "grande_plaine_3", "grande_plaine_4", "grande_plaine_5", "grande_plaine_6", "grande_plaine_7", "grande_plaine_8", "grande_plaine_9", "grande_plaine_10", "grande_plaine_11", "grande_plaine_12", "grande_plaine_13", "grande_plaine_14", "grande_plaine_15", "grande_plaine_16", "grande_plaine_17", "grande_plaine_18", "grande_plaine_19", "grande_plaine_20"],
 			"rows": [
 				"..v....a....n...............#.",
@@ -1260,7 +1260,7 @@
 			]
 		},
 		{
-			"id": "quatre_fiefs", "name": "Quatre fiefs", "tier": 2, "hp": 1.6, "flyer_speed": 0.5, "lanes": 4, "min_players": 1, "max_players": 4,
+			"id": "quatre_fiefs", "name": "Quatre fiefs", "tier": 2, "hp": 1.45, "flyer_speed": 0.5, "lanes": 4, "min_players": 1, "max_players": 4,
 			"waves": ["quatre_fiefs_1", "quatre_fiefs_2", "quatre_fiefs_3", "quatre_fiefs_4", "quatre_fiefs_5", "quatre_fiefs_6", "quatre_fiefs_7", "quatre_fiefs_8", "quatre_fiefs_9", "quatre_fiefs_10", "quatre_fiefs_11", "quatre_fiefs_12", "quatre_fiefs_13", "quatre_fiefs_14", "quatre_fiefs_15", "quatre_fiefs_16", "quatre_fiefs_17", "quatre_fiefs_18", "quatre_fiefs_19", "quatre_fiefs_20"],
 			"rows": [
 				"..T.......#....~....#.......T..",
@@ -1302,7 +1302,7 @@
 			]
 		},
 		{
-			"id": "bastion", "name": "Bastion", "tier": 1, "hp": 0.85, "flyer_speed": 1.0, "lanes": 4, "min_players": 1, "max_players": 4,
+			"id": "bastion", "name": "Bastion", "tier": 1, "hp": 0.72, "flyer_speed": 0.7, "lanes": 4, "min_players": 1, "max_players": 4,
 			"waves": ["bastion_1", "bastion_2", "bastion_3", "bastion_4", "bastion_5", "bastion_6", "bastion_7", "bastion_8", "bastion_9", "bastion_10", "bastion_11", "bastion_12", "bastion_13", "bastion_14", "bastion_15", "bastion_16", "bastion_17", "bastion_18", "bastion_19", "bastion_20"],
 			"rows": [
 				"....#........=====........#....",
@@ -1344,7 +1344,7 @@
 			]
 		},
 		{
-			"id": "lac_gele", "name": "Lac gelé", "theme": "tundra", "tier": 1, "hp": 0.8, "flyer_speed": 0.7, "max_players": 3,
+			"id": "lac_gele", "name": "Lac gelé", "theme": "tundra", "tier": 1, "hp": 0.68, "flyer_speed": 0.7, "max_players": 3,
 			"waves": ["lac_gele_1", "lac_gele_2", "lac_gele_3", "lac_gele_4", "lac_gele_5", "lac_gele_6", "lac_gele_7", "lac_gele_8", "lac_gele_9", "lac_gele_10", "lac_gele_11", "lac_gele_12", "lac_gele_13", "lac_gele_14", "lac_gele_15", "lac_gele_16", "lac_gele_17", "lac_gele_18", "lac_gele_19", "lac_gele_20"],
 			"rows": [
 				".....T....1.^#....TT",
@@ -1361,7 +1361,7 @@
 			"entries": ["1", "2", "12"]
 		},
 		{
-			"id": "caldeira", "name": "Caldeira", "theme": "volcano", "tier": 2, "hp": 0.7, "flyer_speed": 0.5, "max_players": 3,
+			"id": "caldeira", "name": "Caldeira", "theme": "volcano", "tier": 2, "hp": 0.73, "flyer_speed": 0.5, "max_players": 3,
 			"waves": ["caldeira_1", "caldeira_2", "caldeira_3", "caldeira_4", "caldeira_5", "caldeira_6", "caldeira_7", "caldeira_8", "caldeira_9", "caldeira_10", "caldeira_11", "caldeira_12", "caldeira_13", "caldeira_14", "caldeira_15", "caldeira_16", "caldeira_17", "caldeira_18", "caldeira_19", "caldeira_20"],
 			"rows": [
 				"...................",
@@ -1380,7 +1380,7 @@
 			]
 		},
 		{
-			"id": "tourbiere", "name": "Tourbière", "theme": "swamp", "tier": 1, "hp": 0.7, "flyer_speed": 0.8, "max_players": 3,
+			"id": "tourbiere", "name": "Tourbière", "theme": "swamp", "tier": 1, "hp": 0.77, "flyer_speed": 0.8, "max_players": 3,
 			"waves": ["tourbiere_1", "tourbiere_2", "tourbiere_3", "tourbiere_4", "tourbiere_5", "tourbiere_6", "tourbiere_7", "tourbiere_8", "tourbiere_9", "tourbiere_10", "tourbiere_11", "tourbiere_12", "tourbiere_13", "tourbiere_14", "tourbiere_15", "tourbiere_16", "tourbiere_17", "tourbiere_18", "tourbiere_19", "tourbiere_20"],
 			"rows": [
 				"T.T...T..T3..........",
@@ -1400,7 +1400,7 @@
 			"entries": ["2", "13", "1", "3", "12", "23", "123"]
 		},
 		{
-			"id": "cryptes", "name": "Cryptes", "theme": "necropolis", "tier": 2, "hp": 0.72, "flyer_speed": 0.7, "max_players": 3,
+			"id": "cryptes", "name": "Cryptes", "theme": "necropolis", "tier": 2, "hp": 0.82, "flyer_speed": 0.7, "max_players": 3,
 			"waves": ["cryptes_1", "cryptes_2", "cryptes_3", "cryptes_4", "cryptes_5", "cryptes_6", "cryptes_7", "cryptes_8", "cryptes_9", "cryptes_10", "cryptes_11", "cryptes_12", "cryptes_13", "cryptes_14", "cryptes_15", "cryptes_16", "cryptes_17", "cryptes_18", "cryptes_19", "cryptes_20"],
 			"rows": [
 				"..1..T2...3#..4.#....",
@@ -1420,7 +1420,7 @@
 			"entries": ["1", "2", "3", "4", "13", "24", "1234"]
 		},
 		{
-			"id": "gorge_vautour", "name": "Gorge du vautour", "theme": "canyon", "tier": 1, "hp": 0.6, "flyer_speed": 0.6, "max_players": 3,
+			"id": "gorge_vautour", "name": "Gorge du vautour", "theme": "canyon", "tier": 1, "hp": 0.62, "flyer_speed": 0.6, "max_players": 3,
 			"waves": ["gorge_vautour_1", "gorge_vautour_2", "gorge_vautour_3", "gorge_vautour_4", "gorge_vautour_5", "gorge_vautour_6", "gorge_vautour_7", "gorge_vautour_8", "gorge_vautour_9", "gorge_vautour_10", "gorge_vautour_11", "gorge_vautour_12", "gorge_vautour_13", "gorge_vautour_14", "gorge_vautour_15", "gorge_vautour_16", "gorge_vautour_17", "gorge_vautour_18", "gorge_vautour_19", "gorge_vautour_20"],
 			"rows": [
 				".............T........",
@@ -1438,7 +1438,7 @@
 			]
 		},
 		{
-			"id": "sylve", "name": "Sylve profonde", "theme": "forest", "tier": 1, "hp": 0.85, "flyer_speed": 0.6, "max_players": 4,
+			"id": "sylve", "name": "Sylve profonde", "theme": "forest", "tier": 1, "hp": 0.74, "flyer_speed": 0.6, "max_players": 4,
 			"waves": ["sylve_1", "sylve_2", "sylve_3", "sylve_4", "sylve_5", "sylve_6", "sylve_7", "sylve_8", "sylve_9", "sylve_10", "sylve_11", "sylve_12", "sylve_13", "sylve_14", "sylve_15", "sylve_16", "sylve_17", "sylve_18", "sylve_19", "sylve_20"],
 			"rows": [
 				"...#.TT.....1........",
