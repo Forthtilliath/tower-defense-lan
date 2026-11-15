@@ -168,7 +168,7 @@ static func _impact(b: SimBoard, p: SimProjectile, target: SimMonster, rewards: 
 			BoardFeats.extra_targets(b, p, target, p.stat("damage"), rewards)
 
 
-## Monstres visables par le coup p (ni charmés, ni hors de sa portée air/sol) dans un disque.
+## Monstres visables par le coup p (dans sa portée air/sol) dans un disque.
 static func in_radius(b: SimBoard, p: SimProjectile, at: Vector2, radius: float) -> Array[SimMonster]:
 	var out: Array[SimMonster] = []
 	var r2 := radius * radius
@@ -253,9 +253,10 @@ static func _mark(m: SimMonster, p: SimProjectile) -> void:
 		m.marks.ground(p.stat("ground_duration") * (1.0 - m.cc_resist))
 
 
-## Monstre vivant, non charmé, que la tourelle sait viser : un volant par les tourelles qui visent
-## l'air (et par toutes s'il est cloué au sol), un monstre au sol par celles qui visent le sol.
+## Monstre vivant que la tourelle sait viser : un volant par les tourelles qui visent l'air (et
+## par toutes s'il est cloué au sol), un monstre au sol par celles qui visent le sol. Un monstre
+## charmé reste une cible : il recule et frappe les siens tout en restant sous le feu.
 static func can_hit(air: bool, ground: bool, m: SimMonster) -> bool:
-	if not m.is_alive() or m.is_charmed() or m.marks.burrowed:  # enfoui : hors d'atteinte
+	if not m.is_alive() or m.marks.burrowed:  # enfoui : hors d'atteinte
 		return false
 	return (air or m.marks.is_grounded()) if m.flying else ground

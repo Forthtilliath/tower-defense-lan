@@ -41,7 +41,7 @@ static func _contagion(b: SimBoard, dt: float) -> void:
 		var next: SimMonster = null
 		var best := m.poison_spread * m.poison_spread
 		for other in b.monsters:
-			if other == m or not other.is_alive() or other.is_charmed():
+			if other == m or not other.is_alive():
 				continue
 			if other.poison_timer > 0.0 and other.poison_dps >= m.poison_dps:
 				continue
