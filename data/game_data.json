@@ -9,8 +9,8 @@
 		{
 			"id": "gunner", "name": "Artilleur", "color": "#d9a441",
 			"heritage": { "id": "he_gunner", "name": "Héritage de l'Artilleur", "description": "+20 % de dégâts des tirs physiques.", "tier": 1, "towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"], "damage": 0.2 },
-			"description": "Armes lourdes : +20 % de dégâts des tirs physiques (Arbalète, Fléchettes, Canon, Sentinelle, Baliste, Broyeur, Mortier, Rafale).",
-			"damage": 1.2, "bonus_towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"],
+			"description": "Armes lourdes : +10 % de dégâts des tirs physiques (Arbalète, Fléchettes, Canon, Sentinelle, Baliste, Broyeur, Mortier, Rafale).",
+			"damage": 1.1, "bonus_towers": ["crossbow", "dart", "cannon", "sentinel", "ballista", "crusher", "mortar", "gatling"],
 			"branches": [
 				{ "id": "armory", "name": "Armurerie", "description": "Tronc commun de l'Artilleur : ses tourelles physiques.", "trunk": true, "talents": [
 					{ "id": "gu_caliber", "name": "Calibre", "description": "+6 % de dégâts par rang (tourelles de l'Artilleur).", "tier": 1, "max_rank": 3, "towers": ["crossbow", "sentinel", "dart", "cannon", "crusher", "ballista", "mortar", "gatling"], "damage": 0.06 },
@@ -260,7 +260,7 @@
 					{ "id": "go_rush", "name": "Ruée vers l'or", "description": "Pouvoir : pendant 12 s, tout monstre tué rapporte le double (alliés compris).", "tier": 5, "ultimate": true, "power": "gold_rush" }
 				] },
 				{ "id": "usurer", "name": "Usurier", "description": "L'or qui dort rapporte.", "talents": [
-					{ "id": "go_rate", "name": "Taux", "description": "+1 % d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest": 0.01 },
+					{ "id": "go_rate", "name": "Taux", "description": "+0,5 % d'intérêts par rang.", "tier": 1, "max_rank": 3, "interest": 0.005 },
 					{ "id": "go_vault", "name": "Coffre-fort", "description": "+30 or de départ par rang : de quoi faire fructifier dès la 1re vague.", "tier": 1, "max_rank": 3, "start_gold": 30 },
 					{ "id": "go_rent", "name": "Rente", "description": "+5 or fixes par vague et par rang.", "tier": 2, "max_rank": 3, "rent": 5 },
 					{ "id": "go_compound", "name": "Intérêts composés", "description": "Tes intérêts comptent aussi 10 % par rang de l'or investi dans tes tourelles.", "tier": 3, "max_rank": 3, "compound": 0.1 },
